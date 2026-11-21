@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>FLOODLINE V6.2 · HỘI AN</title>
+<title>RÁNG MỠ GÀ: CÓ NHÀ THÌ GIỮ · HỘI AN</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="art.js"></script>
@@ -32,7 +32,7 @@ label{display:block;font-weight:700;margin:8px 0 4px}
 
 /* === 1. MÀN HÌNH INTRO / TITLE SCREEN === */
 #introScreen {
-  position: fixed; inset: 0; z-index: 9000; background: #132933;
+  position: fixed; inset: 0; z-index: 9000; background: #261a24;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   transition: opacity 0.6s ease, transform 0.6s ease;
 }
@@ -41,21 +41,22 @@ label{display:block;font-weight:700;margin:8px 0 4px}
 .introContent {
   position: relative; z-index: 2; text-align: center; padding: 24px;
   display: flex; flex-direction: column; align-items: center;
-  background: radial-gradient(ellipse at center, rgba(16,38,46,0.68) 0%, rgba(16,38,46,0) 78%);
+  background: radial-gradient(ellipse at center, rgba(28, 22, 30, 0.72) 0%, rgba(28, 22, 30, 0) 78%);
 }
 .gameEdition {
-  background: rgba(245, 201, 107, 0.22); border: 1.5px solid #f5c96b;
-  color: #ffe8a3; font-size: 12px; font-weight: 800; letter-spacing: 3px;
+  background: rgba(246, 179, 82, 0.22); border: 1.5px solid #f6b352;
+  color: #ffe8a3; font-size: 12px; font-weight: 800; letter-spacing: 2.5px;
   padding: 5px 14px; border-radius: 99px; margin-bottom: 14px; text-transform: uppercase;
 }
 .gameMainTitle {
-  font-size: clamp(44px, 8vw, 84px); font-weight: 900; letter-spacing: 6px;
-  color: #fff6dc; margin: 0; line-height: 1;
-  text-shadow: 0 5px 0 #8c4a27, 0 10px 25px rgba(0,0,0,0.65);
+  font-size: clamp(38px, 7.5vw, 76px); font-weight: 900; letter-spacing: 4px;
+  color: #ffd97d; margin: 0; line-height: 1.05;
+  text-shadow: 0 5px 0 #7a351d, 0 10px 25px rgba(0,0,0,0.7);
 }
 .gameSubTitle {
-  font-size: clamp(14px, 2.2vw, 19px); font-weight: 700; letter-spacing: 3px;
-  color: #a8e6cf; margin: 12px 0 34px; text-shadow: 0 2px 8px rgba(0,0,0,0.75);
+  font-size: clamp(18px, 3vw, 28px); font-weight: 900; letter-spacing: 3px;
+  color: #fff6dc; margin: 10px 0 32px;
+  text-shadow: 0 3px 0 #592b18, 0 4px 12px rgba(0,0,0,0.8);
 }
 .playStartBtn {
   background: linear-gradient(180deg, #f6c95e 0%, #e09f3e 100%);
@@ -64,7 +65,7 @@ label{display:block;font-weight:700;margin:8px 0 4px}
   box-shadow: 0 6px 0 #8c5319, 0 12px 24px rgba(0,0,0,0.5);
   cursor: pointer; animation: pulsePlay 1.8s infinite;
 }
-.introFooter { position: absolute; bottom: 18px; z-index: 2; color: rgba(255, 248, 231, 0.8); font-size: 12px; letter-spacing: 1px; }
+.introFooter { position: absolute; bottom: 18px; z-index: 2; color: rgba(255, 248, 231, 0.85); font-size: 12px; letter-spacing: 1px; text-align: center; padding: 0 12px; }
 @keyframes pulsePlay { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
 
 /* === 2. ĐĂNG KÝ GIA ĐÌNH === */
@@ -81,7 +82,7 @@ label{display:block;font-weight:700;margin:8px 0 4px}
 /* === 3. FULL-SCREEN PANNABLE MAP & FLOATING HUD === */
 #gameWorld {
   position: fixed; inset: 0; width: 100vw; height: 100vh; overflow: hidden;
-  background: #2b4a42; touch-action: none; /* Khóa cuộn trang trình duyệt để kéo vuốt map mượt */
+  background: #2b4a42; touch-action: none;
 }
 #map {
   position: absolute; inset: 0; width: 100%; height: 100%;
@@ -282,12 +283,12 @@ body.shaking { animation: screenShake 0.55s ease-in-out 2; }
 <div id="introScreen">
   <canvas id="introCanvas" width="480" height="270"></canvas>
   <div class="introContent">
-    <div class="gameEdition">✦ HỘI AN COMMUNITY SIMULATION ✦</div>
-    <h1 class="gameMainTitle">FLOODLINE</h1>
-    <div class="gameSubTitle">KÝ ỨC MÙA NƯỚC NỔI</div>
+    <div class="gameEdition">✦ KÝ ỨC MÙA NƯỚC NỔI · PHỐ HỘI ✦</div>
+    <h1 class="gameMainTitle">RÁNG MỠ GÀ</h1>
+    <div class="gameSubTitle">CÓ NHÀ THÌ GIỮ</div>
     <button class="playStartBtn" id="introPlayBtn" onclick="enterGameFromIntro()">▶ BẮT ĐẦU CHƠI</button>
   </div>
-  <div class="introFooter">KHU PHỐ HỘI AN · CHUNG TAY VƯỢT LŨ · V6.2</div>
+  <div class="introFooter">RÁNG MỠ GÀ: CÓ NHÀ THÌ GIỮ · MÔ PHỎNG CỘNG ĐỒNG ỨNG PHÓ THIÊN TAI</div>
 </div>
 
 <!-- 2. BẢN ĐỒ KÉO VUỐT ĐA HƯỚNG LÀM THẾ GIỚI CHÍNH -->
@@ -366,7 +367,7 @@ body.shaking { animation: screenShake 0.55s ease-in-out 2; }
     <div class="note" id="roomStatus">Đang kết nối khu phố Hội An...</div>
     <div class="row">
       <button id="newMode" class="primary" onclick="mode='join';loginRender()">Tham gia lần đầu</button>
-      <button id="oldMode" onclick="mode='login';loginRender()">Trở lại nhà mình</button>
+      <button id="oldMode" class="primary" onclick="mode='login';loginRender()">Trở lại nhà mình</button>
     </div>
     <label>Tên gia đình</label><input id="name" maxlength="32" placeholder="Ví dụ: Nhà Mít">
     <label>PIN cá nhân (4 chữ số)</label><input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••">
@@ -497,28 +498,29 @@ const SCENE_DROPS = Array.from({ length: 110 }, (_, i) => ({
 function renderHoiAnPanorama(ctx, frame, mood) {
   ctx.imageSmoothingEnabled = false;
   const cfg = {
-    intro: { skyTop:'#183442', skyMid:'#3b5d66', skyBot:'#d99b52', sun:true, sunY:118, rainCount:45, waterY:180, lanternsOn:true, cloudAlpha:0.55 },
+    // Cảnh Intro Ráng Mỡ Gà: Bầu trời chuyển vàng cam ráng chiều báo bão, mây giông sẫm kéo về
+    intro: { skyTop:'#2b2238', skyMid:'#b85d3b', skyBot:'#f5b041', sun:true, sunY:122, rainCount:25, waterY:180, lanternsOn:true, cloudAlpha:0.68 },
     p1:    { skyTop:'#234854', skyMid:'#4b6f75', skyBot:'#e0ab63', sun:true, sunY:112, rainCount:25, waterY:180, lanternsOn:true, cloudAlpha:0.45 },
     p2:    { skyTop:'#12222b', skyMid:'#223742', skyBot:'#4f5d61', sun:false, sunY:0,  rainCount:75, waterY:172, lanternsOn:true, cloudAlpha:0.80 },
     break: { skyTop:'#1c1829', skyMid:'#382a3b', skyBot:'#7d5338', sun:false, sunY:0,  rainCount:20, waterY:178, lanternsOn:true, cloudAlpha:0.40 },
     p3:    { skyTop:'#070d12', skyMid:'#111c24', skyBot:'#25323b', sun:false, sunY:0,  rainCount:110, waterY:148, lanternsOn:false, cloudAlpha:0.94 },
     p4:    { skyTop:'#2b6777', skyMid:'#68a691', skyBot:'#ffd180', sun:true, sunY:98,  rainCount:0,  waterY:182, lanternsOn:true, cloudAlpha:0.22 }
-  }[mood] || { skyTop:'#183442', skyMid:'#3b5d66', skyBot:'#d99b52', sun:true, sunY:118, rainCount:45, waterY:180, lanternsOn:true, cloudAlpha:0.55 };
+  }[mood] || { skyTop:'#2b2238', skyMid:'#b85d3b', skyBot:'#f5b041', sun:true, sunY:122, rainCount:25, waterY:180, lanternsOn:true, cloudAlpha:0.68 };
 
   const sky = ctx.createLinearGradient(0, 0, 0, 175);
   sky.addColorStop(0, cfg.skyTop); sky.addColorStop(0.55, cfg.skyMid); sky.addColorStop(1, cfg.skyBot);
   ctx.fillStyle = sky; ctx.fillRect(0, 0, 480, 175);
 
   if (cfg.sun) {
-    ctx.fillStyle = 'rgba(255, 232, 163, 0.25)';
-    ctx.beginPath(); ctx.arc(355, cfg.sunY, 28, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#ffe8a3';
-    ctx.beginPath(); ctx.arc(355, cfg.sunY, 16, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = mood === 'intro' ? 'rgba(255, 195, 90, 0.32)' : 'rgba(255, 232, 163, 0.25)';
+    ctx.beginPath(); ctx.arc(355, cfg.sunY, 30, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = mood === 'intro' ? '#ffd166' : '#ffe8a3';
+    ctx.beginPath(); ctx.arc(355, cfg.sunY, 17, 0, Math.PI * 2); ctx.fill();
   }
 
-  ctx.fillStyle = `rgba(18, 30, 38, ${cfg.cloudAlpha})`;
+  ctx.fillStyle = `rgba(22, 24, 34, ${cfg.cloudAlpha})`;
   SCENE_CLOUDS.forEach(cl => {
-    cl.x += cl.s * (mood === 'p3' ? 2.6 : 1);
+    cl.x += cl.s * (mood === 'p3' ? 2.6 : 1.1);
     if (cl.x > 500) cl.x = -cl.w;
     ctx.fillRect(Math.floor(cl.x), cl.y, cl.w, 13);
     ctx.fillRect(Math.floor(cl.x) + 12, cl.y - 6, cl.w - 24, 9);
@@ -535,7 +537,7 @@ function renderHoiAnPanorama(ctx, frame, mood) {
     ctx.fillRect(h.x + 12, topY + 24, 10, 12);
     ctx.fillRect(h.x + h.w - 22, topY + 24, 10, 12);
 
-    const swing = Math.sin(frame * (mood === 'p3' ? 0.16 : 0.05) + idx) * (mood === 'p3' ? 4 : 2);
+    const swing = Math.sin(frame * (mood === 'p3' ? 0.16 : 0.06) + idx) * (mood === 'p3' ? 4 : 2.2);
     const lx = Math.floor(h.x + h.w / 2 + swing);
     const ly = topY + 17;
     ctx.fillStyle = cfg.lanternsOn ? ((idx % 2 === 0) ? '#ff4d4f' : '#faad14') : '#4a2e1e';
@@ -547,10 +549,11 @@ function renderHoiAnPanorama(ctx, frame, mood) {
 
   const river = ctx.createLinearGradient(0, cfg.waterY, 0, 270);
   if (mood === 'p3') { river.addColorStop(0, 'rgba(28, 64, 82, 0.90)'); river.addColorStop(1, '#091820'); }
+  else if (mood === 'intro') { river.addColorStop(0, '#3d3b4d'); river.addColorStop(1, '#182430'); }
   else { river.addColorStop(0, '#1f4e5f'); river.addColorStop(1, '#102933'); }
   ctx.fillStyle = river; ctx.fillRect(0, cfg.waterY, 480, 270 - cfg.waterY);
 
-  ctx.fillStyle = 'rgba(200, 238, 255, 0.36)'; ctx.fillRect(0, cfg.waterY, 480, 2);
+  ctx.fillStyle = 'rgba(255, 224, 163, 0.36)'; ctx.fillRect(0, cfg.waterY, 480, 2);
 
   if (cfg.lanternsOn) {
     HOIAN_HOUSES.forEach((h, idx) => {
@@ -560,9 +563,9 @@ function renderHoiAnPanorama(ctx, frame, mood) {
     });
   }
 
-  ctx.fillStyle = 'rgba(168, 230, 255, 0.22)';
+  ctx.fillStyle = 'rgba(255, 220, 175, 0.22)';
   for (let w = 0; w < 20; w++) {
-    const wx = ((w * 67 + frame * (mood === 'p3' ? 1.3 : 0.4)) % 500) - 20;
+    const wx = ((w * 67 + frame * (mood === 'p3' ? 1.3 : 0.45)) % 500) - 20;
     const wy = cfg.waterY + 6 + (w * 19) % Math.max(20, 265 - cfg.waterY);
     ctx.fillRect(Math.floor(wx), wy, 18 + (w % 12), 2);
   }
@@ -608,8 +611,8 @@ function renderHoiAnPanorama(ctx, frame, mood) {
 const PHASE_SCENES = {
   profile_card: {
     mood: 'p1', theme: '', badge: 'PART I · T–72 GIỜ TRƯỚC BÃO',
-    title: '🌤️ MÂY ĐEN KÉO VỀ PHỐ HỘI',
-    desc: 'Dự báo có áp thấp nhiệt đới mạnh lên thành bão hướng vào miền Trung. Hãy nhận thẻ phân vai để khám phá hoàn cảnh và câu chuyện của gia đình bạn.'
+    title: '🌤️ RÁNG MỠ GÀ BÁO BÃO',
+    desc: 'Chân trời ửng sắc ráng mỡ gà, áp thấp nhiệt đới đang mạnh lên hướng vào miền Trung. Hãy nhận thẻ phân vai để khám phá hoàn cảnh và câu chuyện của gia đình bạn.'
   },
   news: {
     mood: 'p2', theme: '', badge: 'PART II · T–48 GIỜ TRƯỚC LŨ',
@@ -811,7 +814,7 @@ function renderGame(){
       $('hudBtnIcon').textContent = '📜';
       $('hudTaskBtnText').textContent = t ? `Nhiệm vụ P${t.phase}` : 'Thông tin nhà';
       $('taskTitle').textContent = t ? t.label : (room.locked ? 'Đã kết thúc' : 'Chờ bắt đầu');
-      $('taskSubtitle').textContent = t ? `GIAI ĐOẠN ${t.phase} · ${me.name.toUpperCase()}` : 'KHU PHỐ HỘI AN';
+      $('taskSubtitle').textContent = t ? `GIAI ĐOẠN ${t.phase} · ${me.name.toUpperCase()}` : 'RÁNG MỠ GÀ: CÓ NHÀ THÌ GIỮ';
     }
   }
 
@@ -819,7 +822,7 @@ function renderGame(){
   let html = '';
 
   if(!t){
-    html = `<div class="card">${room.locked ? `Cảm ơn <b>${esc(me.name)}</b> đã tham gia mô phỏng!` : `✅ Chào mừng <b>${esc(me.name)}</b> đến với khu phố Hội An!<br><br>Ngôi nhà <b>${esc(me.name)}</b> đang tỏa sáng viền vàng trên bản đồ. Bạn có thể bấm <b>"🗺️ Xem bản đồ"</b> rồi <b>kéo vuốt tự do</b> để dạo quanh khu phố trong lúc chờ Host bắt đầu!`}</div>`;
+    html = `<div class="card">${room.locked ? `Cảm ơn <b>${esc(me.name)}</b> đã tham gia <b>Ráng Mỡ Gà: Có Nhà Thì Giữ</b>!` : `✅ Chào mừng <b>${esc(me.name)}</b> đến với khu phố Hội An!<br><br>Ngôi nhà <b>${esc(me.name)}</b> đang tỏa sáng viền vàng trên bản đồ. Bạn có thể bấm <b>"🗺️ Xem bản đồ"</b> rồi <b>kéo vuốt tự do</b> để dạo quanh khu phố trong lúc chờ Host bắt đầu!`}</div>`;
   } else if(t.id === 'profile_card'){
     const prof = me.profile;
     const roleSubtitle = cleanRoleSubtitle(prof?.title);
@@ -1082,7 +1085,6 @@ if(typeof EMBEDDED_ASSETS !== 'undefined'){
   Object.keys(EMBEDDED_ASSETS).forEach(k => { const im=new Image(); im.src=EMBEDDED_ASSETS[k]; images[k]=im; });
 }
 
-// Bố trí 25 ô nhà rộng rãi, có khoảng đệm an toàn 4 phía để không dính HUD
 const spots = Array.from({length:25},(_,i)=>({
   x: 155 + (i % 5) * 195,
   y: 135 + Math.floor(i / 5) * 115
@@ -1098,7 +1100,6 @@ function updateViewportSize() {
   C.height = h * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.imageSmoothingEnabled = false;
-  // Tự động cân chỉnh độ zoom sao cho trên điện thoại lẫn desktop đều nhìn rõ ngôi nhà
   camZoom = w < 640 ? 1.05 : 1.15;
   clampCamera();
 }
@@ -1108,7 +1109,7 @@ updateViewportSize();
 function clampCamera() {
   const viewW = window.innerWidth / camZoom;
   const viewH = window.innerHeight / camZoom;
-  const padX = 90, padTop = 95, padBottom = 85; // Khoảng đệm để kéo mép bản đồ thoát khỏi thanh HUD
+  const padX = 90, padTop = 95, padBottom = 85;
   if (WORLD_W + padX * 2 <= viewW) {
     targetCamX = (WORLD_W - viewW) / 2;
   } else {
@@ -1133,7 +1134,6 @@ function centerOnMyHouse(showNotice) {
   if (showNotice) toast(`🎯 Đã đưa camera về ${me.name}`);
 }
 
-// Xử lý kéo vuốt chuột & cảm ứng (Pointer Events)
 C.addEventListener('pointerdown', e => {
   isDragging = true;
   dragMoved = false;
@@ -1194,7 +1194,6 @@ function handleMapTap(clientX, clientY) {
 let tick = 0, lightningTimer = 0;
 function draw(){
   tick++;
-  // Nội suy mượt mà chuyển động camera
   camX += (targetCamX - camX) * 0.22;
   camY += (targetCamY - camY) * 0.22;
 
@@ -1206,7 +1205,6 @@ function draw(){
   ctx.scale(camZoom, camZoom);
   ctx.translate(-camX, -camY);
 
-  // Nền cỏ khu phố Hội An
   ctx.fillStyle = '#8eb88d';
   ctx.fillRect(0, 0, WORLD_W, WORLD_H);
 
@@ -1218,7 +1216,6 @@ function draw(){
     }
   }
 
-  // Sông Thu Bồn bên bờ Đông & Đường phố chính
   ctx.fillStyle = '#5c9ca3'; ctx.fillRect(1040, 0, 80, WORLD_H);
   ctx.fillStyle = '#b6a68c'; ctx.fillRect(30, 328, 975, 36);
 
@@ -1264,7 +1261,6 @@ function draw(){
     } else if(p.prepared === true) ctx.fillText('❤️', x+21, y-18);
   });
 
-  // HIỆU ỨNG THỜI TIẾT & LŨ DÂNG TRÊN BẢN ĐỒ
   if(phase === 2 && tid !== 'break'){
     ctx.fillStyle='rgba(18, 38, 48, 0.24)'; ctx.fillRect(0, 0, WORLD_W, WORLD_H);
     ctx.fillStyle='rgba(209, 236, 248, 0.55)';
