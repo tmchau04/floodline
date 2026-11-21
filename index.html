@@ -1,206 +1,666 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FLOODLINE V4 · HỘI AN</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>FLOODLINE V6.1 · HỘI AN</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="art.js"></script>
 <script src="game-data.js"></script>
 <style>
-:root{--ink:#354c48;--paper:#fff7e5}*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#224653,#426b64);color:var(--ink);font:15px system-ui,Arial}
-h1,h2,h3,p{margin:0 0 10px}h1{color:#fff4d8;letter-spacing:2px}main{max-width:1240px;margin:auto;padding:14px}
-.panel{background:var(--paper);border:3px solid #96734e;border-radius:14px;padding:15px;box-shadow:0 7px #183c40}
-.stack{display:grid;gap:12px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:12px}
-.mapcol{min-width:0;display:flex;flex-direction:column;gap:9px}.infoBoard{background:#fff6dd;border:2px solid #b89c6c;border-radius:10px;padding:11px;max-height:240px;overflow:auto}.infoBoard:empty{display:none}.infoBoard.emergency{border-color:#cf4242;background:#fff0e8}
-.stage{position:relative;background:#91b98c;border:5px solid #796044;border-radius:13px;overflow:hidden}canvas{display:block;width:100%;image-rendering:pixelated;cursor:pointer}
-.task{max-height:82vh;overflow:auto}button,input,select{font:inherit;border:2px solid #bca27a;border-radius:8px;padding:10px;background:#fffdf5;color:var(--ink);max-width:100%}
-button{cursor:pointer;font-weight:750;background:#dbe9c6}button.primary{background:#448e75;color:white;border-color:#2d6655}button:disabled{opacity:.45;cursor:not-allowed}
-input{width:100%}label{display:block;font-weight:700;margin:8px 0 4px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}
-.small{font-size:12px;color:#68776e}.note{background:#e8efdc;border-radius:8px;padding:10px;margin:8px 0}.danger{background:#f9e0d5;border:1px solid #d98270}
-.card{border:2px solid #ddc9a4;padding:10px;border-radius:9px;margin:8px 0}.hidden{display:none!important}.tag{display:inline-block;padding:4px 8px;border-radius:7px;background:#dceacb;font-size:12px}
-.board{background:#fffdf3;border:1px solid #d7c29c;padding:9px;margin:7px 0;border-radius:8px}.top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
-#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#233f3e;color:white;padding:12px 18px;border-radius:9px;z-index:99;max-width:90vw;display:none}
-.familyCard{background:linear-gradient(180deg,#fffdf6,#f7edd4);border:2px solid #9c794c;border-radius:12px;padding:12px;margin:6px 0}
-.familyRow{padding:6px 0;border-bottom:1px dashed #d6c39c;font-size:13px}.scriptBox{background:#fdf3d7;border-left:4px solid #b5854b;padding:8px 10px;margin-top:8px;font-style:italic;font-size:13px;border-radius:0 8px 8px 0}
-.bagGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;max-height:290px;overflow:auto;margin:8px 0}
-.bagItem{border:2px solid #cbb792;border-radius:10px;padding:7px;background:#fffdf6;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px}.bagItem.sel{background:#d9ebd0;border-color:#3a7d66}
-.bar{height:10px;background:#d8decb;border-radius:99px;overflow:hidden;margin:6px 0}.fill{height:100%;background:#448e75}
-.voteCard{border:2px solid #cbb792;border-radius:9px;padding:9px;margin:7px 0;background:#fffdf6;cursor:pointer;text-align:left;width:100%}.voteCard.sel{background:#d9ebd0;border-color:#3a7d66}
-.invGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0}.invBox{background:#fffdf5;border:1px solid #cbb792;border-radius:8px;padding:7px;font-size:13px}
+:root{--ink:#354c48;--paper:#fff7e5;--border:#96734e}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#14282e;color:var(--ink);font:15px system-ui,Arial}
+h1,h2,h3,p{margin:0 0 10px}
+button,input,select{font:inherit;border:2px solid #bca27a;border-radius:9px;padding:9px 11px;background:#fffdf5;color:var(--ink);max-width:100%}
+button{cursor:pointer;font-weight:750;background:#dbe9c6;transition:transform 0.1s}
+button:hover{filter:brightness(1.04)}
+button:active{transform:translateY(1px)}
+button.primary{background:#448e75;color:white;border-color:#2d6655}
+button.warn{background:#f3b562;color:#2b1e0e;border-color:#c98a36}
+button:disabled{opacity:.45;cursor:not-allowed}
+input,select{width:100%}
+label{display:block;font-weight:700;margin:8px 0 4px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}
+.small{font-size:12px;color:#68776e}
+.note{background:#e8efdc;border-radius:9px;padding:10px;margin:8px 0}
+.danger{background:#f9e0d5;border:1px solid #d98270}
+.card{border:2px solid #ddc9a4;padding:12px;border-radius:11px;margin:8px 0;background:#fffdf7}
+.hidden{display:none!important}
+.tag{display:inline-block;padding:4px 8px;border-radius:7px;background:#dceacb;font-size:12px;font-weight:700}
+.board{background:#fffdf3;border:1px solid #d7c29c;padding:9px;margin:7px 0;border-radius:8px}
 
-/* === HIỆU ỨNG CHUYỂN CẢNH ĐẦU MỖI PHẦN === */
+/* === 1. MÀN HÌNH INTRO / TITLE SCREEN === */
+#introScreen {
+  position: fixed; inset: 0; z-index: 9000; background: #132933;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+#introScreen.fadeOut { opacity: 0; transform: scale(1.04); pointer-events: none; }
+#introCanvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; z-index: 1; }
+.introContent {
+  position: relative; z-index: 2; text-align: center; padding: 24px;
+  display: flex; flex-direction: column; align-items: center;
+  background: radial-gradient(ellipse at center, rgba(16,38,46,0.68) 0%, rgba(16,38,46,0) 78%);
+}
+.gameEdition {
+  background: rgba(245, 201, 107, 0.22); border: 1.5px solid #f5c96b;
+  color: #ffe8a3; font-size: 12px; font-weight: 800; letter-spacing: 3px;
+  padding: 5px 14px; border-radius: 99px; margin-bottom: 14px; text-transform: uppercase;
+}
+.gameMainTitle {
+  font-size: clamp(44px, 8vw, 84px); font-weight: 900; letter-spacing: 6px;
+  color: #fff6dc; margin: 0; line-height: 1;
+  text-shadow: 0 5px 0 #8c4a27, 0 10px 25px rgba(0,0,0,0.65);
+}
+.gameSubTitle {
+  font-size: clamp(14px, 2.2vw, 19px); font-weight: 700; letter-spacing: 3px;
+  color: #a8e6cf; margin: 12px 0 34px; text-shadow: 0 2px 8px rgba(0,0,0,0.75);
+}
+.playStartBtn {
+  background: linear-gradient(180deg, #f6c95e 0%, #e09f3e 100%);
+  color: #2b1d0e; border: 3px solid #fff3c4; border-radius: 12px;
+  padding: 15px 38px; font-size: 18px; font-weight: 900; letter-spacing: 2px;
+  box-shadow: 0 6px 0 #8c5319, 0 12px 24px rgba(0,0,0,0.5);
+  cursor: pointer; animation: pulsePlay 1.8s infinite;
+}
+.introFooter { position: absolute; bottom: 18px; z-index: 2; color: rgba(255, 248, 231, 0.8); font-size: 12px; letter-spacing: 1px; }
+@keyframes pulsePlay { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+
+/* === 2. ĐĂNG KÝ GIA ĐÌNH === */
+#loginWrap {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(18, 42, 46, 0.72); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.loginBox {
+  background: var(--paper); border: 4px solid var(--border); border-radius: 16px;
+  padding: 20px; width: 100%; max-width: 440px; box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+}
+
+/* === 3. FULL-SCREEN MAP WORLD & FLOATING HUD === */
+#gameWorld { position: fixed; inset: 0; width: 100vw; height: 100vh; overflow: hidden; }
+#map {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; image-rendering: pixelated; cursor: pointer; display: block;
+}
+
+.hudTop {
+  position: fixed; top: 12px; left: 12px; right: 12px; z-index: 250;
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; pointer-events: none;
+}
+.hudPill {
+  pointer-events: auto; background: rgba(255, 247, 229, 0.96);
+  border: 3px solid var(--border); border-radius: 14px; padding: 8px 14px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.28); display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.clockBadge {
+  background: #2c5e4e; color: #fff6dc; font-weight: 800; padding: 5px 11px;
+  border-radius: 8px; font-size: 14px; letter-spacing: 0.5px;
+}
+.hudActionBtn {
+  pointer-events: auto; background: linear-gradient(180deg, #f6c95e, #e4a644);
+  color: #2b1d0e; border: 3px solid #7d5832; border-radius: 14px;
+  padding: 10px 16px; font-weight: 900; font-size: 14px;
+  box-shadow: 0 5px 0 #6e4b28, 0 8px 18px rgba(0,0,0,0.3);
+  display: flex; align-items: center; gap: 6px; position: relative;
+}
+.notifDot {
+  position: absolute; top: -6px; right: -6px; background: #d93838; color: white;
+  font-size: 11px; font-weight: 900; min-width: 22px; height: 22px; padding: 0 5px;
+  border-radius: 99px; border: 2px solid #fff; display: flex; align-items: center; justify-content: center;
+  animation: pulsePlay 1.2s infinite;
+}
+
+.hudBottom {
+  position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 100;
+  width: min(94vw, 680px); pointer-events: none; display: flex; flex-direction: column; gap: 6px; align-items: center;
+}
+.tickerBar {
+  pointer-events: auto; width: 100%; background: rgba(31, 58, 56, 0.92); color: #fff7e5;
+  border: 2px solid #c9a66b; border-radius: 12px; padding: 9px 14px;
+  font-size: 13px; text-align: center; box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  cursor: pointer;
+}
+.tickerBar.emergency { background: rgba(156, 38, 38, 0.95); border-color: #ffd166; }
+
+/* === 4. GIAO DIỆN MINI-GAME CHUYÊN BIỆT === */
+#miniGameStage {
+  position: fixed; inset: 0; z-index: 200;
+  background: radial-gradient(circle at top, #274c52 0%, #14282e 100%);
+  padding: 74px 16px 20px; overflow-y: auto;
+  display: flex; justify-content: center; align-items: flex-start;
+}
+.studioFrame {
+  background: var(--paper); border: 4px solid #8c643b; border-radius: 18px;
+  width: 100%; max-width: 780px; overflow: hidden;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.5), inset 0 0 0 2px #fffdf5;
+  animation: popIn 0.25s ease;
+}
+.studioHeader {
+  background: linear-gradient(180deg, #4f3a23, #3b2a19); color: #fff6dc;
+  padding: 13px 18px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  border-bottom: 3px solid #8c643b;
+}
+.studioHeader h2 { margin: 0; font-size: 17px; }
+.studioBody { padding: 18px; }
+
+/* === 5. POP-UP TRÊN NỀN MAP === */
+#taskModalBackdrop {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(15, 34, 38, 0.58); backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center; padding: 14px;
+}
+.farmModal {
+  background: var(--paper); border: 4px solid #8c643b; border-radius: 18px;
+  width: 100%; max-width: 540px; max-height: 86vh;
+  display: flex; flex-direction: column; overflow: hidden;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.55), inset 0 0 0 2px #fffdf5;
+  animation: popIn 0.24s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+@keyframes popIn { from { opacity: 0; transform: scale(0.92) translateY(12px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.modalHeader {
+  background: linear-gradient(180deg, #5c4328, #46321d); color: #fff6dc;
+  padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  border-bottom: 3px solid #8c643b;
+}
+.modalHeader h2 { margin: 0; font-size: 16px; }
+.modalCloseBtn {
+  background: #e6c68a; color: #2e1f10; border: 2px solid #fff3d1;
+  padding: 6px 11px; border-radius: 8px; font-size: 12px; font-weight: 800; white-space: nowrap;
+}
+.modalBody { padding: 15px; overflow-y: auto; flex: 1; }
+
+/* === 6. POP-UP BIẾN CỐ ĐẶC BIỆT (EVENT CINEMATIC CARD) === */
+#eventPopupBackdrop {
+  position: fixed; inset: 0; z-index: 8500;
+  background: rgba(10, 18, 24, 0.78); backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center; padding: 18px;
+}
+.eventCard {
+  width: 100%; max-width: 440px; border-radius: 20px; overflow: hidden;
+  border: 4px solid #f5c96b; background: #fff8e7; text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.75);
+  animation: eventImpact 0.45s cubic-bezier(0.17, 0.89, 0.32, 1.28);
+}
+@keyframes eventImpact {
+  0% { opacity: 0; transform: scale(0.65) rotate(-2deg); }
+  65% { transform: scale(1.04) rotate(1deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+.eventArtBanner {
+  width: 100%; height: 150px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; position: relative; overflow: hidden;
+}
+.ev-danger { background: radial-gradient(circle, #8c2323 0%, #3b0d0d 100%); color: #ffe8e8; }
+.ev-warning { background: radial-gradient(circle, #9c5a14 0%, #3d2106 100%); color: #fff3d6; }
+.ev-relief { background: radial-gradient(circle, #1f6e58 0%, #0e362b 100%); color: #e3fff5; }
+.ev-glitch { background: radial-gradient(circle, #333a47 0%, #11151c 100%); color: #d8e2f0; animation: glitchPulse 0.3s infinite alternate; }
+@keyframes glitchPulse { from { filter: hue-rotate(0deg) contrast(1.1); } to { filter: hue-rotate(25deg) contrast(1.4); } }
+.eventHeroIcon { font-size: 56px; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.5)); animation: floatIcon 1.6s ease-in-out infinite; }
+@keyframes floatIcon { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+.eventTag {
+  margin-top: 8px; font-size: 11px; font-weight: 900; letter-spacing: 2.5px;
+  padding: 4px 12px; border-radius: 99px; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.3);
+}
+.eventBody { padding: 18px 20px 20px; }
+.eventBody h3 { font-size: 20px; color: #2b3a36; margin-bottom: 8px; }
+.eventBody p { font-size: 15px; line-height: 1.55; color: #3d4f4a; margin-bottom: 16px; }
+
+/* Thẻ phân vai nhập vai chuẩn */
+.roleTicket{background:linear-gradient(180deg,#fffef9,#f6ebd0);border:3px solid #9c794c;border-radius:14px;padding:14px;margin:4px 0}
+.roleHeader{display:flex;justify-content:space-between;align-items:center;border-bottom:2px dashed #d6c39c;padding-bottom:8px;margin-bottom:10px;gap:6px;flex-wrap:wrap}
+.portraitFrame{width:100%;border:3px solid #8c6a43;border-radius:10px;overflow:hidden;background:#fde68a;margin-bottom:10px;display:flex;justify-content:center}
+.portraitFrame img{width:100%;max-height:150px;object-fit:cover;image-rendering:pixelated;display:block}
+.storyText{background:#fdf6e2;border-left:4px solid #b5854b;padding:11px 13px;font-size:14.5px;line-height:1.65;color:#2f423e;border-radius:0 8px 8px 0;margin-top:8px}
+
+/* Ba lô & Bộ lọc */
+.filterRow{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}.filterBtn{padding:6px 10px;font-size:12px;border-radius:7px;background:#efe6cf}
+.filterBtn.active{background:#3e8a70;color:#fff;border-color:#2b6350}
+.bagGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-height:330px;overflow:auto;margin:10px 0}
+@media(max-width:600px){.bagGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.bagItem{border:2px solid #cbb792;border-radius:10px;padding:8px;background:#fffdf6;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px}.bagItem.sel{background:#d9ebd0;border-color:#3a7d66}
+.bar{height:11px;background:#d8decb;border-radius:99px;overflow:hidden;margin:6px 0}.fill{height:100%;background:#448e75}
+.voteCard{border:2px solid #cbb792;border-radius:10px;padding:10px;margin:8px 0;background:#fffdf6;cursor:pointer;text-align:left;width:100%}.voteCard.sel{background:#d9ebd0;border-color:#3a7d66}
+.invGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0}.invBox{background:#fffdf5;border:1px solid #cbb792;border-radius:8px;padding:7px;font-size:13px}
+.incomingAlert{background:#fff3cd;border:2px solid #e0a800;border-radius:10px;padding:10px;margin-bottom:10px;animation:pulseBorder 1.5s infinite}
+@keyframes pulseBorder{0%,100%{box-shadow:0 0 0 0 rgba(224,168,0,0.4)}50%{box-shadow:0 0 0 6px rgba(224,168,0,0)}}
+
+#toast{
+  position:fixed; top:74px; left:50%; transform:translateX(-50%);
+  background:#213d3b; color:#fff8e7; border:2px solid #f5c96b;
+  padding:11px 18px; border-radius:12px; z-index:9500; max-width:90vw;
+  font-weight:700; box-shadow:0 8px 20px rgba(0,0,0,0.4); display:none;
+}
+
+/* === HIỆU ỨNG CHUYỂN CẢNH ĐỒNG BỘ INTRO === */
 #phaseOverlay {
-  position: fixed; inset: 0; z-index: 9999;
+  position: fixed; inset: 0; z-index: 9999; background: #132933;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   text-align: center; padding: 24px; color: #fff8e7;
-  opacity: 0; pointer-events: none; transition: opacity 0.55s ease;
+  opacity: 0; pointer-events: none; transition: opacity 0.45s ease;
 }
 #phaseOverlay.show { opacity: 1; pointer-events: auto; }
+#phaseCanvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; z-index: 1; }
+.ovContent {
+  position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center;
+  padding: 26px 30px; border-radius: 18px;
+  background: radial-gradient(ellipse at center, rgba(16,38,46,0.78) 0%, rgba(16,38,46,0.28) 80%, transparent 100%);
+}
 #phaseOverlay .ovBadge {
-  font-size: 13px; letter-spacing: 3px; text-transform: uppercase;
-  padding: 6px 14px; border-radius: 99px; background: rgba(255,255,255,0.16);
-  border: 1px solid rgba(255,255,255,0.35); margin-bottom: 14px;
+  font-size: 12px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;
+  padding: 6px 15px; border-radius: 99px; background: rgba(245, 201, 107, 0.22);
+  border: 1.5px solid #f5c96b; color: #ffe8a3; margin-bottom: 14px;
 }
 #phaseOverlay h2 {
-  font-size: clamp(24px, 4vw, 38px); letter-spacing: 1.5px; margin-bottom: 12px;
-  text-shadow: 0 4px 18px rgba(0,0,0,0.45);
+  font-size: clamp(26px, 4.5vw, 44px); font-weight: 900; letter-spacing: 2px; margin-bottom: 12px;
+  color: #fff6dc; text-shadow: 0 4px 0 #7a3e20, 0 8px 20px rgba(0,0,0,0.65);
 }
 #phaseOverlay p {
-  max-width: 620px; font-size: clamp(15px, 2vw, 18px); line-height: 1.6;
-  color: #f3efe2; margin-bottom: 22px;
+  max-width: 600px; font-size: clamp(15px, 2vw, 18px); line-height: 1.6;
+  color: #f3efe2; margin-bottom: 24px; text-shadow: 0 2px 6px rgba(0,0,0,0.75);
 }
 #phaseOverlay .ovSkip {
-  background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.5);
-  padding: 8px 18px; border-radius: 99px; font-size: 13px;
+  background: linear-gradient(180deg, #f6c95e 0%, #e09f3e 100%);
+  color: #2b1d0e; border: 2px solid #fff3c4;
+  padding: 11px 26px; border-radius: 10px; font-size: 14px; font-weight: 800;
+  box-shadow: 0 4px 0 #8c5319;
 }
-.theme-p1 { background: radial-gradient(circle at center, #2d5a53 0%, #162e33 100%); }
-.theme-p2 { background: radial-gradient(circle at center, #2c4a5e 0%, #13222e 100%); }
-.theme-break { background: radial-gradient(circle at center, #6e4e2e 0%, #2b1d12 100%); }
-.theme-p3 { background: radial-gradient(circle at center, #4a1c1c 0%, #14090d 100%); animation: lightningFlash 1.4s ease; }
-.theme-p4 { background: radial-gradient(circle at center, #d48c3b 0%, #2c4d49 100%); }
-
-@keyframes lightningFlash {
-  0%, 100% { filter: brightness(1); }
-  12% { filter: brightness(2.6); }
-  20% { filter: brightness(0.8); }
-  28% { filter: brightness(2.2); }
-  40% { filter: brightness(1); }
-}
-@keyframes screenShake {
-  0%, 100% { transform: translate(0, 0); }
-  20% { transform: translate(-6px, 4px); }
-  40% { transform: translate(6px, -4px); }
-  60% { transform: translate(-4px, -3px); }
-  80% { transform: translate(4px, 3px); }
-}
+.theme-p3 { animation: lightningFlash 1.4s ease; }
+@keyframes lightningFlash { 0%, 100% { filter: brightness(1); } 12% { filter: brightness(2.4); } 20% { filter: brightness(0.85); } 28% { filter: brightness(2.0); } 40% { filter: brightness(1); } }
+@keyframes screenShake { 0%, 100% { transform: translate(0, 0); } 20% { transform: translate(-6px, 4px); } 40% { transform: translate(6px, -4px); } 60% { transform: translate(-4px, -3px); } 80% { transform: translate(4px, 3px); } }
 body.shaking { animation: screenShake 0.55s ease-in-out 2; }
-@media(max-width:800px){.layout{grid-template-columns:1fr}.task{max-height:none}}
 </style>
 </head>
 <body>
-<main>
-<header class="top"><h1>🌊 FLOODLINE <small style="font-size:12px">V4.3 · HỘI AN</small></h1><span class="small" style="color:#e6e8db">Realtime Cloud · Tối đa 25 hộ</span></header>
 
-<section id="login" class="panel stack" style="max-width:460px;margin:30px auto">
-  <h2>🏘️ ĐĂNG KÝ GIA ĐÌNH THAM GIA</h2>
-  <div class="note" id="roomStatus">Đang kết nối khu phố Hội An...</div>
-  <div class="row"><button id="newMode" class="primary" onclick="mode='join';loginRender()">Tham gia lần đầu</button><button id="oldMode" onclick="mode='login';loginRender()">Trở lại nhà mình</button></div>
-  <label>Tên gia đình</label><input id="name" maxlength="32" placeholder="Ví dụ: Nhà Mít">
-  <label>PIN cá nhân (4 chữ số)</label><input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••">
-  <button class="primary" onclick="submitLogin()" id="joinButton">TẠO NHÀ & THAM GIA</button>
-</section>
-
-<section id="game" class="hidden stack">
-  <div class="top" style="color:white"><strong id="roomTitle">KHU PHỐ HỘI AN</strong><span id="clock" class="tag">Đang chờ Host</span><button id="leaveBtn" onclick="leaveGame()">Rời khu phố</button></div>
-  <div class="layout">
-    <div class="mapcol"><div id="infoBoard" class="infoBoard"></div><div class="stage"><canvas id="map" width="960" height="624"></canvas></div></div>
-    <div class="panel task"><h2 id="taskTitle">Đang tải...</h2><p class="small" id="taskSubtitle"></p><div id="taskBody"></div></div>
+<!-- 1. MÀN HÌNH INTRO GAME -->
+<div id="introScreen">
+  <canvas id="introCanvas" width="480" height="270"></canvas>
+  <div class="introContent">
+    <div class="gameEdition">✦ HỘI AN COMMUNITY SIMULATION ✦</div>
+    <h1 class="gameMainTitle">FLOODLINE</h1>
+    <div class="gameSubTitle">KÝ ỨC MÙA NƯỚC NỔI</div>
+    <button class="playStartBtn" id="introPlayBtn" onclick="enterGameFromIntro()">▶ BẮT ĐẦU CHƠI</button>
   </div>
-</section>
-</main>
+  <div class="introFooter">KHU PHỐ HỘI AN · CHUNG TAY VƯỢT LŨ · V6.1</div>
+</div>
+
+<!-- 2. BẢN ĐỒ FULL-SCREEN LÀM THẾ GIỚI CHÍNH -->
+<div id="gameWorld">
+  <canvas id="map" width="960" height="624"></canvas>
+
+  <div id="hudLayer" class="hidden">
+    <div class="hudTop">
+      <div class="hudPill">
+        <strong id="roomTitle" style="font-size:15px">Khu phố Hội An</strong>
+        <span id="clock" class="clockBadge">CHỜ HOST</span>
+        <button id="leaveBtn" style="padding:5px 9px;font-size:12px" onclick="leaveGame()">Rời phòng</button>
+      </div>
+      <button class="hudActionBtn" id="hudSwitchBtn" onclick="handleHudAction()">
+        <span id="hudBtnIcon">📜</span> <span id="hudTaskBtnText">Bảng nhiệm vụ</span>
+        <span id="hudNotifDot" class="notifDot hidden">!</span>
+      </button>
+    </div>
+
+    <div class="hudBottom" id="hudBottomBar">
+      <div id="bottomTicker" class="tickerBar" onclick="openTaskModal()">
+        Chạm vào đây để mở Bảng nhiệm vụ hoặc chạm vào ngôi nhà trên bản đồ.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. GIAO DIỆN MINI-GAME CHUYÊN BIỆT -->
+<div id="miniGameStage" class="hidden">
+  <div class="studioFrame">
+    <div class="studioHeader">
+      <div>
+        <div id="studioSub" style="font-size:11px;color:#f5c96b;font-weight:800;letter-spacing:1px">GIAI ĐOẠN 1</div>
+        <h2 id="studioTitle">Không gian chuẩn bị</h2>
+      </div>
+      <button class="modalCloseBtn" onclick="peekMapFromStudio()">🗺️ Xem bản đồ khu phố</button>
+    </div>
+    <div class="studioBody" id="studioBody"></div>
+  </div>
+</div>
+
+<!-- 4. POP-UP TRÊN NỀN BẢN ĐỒ -->
+<div id="taskModalBackdrop" class="hidden" onclick="if(event.target===this) closeTaskModal()">
+  <div class="farmModal">
+    <div class="modalHeader">
+      <div>
+        <div id="taskSubtitle" style="font-size:11px;color:#f5c96b;font-weight:700;text-transform:uppercase;letter-spacing:1px">GIAI ĐOẠN</div>
+        <h2 id="taskTitle">Bảng nhiệm vụ</h2>
+      </div>
+      <button class="modalCloseBtn" onclick="closeTaskModal()">🗺️ Xem bản đồ</button>
+    </div>
+    <div class="modalBody" id="taskBody"></div>
+  </div>
+</div>
+
+<!-- 5. POP-UP BIẾN CỐ ĐẶC BIỆT -->
+<div id="eventPopupBackdrop" class="hidden" onclick="if(event.target===this) closeEventPopup()">
+  <div class="eventCard">
+    <div id="evBanner" class="eventArtBanner ev-danger">
+      <div id="evIcon" class="eventHeroIcon">🌊</div>
+      <div id="evTag" class="eventTag">BIẾN CỐ KHẨN CẤP</div>
+    </div>
+    <div class="eventBody">
+      <h3 id="evTitle">Biến cố vừa xảy ra!</h3>
+      <p id="evDesc">Nội dung biến cố...</p>
+      <button class="primary" style="width:100%;padding:12px" onclick="closeEventPopup()">ĐÃ RÕ · TIẾP TỤC</button>
+    </div>
+  </div>
+</div>
+
+<!-- 6. CỬA SỔ ĐĂNG KÝ GIA ĐÌNH -->
+<div id="loginWrap">
+  <div class="loginBox">
+    <h2>🏘️ ĐĂNG KÝ GIA ĐÌNH THAM GIA</h2>
+    <div class="note" id="roomStatus">Đang kết nối khu phố Hội An...</div>
+    <div class="row">
+      <button id="newMode" class="primary" onclick="mode='join';loginRender()">Tham gia lần đầu</button>
+      <button id="oldMode" class="primary" onclick="mode='login';loginRender()">Trở lại nhà mình</button>
+    </div>
+    <label>Tên gia đình</label><input id="name" maxlength="32" placeholder="Ví dụ: Nhà Mít">
+    <label>PIN cá nhân (4 chữ số)</label><input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••">
+    <button class="primary" style="width:100%;margin-top:12px" onclick="submitLogin()" id="joinButton">TẠO NHÀ & THAM GIA</button>
+  </div>
+</div>
+
 <div id="toast"></div>
 
+<!-- 7. MÀN CHUYỂN CẢNH CÁC PHẦN -->
 <div id="phaseOverlay">
-  <div class="ovBadge" id="ovBadge">PART I</div>
-  <h2 id="ovTitle">TIÊU ĐỀ PHẦN</h2>
-  <p id="ovDesc">Mô tả bối cảnh...</p>
-  <button class="ovSkip" onclick="hidePhaseOverlay()">Tiếp tục vào khu phố →</button>
+  <canvas id="phaseCanvas" width="480" height="270"></canvas>
+  <div class="ovContent">
+    <div class="ovBadge" id="ovBadge">PART I</div>
+    <h2 id="ovTitle">TIÊU ĐỀ PHẦN</h2>
+    <p id="ovDesc">Mô tả bối cảnh...</p>
+    <button class="ovSkip" onclick="hidePhaseOverlay()">Tiếp tục →</button>
+  </div>
 </div>
 
 <script>
-let mode='join', myId=null, room=null, lastTaskId='', bagSel=new Set(), bagContainer='backpack', voteSel=new Set(), selectedRecipient='', seenEvents=new Set(), initialEventsLoaded=false;
+const STUDIO_TASKS = new Set(['profile_card', 'bag_90s', 'vote_news', 'checklist']);
+
+let mode='join', myId=null, room=null, lastTaskId='', bagSel=new Set(), bagContainer='backpack', bagFilter='all', voteSel=new Set(), selectedRecipient='', seenEvents=new Set(), initialEventsLoaded=false, lastPendingCount=0, modalOpen=true, studioPeekingMap=false;
 const $ = id => document.getElementById(id);
 const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(s){ const e=$('toast'); e.textContent=s; e.style.display='block'; setTimeout(()=>e.style.display='none',4200); }
 
+function cleanRoleSubtitle(rawTitle) {
+  return String(rawTitle || '').replace(/^Hộ\s*\d+\s*·\s*/i, '').trim();
+}
+
+function isStudioTask(tid){ return STUDIO_TASKS.has(tid); }
+
+function handleHudAction() {
+  const tid = TASKS[room?.taskIdx]?.id || '';
+  if (isStudioTask(tid)) {
+    studioPeekingMap = !studioPeekingMap;
+    renderGame();
+  } else {
+    openTaskModal();
+  }
+}
+function peekMapFromStudio() {
+  studioPeekingMap = true;
+  renderGame();
+}
+function openTaskModal() {
+  const tid = TASKS[room?.taskIdx]?.id || '';
+  if (isStudioTask(tid)) {
+    studioPeekingMap = false;
+    renderGame();
+    return;
+  }
+  modalOpen = true;
+  $('taskModalBackdrop').classList.remove('hidden');
+  $('hudNotifDot').classList.add('hidden');
+}
+function closeTaskModal() {
+  modalOpen = false;
+  $('taskModalBackdrop').classList.add('hidden');
+}
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){
+    if(!$('eventPopupBackdrop').classList.contains('hidden')) closeEventPopup();
+    else if(modalOpen) closeTaskModal();
+  }
+});
+
+// ================= HỆ THỐNG POP-UP BIẾN CỐ ĐẶC BIỆT =================
+function showEventPopup(rawText) {
+  let theme = 'ev-warning', icon = '⚠️', tag = 'THÔNG BÁO KHU PHỐ', title = 'Biến cố mới phát sinh!', shake = false;
+
+  if (rawText.includes('cuốn thực phẩm') || rawText.includes('nhiễm bẩn nước')) {
+    theme = 'ev-danger'; icon = rawText.includes('nước') ? '🚱' : '🌊';
+    tag = 'THIỆT HẠI TÀI NGUYÊN'; title = 'Nước lũ tràn vào kho dự trữ!'; shake = true;
+  } else if (rawText.includes('đứt đường truyền') || rawText.includes('mất điện')) {
+    theme = 'ev-glitch'; icon = '📵';
+    tag = 'MẤT TÍN HIỆU LIÊN LẠC'; title = 'Đứt cáp quang & Mất điện!'; shake = true;
+  } else if (rawText.includes('Nước xiết') || rawText.includes('không thể gửi')) {
+    theme = 'ev-danger'; icon = '🚫';
+    tag = 'CÔ LẬP DÒNG NƯỚC XIẾT'; title = 'Tuyến đường tiếp tế bị phong tỏa!';
+  } else if (rawText.includes('cứu trợ')) {
+    theme = 'ev-relief'; icon = '🚁';
+    tag = 'CHI VIỆN KHẨN CẤP'; title = 'Trực thăng cứu trợ thả hàng!';
+  } else if (rawText.includes('lũ cuốn') || rawText.includes('loại')) {
+    theme = 'ev-danger'; icon = '🆘';
+    tag = 'BÁO ĐỘNG ĐỎ'; title = 'Có hộ dân gặp nạn do lũ cuốn!'; shake = true;
+  } else if (rawText.includes('chia cắt đường')) {
+    theme = 'ev-warning'; icon = '🚧';
+    tag = 'CHIA CẮT GIAO THÔNG'; title = 'Đường liên xóm bị ngập sâu!';
+  }
+
+  $('evBanner').className = 'eventArtBanner ' + theme;
+  $('evIcon').textContent = icon;
+  $('evTag').textContent = tag;
+  $('evTitle').textContent = title;
+  $('evDesc').textContent = rawText;
+  $('eventPopupBackdrop').classList.remove('hidden');
+
+  if (shake) {
+    document.body.classList.add('shaking');
+    setTimeout(() => document.body.classList.remove('shaking'), 1200);
+  }
+}
+function closeEventPopup() {
+  $('eventPopupBackdrop').classList.add('hidden');
+}
+
+// ================= BỘ VẼ PHỐ CỔ HỘI AN BÊN SÔNG =================
+const HOIAN_HOUSES = [
+  { x: 18, w: 62, h: 48, wall: '#e8b948', roof: '#8c3b2b' },
+  { x: 84, w: 74, h: 56, wall: '#f6d465', roof: '#9e4737' },
+  { x: 164, w: 58, h: 44, wall: '#edd074', roof: '#7d3325' },
+  { x: 235, w: 80, h: 52, wall: '#f2c14e', roof: '#8c3b2b' },
+  { x: 322, w: 66, h: 46, wall: '#f6d465', roof: '#9e4737' },
+  { x: 394, w: 72, h: 54, wall: '#e8b948', roof: '#7d3325' }
+];
+const SCENE_CLOUDS = [
+  { x: 40, y: 28, w: 90, s: 0.12 },
+  { x: 210, y: 18, w: 120, s: 0.08 },
+  { x: 360, y: 36, w: 85, s: 0.15 }
+];
+const SCENE_DROPS = Array.from({ length: 110 }, (_, i) => ({
+  x: (i * 37) % 480, y: (i * 53) % 270, len: 5 + (i % 5), spd: 2.5 + (i % 3) * 0.8
+}));
+
+function renderHoiAnPanorama(ctx, frame, mood) {
+  ctx.imageSmoothingEnabled = false;
+  const cfg = {
+    intro: { skyTop:'#183442', skyMid:'#3b5d66', skyBot:'#d99b52', sun:true, sunY:118, rainCount:45, waterY:180, lanternsOn:true, cloudAlpha:0.55 },
+    p1:    { skyTop:'#234854', skyMid:'#4b6f75', skyBot:'#e0ab63', sun:true, sunY:112, rainCount:25, waterY:180, lanternsOn:true, cloudAlpha:0.45 },
+    p2:    { skyTop:'#12222b', skyMid:'#223742', skyBot:'#4f5d61', sun:false, sunY:0,  rainCount:75, waterY:172, lanternsOn:true, cloudAlpha:0.80 },
+    break: { skyTop:'#1c1829', skyMid:'#382a3b', skyBot:'#7d5338', sun:false, sunY:0,  rainCount:20, waterY:178, lanternsOn:true, cloudAlpha:0.40 },
+    p3:    { skyTop:'#070d12', skyMid:'#111c24', skyBot:'#25323b', sun:false, sunY:0,  rainCount:110, waterY:148, lanternsOn:false, cloudAlpha:0.94 },
+    p4:    { skyTop:'#2b6777', skyMid:'#68a691', skyBot:'#ffd180', sun:true, sunY:98,  rainCount:0,  waterY:182, lanternsOn:true, cloudAlpha:0.22 }
+  }[mood] || { skyTop:'#183442', skyMid:'#3b5d66', skyBot:'#d99b52', sun:true, sunY:118, rainCount:45, waterY:180, lanternsOn:true, cloudAlpha:0.55 };
+
+  const sky = ctx.createLinearGradient(0, 0, 0, 175);
+  sky.addColorStop(0, cfg.skyTop); sky.addColorStop(0.55, cfg.skyMid); sky.addColorStop(1, cfg.skyBot);
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, 480, 175);
+
+  if (cfg.sun) {
+    ctx.fillStyle = 'rgba(255, 232, 163, 0.25)';
+    ctx.beginPath(); ctx.arc(355, cfg.sunY, 28, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffe8a3';
+    ctx.beginPath(); ctx.arc(355, cfg.sunY, 16, 0, Math.PI * 2); ctx.fill();
+  }
+
+  ctx.fillStyle = `rgba(18, 30, 38, ${cfg.cloudAlpha})`;
+  SCENE_CLOUDS.forEach(cl => {
+    cl.x += cl.s * (mood === 'p3' ? 2.6 : 1);
+    if (cl.x > 500) cl.x = -cl.w;
+    ctx.fillRect(Math.floor(cl.x), cl.y, cl.w, 13);
+    ctx.fillRect(Math.floor(cl.x) + 12, cl.y - 6, cl.w - 24, 9);
+  });
+
+  HOIAN_HOUSES.forEach((h, idx) => {
+    const topY = 175 - h.h;
+    ctx.fillStyle = h.wall; ctx.fillRect(h.x, topY + 14, h.w, h.h - 14);
+    ctx.fillStyle = h.roof;
+    ctx.beginPath(); ctx.moveTo(h.x - 4, topY + 15); ctx.lineTo(h.x + h.w / 2, topY); ctx.lineTo(h.x + h.w + 4, topY + 15); ctx.closePath(); ctx.fill();
+
+    const lit = cfg.lanternsOn && (mood === 'break' || mood === 'p4' || idx % 2 === 0);
+    ctx.fillStyle = lit ? '#ffe58f' : '#2b1e14';
+    ctx.fillRect(h.x + 12, topY + 24, 10, 12);
+    ctx.fillRect(h.x + h.w - 22, topY + 24, 10, 12);
+
+    const swing = Math.sin(frame * (mood === 'p3' ? 0.16 : 0.05) + idx) * (mood === 'p3' ? 4 : 2);
+    const lx = Math.floor(h.x + h.w / 2 + swing);
+    const ly = topY + 17;
+    ctx.fillStyle = cfg.lanternsOn ? ((idx % 2 === 0) ? '#ff4d4f' : '#faad14') : '#4a2e1e';
+    ctx.fillRect(lx - 3, ly, 6, 7);
+    if (cfg.lanternsOn) { ctx.fillStyle = '#fff1b8'; ctx.fillRect(lx - 1, ly + 2, 2, 3); }
+  });
+
+  ctx.fillStyle = '#5c4d3c'; ctx.fillRect(0, 173, 480, 7);
+
+  const river = ctx.createLinearGradient(0, cfg.waterY, 0, 270);
+  if (mood === 'p3') { river.addColorStop(0, 'rgba(28, 64, 82, 0.90)'); river.addColorStop(1, '#091820'); }
+  else { river.addColorStop(0, '#1f4e5f'); river.addColorStop(1, '#102933'); }
+  ctx.fillStyle = river; ctx.fillRect(0, cfg.waterY, 480, 270 - cfg.waterY);
+
+  ctx.fillStyle = 'rgba(200, 238, 255, 0.36)'; ctx.fillRect(0, cfg.waterY, 480, 2);
+
+  if (cfg.lanternsOn) {
+    HOIAN_HOUSES.forEach((h, idx) => {
+      const rx = Math.floor(h.x + h.w / 2 + Math.sin(frame * 0.06 + idx) * 3);
+      ctx.fillStyle = (idx % 2 === 0) ? 'rgba(255, 110, 90, 0.35)' : 'rgba(255, 210, 100, 0.35)';
+      ctx.fillRect(rx - 4, cfg.waterY + 6, 8, 3); ctx.fillRect(rx - 2, cfg.waterY + 14, 5, 2);
+    });
+  }
+
+  ctx.fillStyle = 'rgba(168, 230, 255, 0.22)';
+  for (let w = 0; w < 20; w++) {
+    const wx = ((w * 67 + frame * (mood === 'p3' ? 1.3 : 0.4)) % 500) - 20;
+    const wy = cfg.waterY + 6 + (w * 19) % Math.max(20, 265 - cfg.waterY);
+    ctx.fillRect(Math.floor(wx), wy, 18 + (w % 12), 2);
+  }
+
+  if (cfg.rainCount > 0) {
+    ctx.fillStyle = mood === 'p3' ? 'rgba(225, 245, 255, 0.65)' : 'rgba(215, 240, 255, 0.38)';
+    for (let i = 0; i < cfg.rainCount; i++) {
+      const d = SCENE_DROPS[i];
+      d.y += d.spd * (mood === 'p3' ? 1.6 : 1);
+      d.x -= (mood === 'p3' ? 1.6 : 0.5);
+      if (d.y > 270) { d.y = -5; d.x = (i * 41 + frame) % 480; }
+      if (d.x < 0) d.x += 480;
+      ctx.fillRect(Math.floor(d.x), Math.floor(d.y), mood === 'p3' ? 1.5 : 1, d.len);
+    }
+  }
+}
+
+// ================= INTRO SCREEN =================
+(function initIntroScene() {
+  const ic = $('introCanvas');
+  if (!ic) return;
+  const ictx = ic.getContext('2d');
+  if (localStorage.getItem('floodline_gh_id')) {
+    const btn = $('introPlayBtn');
+    if (btn) btn.textContent = '▶ TIẾP TỤC VÀO KHU PHỐ';
+  }
+  let introFrame = 0, introActive = true;
+  window.enterGameFromIntro = function () {
+    const scr = $('introScreen');
+    scr.classList.add('fadeOut');
+    setTimeout(() => { introActive = false; scr.style.display = 'none'; }, 600);
+  };
+  function drawIntroLoop() {
+    if (!introActive) return;
+    introFrame++;
+    renderHoiAnPanorama(ictx, introFrame, 'intro');
+    requestAnimationFrame(drawIntroLoop);
+  }
+  requestAnimationFrame(drawIntroLoop);
+})();
+
+// ================= CHUYỂN CẢNH TỪNG PHẦN =================
 const PHASE_SCENES = {
   profile_card: {
-    theme: 'theme-p1', badge: 'PART I · T–72 GIỜ TRƯỚC BÃO',
+    mood: 'p1', theme: '', badge: 'PART I · T–72 GIỜ TRƯỚC BÃO',
     title: '🌤️ MÂY ĐEN KÉO VỀ PHỐ HỘI',
-    desc: 'Dự báo có áp thấp nhiệt đới mạnh lên thành bão hướng vào miền Trung. Mỗi hộ gia đình tại Hội An mang một hoàn cảnh và nỗi lo riêng trước giờ bão đến.',
-    sound: 'wind'
+    desc: 'Dự báo có áp thấp nhiệt đới mạnh lên thành bão hướng vào miền Trung. Hãy nhận thẻ phân vai để khám phá hoàn cảnh và câu chuyện của gia đình bạn.'
   },
   news: {
-    theme: 'theme-p2', badge: 'PART II · T–48 GIỜ TRƯỚC LŨ',
+    mood: 'p2', theme: '', badge: 'PART II · T–48 GIỜ TRƯỚC LŨ',
     title: '🌧️ BẢNG TIN CỘNG ĐỒNG',
-    desc: 'Mưa bắt đầu kéo dài, mực nước sông Thu Bồn dâng lên và một số khu vực thấp trũng xuất hiện ngập cục bộ. Nhiều nguồn tin thật – giả bắt đầu lan truyền trong khu phố.',
-    sound: 'rain'
+    desc: 'Mưa bắt đầu kéo dài, mực nước sông Thu Bồn dâng lên. Nhiều nguồn tin thật – giả bắt đầu lan truyền trong khu phố.'
   },
   break: {
-    theme: 'theme-break', badge: 'BREAK · SHARING SESSION',
+    mood: 'break', theme: '', badge: 'BREAK · SHARING SESSION',
     title: '☕ KHOẢNG LẶNG TRƯỚC CƠN BÃO',
-    desc: 'Tạm gác lại những con số và lựa chọn. Đây là lúc cả cộng đồng cùng ngồi lại chia sẻ góc nhìn và kinh nghiệm ứng phó thiên tai thực tế.',
-    sound: 'chime'
+    desc: 'Tạm gác lại những lựa chọn. Đây là lúc cả cộng đồng cùng ngồi lại chia sẻ góc nhìn và kinh nghiệm ứng phó thiên tai thực tế.'
   },
   alert: {
-    theme: 'theme-p3', badge: 'PART III · BÃO LŨ ĐỔ BỘ',
+    mood: 'p3', theme: 'theme-p3', badge: 'PART III · BÃO LŨ ĐỔ BỘ',
     title: '⛈️ NƯỚC SÔNG THU BỒN TRÀN BỜ!',
     desc: 'Gió giật dữ dội, nước lũ dâng nhanh tràn vào khu dân cư! Mọi sự chuẩn bị ở Part I và quyết định ở Part II bắt đầu bộc lộ hệ quả thực tế.',
-    sound: 'thunder', shake: true
+    shake: true
   },
   ending: {
-    theme: 'theme-p4', badge: 'PART IV · HẬU BÃO LŨ',
+    mood: 'p4', theme: '', badge: 'PART IV · HẬU BÃO LŨ',
     title: '🌅 NGÀY MAI TRỜI LẠI SÁNG',
-    desc: 'Mưa đã ngớt, nước lũ rút dần trả lại ánh bình minh trên mái ngói phố Hội. Cùng nhìn lại hành trình và những bài học đọng lại sau cơn bão.',
-    sound: 'dawn'
+    desc: 'Mưa đã ngớt, nước lũ rút dần trả lại ánh bình minh trên mái ngói phố Hội. Cùng nhìn lại hành trình của cả khu phố.'
   }
 };
 
-let overlayTimer = null;
+let overlayTimer = null, phaseAnimActive = false, phaseFrame = 0, currentPhaseMood = 'p1';
+function runPhaseCanvasLoop() {
+  if (!phaseAnimActive) return;
+  const pc = $('phaseCanvas');
+  if (pc) { phaseFrame++; renderHoiAnPanorama(pc.getContext('2d'), phaseFrame, currentPhaseMood); }
+  requestAnimationFrame(runPhaseCanvasLoop);
+}
 function triggerPhaseScene(taskId) {
   const sc = PHASE_SCENES[taskId];
   if (!sc) return;
   const ov = $('phaseOverlay');
-  ov.className = 'show ' + sc.theme;
+  ov.className = 'show ' + (sc.theme || '');
   $('ovBadge').textContent = sc.badge;
   $('ovTitle').textContent = sc.title;
   $('ovDesc').textContent = sc.desc;
-
+  currentPhaseMood = sc.mood;
+  if (!phaseAnimActive) { phaseAnimActive = true; requestAnimationFrame(runPhaseCanvasLoop); }
   if (sc.shake) {
     document.body.classList.add('shaking');
     setTimeout(() => document.body.classList.remove('shaking'), 1200);
   }
-  playSceneSound(sc.sound);
-
   if (overlayTimer) clearTimeout(overlayTimer);
-  overlayTimer = setTimeout(hidePhaseOverlay, 5200);
+  overlayTimer = setTimeout(hidePhaseOverlay, 3800);
 }
-function hidePhaseOverlay() { $('phaseOverlay').classList.remove('show'); }
-
-function playSceneSound(type) {
-  try {
-    const ctxAudio = new (window.AudioContext || window.webkitAudioContext)();
-    const osc = ctxAudio.createOscillator();
-    const gain = ctxAudio.createGain();
-    osc.connect(gain); gain.connect(ctxAudio.destination);
-
-    if (type === 'thunder') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(95, ctxAudio.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(28, ctxAudio.currentTime + 1.1);
-      gain.gain.setValueAtTime(0.35, ctxAudio.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctxAudio.currentTime + 1.2);
-      osc.start(); osc.stop(ctxAudio.currentTime + 1.2);
-    } else if (type === 'dawn' || type === 'chime') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(523.25, ctxAudio.currentTime);
-      osc.frequency.setValueAtTime(659.25, ctxAudio.currentTime + 0.25);
-      osc.frequency.setValueAtTime(783.99, ctxAudio.currentTime + 0.5);
-      gain.gain.setValueAtTime(0.18, ctxAudio.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctxAudio.currentTime + 1.4);
-      osc.start(); osc.stop(ctxAudio.currentTime + 1.4);
-    } else {
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(220, ctxAudio.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(140, ctxAudio.currentTime + 0.7);
-      gain.gain.setValueAtTime(0.12, ctxAudio.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctxAudio.currentTime + 0.75);
-      osc.start(); osc.stop(ctxAudio.currentTime + 0.75);
-    }
-  } catch (_) {}
+function hidePhaseOverlay() {
+  $('phaseOverlay').classList.remove('show');
+  phaseAnimActive = false;
+  const tid = TASKS[room?.taskIdx]?.id || '';
+  if (!isStudioTask(tid)) openTaskModal();
 }
 
+// ================= ĐĂNG NHẬP & KẾT NỐI FIREBASE =================
 function loginRender(){
   $('newMode').classList.toggle('primary', mode==='join');
   $('oldMode').classList.toggle('primary', mode==='login');
@@ -210,18 +670,20 @@ function loginRender(){
 DB.ref('room').on('value', snap => {
   room = snap.val() || { players: {} };
   const active = Object.values(room.players || {}).filter(p => p.status !== 'left');
-  $('roomStatus').innerHTML = `🏘️ <b>Khu phố Hội An:</b> Đã có <b>${active.length}/25</b> hộ đăng ký ${room.locked?'· <span style="color:#b63e3e">Đã khóa danh sách</span>':'· Đang mở đăng ký'}`;
+  $('roomStatus').innerHTML = `🏘️ <b>Khu phố Hội An:</b> Đã có <b>${active.length}/25</b> gia đình tham gia ${room.locked?'· <span style="color:#b63e3e">Đã khóa danh sách</span>':'· Đang mở đăng ký'}`;
 
   if(myId){
     const me = room.players?.[myId];
     if(!me || me.status === 'left'){
       localStorage.removeItem('floodline_gh_id');
       myId = null;
-      $('game').classList.add('hidden');
-      $('login').classList.remove('hidden');
+      $('hudLayer').classList.add('hidden');
+      $('miniGameStage').classList.add('hidden');
+      $('taskModalBackdrop').classList.add('hidden');
+      $('loginWrap').classList.remove('hidden');
     } else {
-      $('login').classList.add('hidden');
-      $('game').classList.remove('hidden');
+      $('loginWrap').classList.add('hidden');
+      $('hudLayer').classList.remove('hidden');
       renderGame();
     }
   }
@@ -237,7 +699,7 @@ async function submitLogin(){
   if(mode === 'join'){
     if(room?.locked) return toast('Danh sách khu phố đã khóa!');
     if(existing) return toast('Tên nhà này đã có người đặt!');
-    if(players.length >= 25) return toast('Khu phố đã đủ 25 hộ!');
+    if(players.length >= 25) return toast('Khu phố đã đủ 25 gia đình!');
     const slot = Array.from({length:25},(_,i)=>i+1).find(n => !players.some(p => p.slot === n));
     const id = 'P' + Date.now() + Math.floor(Math.random()*999);
     await DB.ref(`room/players/${id}`).set({
@@ -250,8 +712,9 @@ async function submitLogin(){
     myId = existing.id;
   }
   localStorage.setItem('floodline_gh_id', myId);
-  $('login').classList.add('hidden');
-  $('game').classList.remove('hidden');
+  $('loginWrap').classList.add('hidden');
+  $('hudLayer').classList.remove('hidden');
+  openTaskModal();
   renderGame();
 }
 
@@ -260,106 +723,188 @@ async function leaveGame(){
   if(!confirm('Rời khỏi khu phố này?')) return;
   await DB.ref(`room/players/${myId}/status`).set('left');
   localStorage.removeItem('floodline_gh_id');
-  myId = null; $('game').classList.add('hidden'); $('login').classList.remove('hidden');
+  myId = null;
+  $('hudLayer').classList.add('hidden');
+  $('miniGameStage').classList.add('hidden');
+  $('taskModalBackdrop').classList.add('hidden');
+  $('loginWrap').classList.remove('hidden');
 }
 
 setInterval(() => {
   if(!room || !room.locked || room.taskIdx < 0 || room.taskIdx >= TASKS.length){
-    $('clock').textContent = room?.locked ? 'ĐÃ KẾT THÚC' : 'CHỜ HOST BẮT ĐẦU';
+    $('clock').textContent = room?.locked ? 'ĐÃ KẾT THÚC' : 'CHỜ HOST';
     return;
   }
   const rem = room.paused ? room.remaining : Math.max(0, room.deadline - Date.now());
   const sec = Math.ceil(rem / 1000);
   const t = TASKS[room.taskIdx];
-  $('clock').textContent = `PART ${t.phase} · ${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}${room.paused?' ⏸':''}`;
+  $('clock').textContent = `P${t.phase} · ${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}${room.paused?' ⏸':''}`;
 }, 500);
 
 function renderGame(){
   const me = room.players[myId];
   const all = Object.values(room.players || {}).filter(p => p.status !== 'left');
   const t = TASKS[room.taskIdx];
-  $('leaveBtn').disabled = !!room.locked;
-  $('roomTitle').textContent = `${me.name} · ${all.length} hộ trong khu phố`;
-  $('taskTitle').textContent = t ? t.label : (room.locked ? 'Đã kết thúc' : 'Đang chờ Host');
-  $('taskSubtitle').textContent = t ? `Giai đoạn ${t.phase}` : 'Game sẽ tự động đồng bộ khi Host bấm bắt đầu';
+  const tid = t?.id || '';
+  const inStudio = isStudioTask(tid);
 
+  $('leaveBtn').disabled = !!room.locked;
+  $('roomTitle').textContent = `🏠 ${me.name}`;
+
+  // 1. Biến cố mới -> Bật Pop-up Cinematic Event nổi bật
   const evEntries = Object.entries(room.events || {});
   if(!initialEventsLoaded){
     evEntries.forEach(([eid]) => seenEvents.add(eid));
     initialEventsLoaded = true;
   } else {
     evEntries.forEach(([eid, ev]) => {
-      if(!seenEvents.has(eid)){ seenEvents.add(eid); if(room.locked && ev.text) toast(ev.text); }
+      if(!seenEvents.has(eid)){
+        seenEvents.add(eid);
+        if(room.locked && ev.text && !ev.text.startsWith('🎬 Chuyển sang:')){
+          showEventPopup(ev.text);
+        }
+      }
     });
   }
 
-  if(t?.id !== lastTaskId){
-    lastTaskId = t?.id || '';
+  // 2. Hàng xóm gửi tiếp tế -> Bật Pop-up nhận hàng ngay
+  const incomingPending = Object.entries(room.transfers || {}).filter(([_,x]) => x.to === myId && x.status === 'pending');
+  if(incomingPending.length > lastPendingCount){
+    toast(`📦 Có hàng xóm vừa gửi tiếp tế cho ${me.name}!`);
+    if(!inStudio) openTaskModal();
+  }
+  lastPendingCount = incomingPending.length;
+
+  // 3. Chuyển vòng mới
+  if(tid !== lastTaskId){
+    lastTaskId = tid;
+    studioPeekingMap = false;
     triggerPhaseScene(lastTaskId);
-    if(lastTaskId === 'bag_90s'){ bagSel = new Set(me.bag?.selected || []); bagContainer = me.bag?.containerType || 'backpack'; }
+    if(lastTaskId === 'bag_90s'){ bagSel = new Set(me.bag?.selected || []); bagContainer = me.bag?.containerType || 'backpack'; bagFilter = 'all'; }
     if(lastTaskId === 'vote_news'){ voteSel = new Set(me.votes || []); }
+    if(!inStudio) openTaskModal();
   }
 
-  renderInfoBoard(me, all, t);
+  // 4. Điều phối Giao diện Mini-game chuyên biệt vs Bản đồ Full-screen
+  if(inStudio && !studioPeekingMap){
+    $('miniGameStage').classList.remove('hidden');
+    $('taskModalBackdrop').classList.add('hidden');
+    $('hudBottomBar').classList.add('hidden');
+    $('hudBtnIcon').textContent = '🗺️';
+    $('hudTaskBtnText').textContent = 'Xem bản đồ';
+    $('studioSub').textContent = `GIAI ĐOẠN ${t.phase} · ${me.name.toUpperCase()}`;
+    $('studioTitle').textContent = t.label;
+  } else {
+    $('miniGameStage').classList.add('hidden');
+    $('hudBottomBar').classList.remove('hidden');
+    if(inStudio && studioPeekingMap){
+      $('hudBtnIcon').textContent = '🎮';
+      $('hudTaskBtnText').textContent = 'Quay lại màn chơi';
+    } else {
+      $('hudBtnIcon').textContent = '📜';
+      $('hudTaskBtnText').textContent = t ? `Nhiệm vụ P${t.phase}` : 'Thông tin nhà';
+      $('taskTitle').textContent = t ? t.label : (room.locked ? 'Đã kết thúc' : 'Chờ bắt đầu');
+      $('taskSubtitle').textContent = t ? `GIAI ĐOẠN ${t.phase} · ${me.name.toUpperCase()}` : 'KHU PHỐ HỘI AN';
+    }
+  }
+
+  renderBottomTicker(me, all, t);
   let html = '';
 
   if(!t){
-    html = `<div class="card">${room.locked ? 'Cảm ơn gia đình bạn đã tham gia mô phỏng!' : 'Bạn đã vào nhà thành công. Hãy chờ Host chốt danh sách để nhận Thẻ hộ gia đình.'}</div>`;
+    html = `<div class="card">${room.locked ? `Cảm ơn <b>${esc(me.name)}</b> đã tham gia mô phỏng!` : `✅ Chào mừng <b>${esc(me.name)}</b> đến với khu phố Hội An!<br><br>Ngôi nhà <b>${esc(me.name)}</b> đang tỏa sáng viền vàng trên bản đồ. Bạn có thể bấm <b>"🗺️ Xem bản đồ"</b> ở góc trên để ngắm khu phố trong lúc chờ Host chốt danh sách!`}</div>`;
   } else if(t.id === 'profile_card'){
     const prof = me.profile;
-    html = `<p>Đọc kỹ thẻ thông tin hộ gia đình của bạn trước khi soạn ba lô:</p>
-    <div class="familyCard">
-      <div style="font-weight:800;font-size:15px;color:#2c5e4e;margin-bottom:6px">🪪 ${esc(prof?.title)}</div>
-      <div class="familyRow"><b>🏷️ Nhóm hoàn cảnh:</b> <span class="tag">${esc(prof?.groupLabel)}</span></div>
-      <div class="familyRow"><b>👥 Thành viên:</b> ${esc(prof?.membersText)} (Chuẩn: ${prof?.reqFood} Ăn · ${prof?.reqWater} Nước)</div>
-      <div class="familyRow"><b>🏠 Hoàn cảnh:</b> ${esc(prof?.circumstance)}</div>
-      <div class="familyRow"><b>⚠️ Nhu cầu riêng:</b> <span style="color:#a83b2b">${esc(prof?.needText)}</span></div>
-      <div class="familyRow"><b>📦 Dự trữ sẵn tại nhà:</b> 🥫 ${prof?.baseFood} Đồ ăn · 💧 ${prof?.baseWater} Nước uống</div>
-      <div class="scriptBox">“${esc(prof?.script)}”</div>
+    const roleSubtitle = cleanRoleSubtitle(prof?.title);
+    const portraitSrc = (typeof EMBEDDED_ASSETS !== 'undefined' && prof?.group) ? EMBEDDED_ASSETS[`portrait_${prof.group}.png`] : '';
+    html = `<p>Đọc kỹ thẻ phân vai của <b>${esc(me.name)}</b> trước khi bước vào 90 giây chuẩn bị:</p>
+    <div class="roleTicket">
+      <div class="roleHeader">
+        <strong style="font-size:16px;color:#2c5e4e">🪪 ${esc(me.name)} · ${esc(roleSubtitle)}</strong>
+        <span class="tag">👥 ${esc(prof?.membersText)}</span>
+      </div>
+      ${portraitSrc ? `<div class="portraitFrame"><img src="${portraitSrc}" alt="Chân dung gia đình"></div>` : ''}
+      <div style="font-size:12px;color:#7a6240;font-weight:700;text-transform:uppercase;letter-spacing:1px">Câu chuyện gia đình bạn:</div>
+      <div class="storyText">“${esc(prof?.script)}”</div>
     </div>
-    <button class="primary" onclick="DB.ref('room/players/${myId}/profileAck').set(true)">${me.profileAck?'✓ ĐÃ XÁC NHẬN THẺ':'✅ ĐÃ NẮM RÕ THẺ GIA ĐÌNH'}</button>`;
+    <button class="primary" style="width:100%;margin-top:12px;padding:12px" onclick="DB.ref('room/players/${myId}/profileAck').set(true)">
+      ${me.profileAck ? '✅ ĐÃ XÁC NHẬN THẺ (Đang chờ các gia đình khác...)' : '👍 TÔI ĐÃ HIỂU HOÀN CẢNH GIA ĐÌNH'}
+    </button>`;
   } else if(t.id === 'bag_90s'){
     const w = BAG_ITEMS.reduce((s,it)=>s+(bagSel.has(it[0])?it[3]:0),0);
-    html = `<div class="note"><b>Nhắc nhớ:</b> ${esc(me.profile?.groupLabel)} · Sẵn có: 🥫${me.profile?.baseFood} 💧${me.profile?.baseWater}<br><span class="small">${esc(me.profile?.needText)}</span></div>
-    <div class="row"><button class="${bagContainer==='backpack'?'primary':''}" onclick="bagContainer='backpack';renderGame()">🎒 Balo vải</button><button class="${bagContainer==='bucket'?'primary':''}" onclick="bagContainer='bucket';renderGame()">🪣 Xô nhựa có nắp</button></div>
-    <div style="margin-top:8px"><b>${bagSel.size}/12 món · ${(w/10).toFixed(1)}/5.0 kg</b></div>
+    const filtered = BAG_ITEMS.filter(it => bagFilter === 'all' || it[4] === bagFilter);
+    const roleSubtitle = cleanRoleSubtitle(me.profile?.title);
+    html = `<div class="note" style="font-size:13.5px"><b>🎭 ${esc(me.name)} (${esc(roleSubtitle)}):</b> ${esc(me.profile?.membersText)}. Hãy tự suy luận từ câu chuyện gia đình để chọn đồ thiết yếu nhất!</div>
+    <div class="row">
+      <button class="${bagContainer==='backpack'?'primary':''}" onclick="bagContainer='backpack';renderGame()">🎒 Balo vải<br><span style="font-size:11px;font-weight:400">(Gọn nhẹ, dễ ngấm nước)</span></button>
+      <button class="${bagContainer==='bucket'?'primary':''}" onclick="bagContainer='bucket';renderGame()">🪣 Xô nhựa có nắp<br><span style="font-size:11px;font-weight:400">(Chống thấm bảo vệ thuốc/sữa)</span></button>
+    </div>
+    <div style="margin-top:10px;display:flex;justify-content:space-between"><b>Đã chọn: ${bagSel.size}/12 món</b><b>Trọng lượng: ${(w/10).toFixed(1)}/5.0 kg</b></div>
     <div class="bar"><div class="fill" style="width:${Math.min(100,Math.max(bagSel.size/12,w/50)*100)}%"></div></div>
-    <div class="bagGrid">${BAG_ITEMS.map(([bid,em,nm,bw])=>`<button class="bagItem ${bagSel.has(bid)?'sel':''}" onclick="toggleBag('${bid}')"><span style="font-size:20px">${em}</span><b>${nm}</b><span>${(bw/10).toFixed(1)}kg ${bagSel.has(bid)?'✓':''}</span></button>`).join('')}</div>
-    <button class="primary" onclick="saveBag()">🎒 CHỐT BA LÔ KHẨN CẤP</button>`;
-  } else if(t.id === 'news'){
-    html = `<div class="card">📰 <b>T–48 GIỜ TRƯỚC LŨ:</b> Đọc kỹ mẩu thông tin riêng nhà bạn nhận được ở khung phía trên bản đồ.</div>`;
-  } else if(t.id === 'talk1'){
-    html = `<div class="card">📻 <b>THẢO LUẬN BỘ ĐÀM KHU PHỐ</b><br>Mở mic trao đổi, đối chiếu các mẩu tin mọi người đang có để chuẩn bị bình chọn 5 tin đưa lên Bảng tin chung.</div>`;
+    <div class="filterRow">
+      <button class="filterBtn ${bagFilter==='all'?'active':''}" onclick="bagFilter='all';renderGame()">Tất cả (30)</button>
+      <button class="filterBtn ${bagFilter==='survival'?'active':''}" onclick="bagFilter='survival';renderGame()">💧 Sinh tồn</button>
+      <button class="filterBtn ${bagFilter==='medical'?'active':''}" onclick="bagFilter='medical';renderGame()">💊 Y tế & Bé</button>
+      <button class="filterBtn ${bagFilter==='gear'?'active':''}" onclick="bagFilter='gear';renderGame()">🎒 Vật dụng</button>
+    </div>
+    <div class="bagGrid">${filtered.map(([bid,em,nm,bw,_,hint])=>`<button class="bagItem ${bagSel.has(bid)?'sel':''}" onclick="toggleBag('${bid}')"><span style="font-size:22px">${em}</span><b>${nm}</b><span class="small">${hint}</span><span><b>${(bw/10).toFixed(1)}kg</b> ${bagSel.has(bid)?'✅':''}</span></button>`).join('')}</div>
+    <button class="primary" style="width:100%;padding:12px" onclick="saveBag()">${me.bag ? '✅ ĐÃ CHỐT BA LÔ (Bấm để cập nhật lại)' : '🎒 CHỐT BA LÔ KHẨN CẤP'}</button>`;
+  } else if(t.id === 'news' || t.id === 'talk1'){
+    const nw = NEWS[me.news];
+    html = `<div class="roleTicket">
+      <div style="font-size:12px;color:#8c5828;font-weight:800">📰 MẨU TIN RIÊNG ${esc(me.name.toUpperCase())} NHẬN ĐƯỢC:</div>
+      <div style="font-weight:700;margin:4px 0">${esc(nw?.source)}</div>
+      <div class="storyText">“${esc(nw?.text)}”</div>
+    </div>
+    <div class="card">${t.id==='news' ? '⏳ Hãy đọc kỹ mẩu tin này. Chút nữa mic toàn khu phố sẽ mở để mọi người đối chiếu tin tức với nhau.' : '📻 <b>ĐANG MỞ MIC THẢO LUẬN:</b> Hãy chia sẻ ngắn gọn nội dung tin nhà bạn đang có và lắng nghe hàng xóm để nhận diện tin đồn!'}</div>`;
   } else if(t.id === 'vote_news'){
     const inPlay = [...new Set(all.map(p=>p.news).filter(i=>i>=0))];
     html = `<p>Chọn tối đa <b>3 mẩu tin</b> đáng tin cậy nhất đưa lên Bảng tin cộng đồng (${voteSel.size}/3):</p>` +
-    inPlay.map(idx => `<button class="voteCard ${voteSel.has(idx)?'sel':''}" onclick="toggleVote(${idx})"><b>${voteSel.has(idx)?'✅ ':'⬜ '}${esc(NEWS[idx].source)}</b><div class="small" style="margin-top:4px;color:#354c48">${esc(NEWS[idx].text)}</div></button>`).join('') +
-    `<button class="primary" onclick="saveVotes()">🗳️ GỬI PHIẾU BÌNH CHỌN</button>`;
+    inPlay.map(idx => `<button class="voteCard ${voteSel.has(idx)?'sel':''}" onclick="toggleVote(${idx})"><b>${voteSel.has(idx)?'✅ ':'⬜ '}${esc(NEWS[idx].source)}</b><div class="small" style="margin-top:4px;color:#354c48;font-size:13.5px">${esc(NEWS[idx].text)}</div></button>`).join('') +
+    `<button class="primary" style="width:100%;padding:12px;margin-top:8px" onclick="saveVotes()">${(me.votes||[]).length ? '✅ ĐÃ GỬI PHIẾU (Bấm để sửa)' : '🗳️ GỬI PHIẾU BÌNH CHỌN'}</button>`;
   } else if(t.id === 'board_decide'){
     const board = (room.boardIndices||[]).map(i => NEWS[i]?.text).filter(Boolean);
     html = `<p>📢 <b>BẢNG TIN CỘNG ĐỒNG (Top 5 bình chọn):</b></p>` +
     board.map((x,i)=>`<div class="board"><b>Tin #${i+1}:</b> ${esc(x)}</div>`).join('') +
-    `<div class="card">Dựa trên bảng tin cộng đồng, gia đình bạn quyết định thế nào?</div>
+    `<div class="card"><b>Quyết định của ${esc(me.name)} trước giờ bão:</b>
+      <div class="small" style="margin-top:4px">• <b>Chọn A (Chuẩn bị):</b> Khẩn trương kê cao đồ đạc, chằng chống nhà cửa, sẵn sàng sơ tán sớm.<br>• <b>Chọn B (Chờ đợi):</b> Giữ nguyên nhịp sinh hoạt hiện tại, chờ theo dõi thêm diễn biến thực tế.</div>
+    </div>
     <div class="row"><button class="${me.prepared===true?'primary':''}" onclick="DB.ref('room/players/${myId}/prepared').set(true)">A · 🛡️ Tiếp tục chuẩn bị</button><button class="${me.prepared===false?'primary':''}" onclick="DB.ref('room/players/${myId}/prepared').set(false)">B · ⏳ Tạm thời chờ đợi</button></div>`;
   } else if(t.id === 'checklist'){
     const checks = Array.isArray(me.checks) ? me.checks : [];
-    html = me.prepared === true ? `<p>❤️ Rà soát danh mục an toàn trước bão (${checks.length}/${CHECKLIST.length}):</p>` + CHECKLIST.map((x,i)=>`<label class="card"><input type="checkbox" style="width:auto" ${checks.includes(i)?'checked':''} onchange="toggleCheck(${i})"> ${esc(x)}</label>`).join('') : `<div class="card">⏳ Gia đình đã chọn phương án B (Tạm thời chờ đợi thêm thông tin).</div>`;
+    html = me.prepared === true ? `<p>❤️ Rà soát danh mục an toàn trước bão của <b>${esc(me.name)}</b> (${checks.length}/${CHECKLIST.length}):</p>` + CHECKLIST.map((x,i)=>`<label class="card"><input type="checkbox" style="width:auto" ${checks.includes(i)?'checked':''} onchange="toggleCheck(${i})"> ${esc(x)}</label>`).join('') : `<div class="card">⏳ <b>${esc(me.name)}</b> đã chọn phương án B (Tạm thời chờ đợi thêm thông tin).</div>`;
   } else if(t.id === 'break'){
-    html = `<div class="card">☕ <b>BREAK · SHARING SESSION</b><br><br>• Theo dõi cảnh báo và thông tin chính thống.<br>• Chuẩn bị ba lô khẩn cấp.<br>• Bảo vệ giấy tờ, thuốc men và tài sản thiết yếu.<br>• Quan tâm đến trẻ em, người cao tuổi và người có nhu cầu đặc biệt.<br>• Tinh thần phối hợp, hỗ trợ giữa các hộ gia đình.</div>`;
+    html = `<div class="card">☕ <b>BREAK · SHARING SESSION</b><br><br>• Theo dõi cảnh báo và thông tin chính thống.<br>• Chuẩn bị ba lô khẩn cấp.<br>• Bảo vệ giấy tờ, thuốc men và tài sản thiết yếu.<br>• Quan tâm đến trẻ em, người cao tuổi và người có nhu cầu đặc biệt.<br>• Tinh thần phối hợp, hỗ trợ giữa các gia đình.</div>`;
   } else if(t.id === 'alert'){
-    html = `<div class="card">🚨 <b>BÃO LŨ ĐỔ BỘ!</b> Diễn biến thực tế tại nhà bạn:</div>` +
-    (me.consequenceLogs||[]).map(l=>`<div class="board">${esc(l)}</div>`).join('') + myInvHtml(me);
+    html = `<div class="card">🚨 <b>BÃO LŨ ĐỔ BỘ!</b> Diễn biến thực tế tại <b>${esc(me.name)}</b>:</div>` +
+    (me.consequenceLogs||[]).map(l=>`<div class="board">${esc(l)}</div>`).join('') + myInvHtml(me) +
+    `<div class="note small">💡 <b>Quy tắc sống còn:</b> Mỗi thành viên cần đủ <b>1 Ăn + 1 Nước</b> (tối thiểu 2 Ăn, 2 Nước/nhà). Các nhu cầu đặc thù (Thuốc, Sữa/Tã, Sơ tán cụ yếu) nếu thiếu sẽ gây tổn thất nghiêm trọng cho gia đình!</div>`;
   } else if(t.id === 'talk2'){
-    html = (me.muted?'<div class="note danger">📵 <b>Nhà bạn đang bị đứt đường truyền / mất điện!</b> Vui lòng tắt mic & không chat trên Zoom.</div>':'') +
-    `<div class="card">📻 <b>MỞ MIC THƯƠNG LƯỢNG NGUỒN LỰC</b><br>Hệ thống KHÔNG công khai kho đồ từng nhà. Hãy mở mic chia sẻ tình trạng thiếu/dư của nhà mình!</div>` + myInvHtml(me);
+    html = (me.muted?`<div class="note danger">📵 <b>${esc(me.name)} đang bị đứt đường truyền / mất điện!</b> Vui lòng tắt mic & không chat trên Zoom.</div>`:'') +
+    `<div class="card">📻 <b>MỞ MIC THƯƠNG LƯỢNG NGUỒN LỰC</b><br>Hệ thống KHÔNG công khai kho đồ từng nhà. Hãy mở mic báo ngay tình trạng thiếu/dư của <b>${esc(me.name)}</b> cho hàng xóm biết!</div>` + myInvHtml(me);
   } else if(t.id === 'transfer'){
-    const rec = all.find(x => x.id === selectedRecipient && x.status === 'active' && x.id !== myId);
+    const otherActive = all.filter(x => x.status === 'active' && x.id !== myId).sort((a,b)=>a.name.localeCompare(b.name,'vi'));
     const trList = Object.entries(room.transfers || {}).filter(([_,x]) => x.from === myId || x.to === myId);
-    html = (me.muted?'<div class="note danger">📵 <b>Đứt đường truyền cáp:</b> Tạm thời không mở mic/chat trên Zoom.</div>':'') +
-    (me.sendLocked?'<div class="note danger">🚫 <b>Nước chảy xiết:</b> Không thể gửi đồ đi, chỉ có thể nhận hỗ trợ.</div>':'') +
+
+    const pendingBox = incomingPending.length ? `<div class="incomingAlert"><b>📦 CÓ HÀNG TIẾP TẾ GỬI TỚI ${esc(me.name.toUpperCase())}!</b>` +
+      incomingPending.map(([tid, tr]) => {
+        const fName = room.players[tr.from]?.name || 'Hàng xóm';
+        const items = [tr.food?`🥫${tr.food}`:'',tr.water?`💧${tr.water}`:'',tr.med?`💊${tr.med}`:'',tr.baby?`🍼${tr.baby}`:'',tr.pads?`🌸${tr.pads}`:'',tr.evacAssist?'🤝 Cử người hỗ trợ sơ tán':''].filter(Boolean).join(' · ');
+        return `<div style="margin-top:6px;padding-top:6px;border-top:1px dashed #c99a00">Từ <b>${esc(fName)}</b>: <b>${items}</b>
+          <div class="row" style="margin-top:5px"><button class="primary" onclick="respondTr('${tid}',true)">✅ Nhận ngay</button><button onclick="respondTr('${tid}',false)">Từ chối</button></div>
+        </div>`;
+      }).join('') + `</div>` : '';
+
+    html = pendingBox +
+    (me.muted?`<div class="note danger">📵 <b>Đứt đường truyền cáp:</b> ${esc(me.name)} tạm thời không mở mic/chat trên Zoom.</div>`:'') +
+    (me.sendLocked?`<div class="note danger">🚫 <b>Nước chảy xiết:</b> ${esc(me.name)} không thể gửi đồ đi, chỉ có thể nhận hỗ trợ.</div>`:'') +
     myInvHtml(me) +
-    `<div class="board"><b>📢 Đăng tin công khai (hiện trên góc bản đồ):</b><div class="row" style="margin-top:5px"><input id="pubNote" maxlength="55" value="${esc(me.publicNote||'')}" placeholder="VD: Dư 2 nước, cần xin 1 thuốc..."><button style="flex:none" onclick="DB.ref('room/players/${myId}/publicNote').set(document.getElementById('pubNote').value.trim())">Đăng</button></div></div>
-    <div class="note">${rec ? `Đang chọn gửi cho: <b>${esc(rec.name)}</b>` : 'Chạm vào một ngôi nhà trên bản đồ để chọn người nhận.'}</div>
+    `<div class="board"><b>📢 Đăng tin kêu gọi / chia sẻ (hiện trên bản đồ):</b><div class="row" style="margin-top:5px"><input id="pubNote" maxlength="55" value="${esc(me.publicNote||'')}" placeholder="VD: Dư 2 nước, cần xin 1 thuốc..."><button style="flex:none" onclick="DB.ref('room/players/${myId}/publicNote').set(document.getElementById('pubNote').value.trim())">Đăng</button></div></div>
+    <label>🏠 Chọn nhà hàng xóm muốn hỗ trợ (hoặc bấm "Xem bản đồ" rồi chạm vào nhà đó):</label>
+    <select onchange="selectedRecipient=this.value;renderGame()">
+      <option value="">-- Chọn gia đình nhận hỗ trợ --</option>
+      ${otherActive.map(x => `<option value="${x.id}" ${x.id===selectedRecipient?'selected':''}>${esc(x.name)}</option>`).join('')}
+    </select>
     <div class="invGrid">
       <div><label>🥫 Đồ ăn</label><input id="trFood" type="number" min="0" value="0"></div>
       <div><label>💧 Nước uống</label><input id="trWater" type="number" min="0" value="0"></div>
@@ -367,20 +912,30 @@ function renderGame(){
       <div><label>🍼 Sữa & Tã bé</label><input id="trBaby" type="number" min="0" max="1" value="0"></div>
       <div><label>🌸 Băng vệ sinh</label><input id="trPads" type="number" min="0" max="1" value="0"></div>
     </div>
-    <button class="primary" onclick="sendTransfer()">📦 CHUYỂN TÀI NGUYÊN</button>
-    <h3 style="margin-top:12px">Giao dịch của nhà mình</h3>` +
+    <div class="row" style="margin-top:8px">
+      <button class="primary" onclick="sendTransfer()">📦 GỬI VẬT PHẨM</button>
+      <button class="warn" onclick="sendEvacHelp()">🤝 CỬ NGƯỜI SANG SƠ TÁN</button>
+    </div>
+    <h3 style="margin-top:12px">Lịch sử giao dịch của ${esc(me.name)}</h3>` +
     (trList.length ? trList.map(([tid, tr]) => {
-      const fName = room.players[tr.from]?.name || '?', tName = room.players[tr.to]?.name || '?';
-      const items = [tr.food?`🥫${tr.food}`:'',tr.water?`💧${tr.water}`:'',tr.med?`💊${tr.med}`:'',tr.baby?`🍼${tr.baby}`:'',tr.pads?`🌸${tr.pads}`:''].filter(Boolean).join(' ');
-      return `<div class="board">${esc(fName)} → ${esc(tName)}: <b>${items}</b> · <i>${tr.status}</i>
-      ${tr.to===myId && tr.status==='pending' ? `<div class="row"><button class="primary" onclick="respondTr('${tid}',true)">Nhận hỗ trợ</button><button onclick="respondTr('${tid}',false)">Từ chối</button></div>` : ''}</div>`;
+      const fName = room.players[tr.from]?.name || 'Hàng xóm', tName = room.players[tr.to]?.name || 'Hàng xóm';
+      const items = [tr.food?`🥫${tr.food}`:'',tr.water?`💧${tr.water}`:'',tr.med?`💊${tr.med}`:'',tr.baby?`🍼${tr.baby}`:'',tr.pads?`🌸${tr.pads}`:'',tr.evacAssist?'🤝 Hỗ trợ sơ tán':''].filter(Boolean).join(' ');
+      return `<div class="board">${esc(fName)} → ${esc(tName)}: <b>${items}</b> · <i>${tr.status==='accepted'?'Đã nhận':tr.status==='pending'?'Đang chờ nhận':tr.status}</i></div>`;
     }).join('') : '<div class="card">Chưa có giao dịch nào.</div>');
   } else if(t.id === 'ending'){
     const res = calcResultsFromState(room);
     const myOut = res.houses.find(h => h.id === myId);
+    const topHelpers = [...res.houses].filter(h=>h.sentCount>0).sort((a,b)=>b.sentCount-a.sentCount).slice(0,3);
+
     html = `<div class="card"><h3>🌅 NGÀY MAI TRỜI LẠI SÁNG</h3>
-      <p>🏘️ <b>Toàn khu phố:</b> <b>${res.safeHouses}/${res.totalHouses}</b> hộ bình an trọn vẹn · <b>${res.survivedMembers}/${res.totalMembers}</b> thành viên an toàn.</p>
-      ${myOut ? `<div class="note"><b>Tình trạng nhà mình (${esc(myOut.name)}):</b><br>${esc(myOut.outcomeLabel)}<br><span class="small">An toàn: ${myOut.survivedCount}/${myOut.members} thành viên · Kho cuối: 🥫${myOut.food}/${myOut.reqFood}, 💧${myOut.water}/${myOut.reqWater}</span></div>` : ''}
+      <p>🏘️ <b>Toàn khu phố:</b> <b>${res.safeHouses}/${res.totalHouses}</b> gia đình bình an trọn vẹn · <b>${res.survivedMembers}/${res.totalMembers}</b> thành viên an toàn.</p>
+      ${myOut ? `<div class="note"><b>Tình trạng của ${esc(myOut.name)}:</b><br>${esc(myOut.outcomeLabel)}<br><span class="small">An toàn: ${myOut.survivedCount}/${myOut.members} thành viên · Kho cuối: 🥫${myOut.food}/${myOut.reqFood}, 💧${myOut.water}/${myOut.reqWater}</span></div>` : ''}
+      ${topHelpers.length ? `<div class="board"><b>🏅 Vinh danh Người hùng Khu phố:</b><br>${topHelpers.map((h,i)=>`${i===0?'🥇':i===1?'🥈':'🥉'} <b>${esc(h.name)}</b> (${h.sentCount} lượt cứu trợ)`).join('<br>')}</div>` : ''}
+    </div>
+    <div class="card"><b>📋 Toàn cảnh khu phố sau cơn bão:</b>
+      <div style="max-height:170px;overflow:auto;margin-top:6px">
+        ${res.houses.map(h => `<div class="small" style="padding:4px 0;border-bottom:1px dashed #d6c39c"><b>${esc(h.name)}</b> (${esc(h.group)}): ${esc(h.outcomeLabel)}</div>`).join('')}
+      </div>
     </div>
     <div class="card"><b>💬 DEBRIEFING – NHÌN LẠI HÀNH TRÌNH</b><br><br>
       1. Khi chuẩn bị ba lô, bạn đã ưu tiên những gì?<br>
@@ -390,11 +945,35 @@ function renderGame(){
     </div>`;
   }
   if(room.paused) html = '<div class="note">⏸ Host đang tạm dừng đồng hồ để thảo luận.</div>' + html;
-  $('taskBody').innerHTML = html;
+
+  if(inStudio){
+    $('studioBody').innerHTML = html;
+  } else {
+    $('taskBody').innerHTML = html;
+  }
+}
+
+function renderBottomTicker(me, all, t){
+  const tk = $('bottomTicker');
+  tk.className = 'tickerBar';
+  if(!t){
+    tk.innerHTML = `🏠 <b>${esc(me.name)}</b> · Đang chờ Host bắt đầu · <u>Bấm để mở Bảng thông tin</u>`;
+    return;
+  }
+  if(t.id === 'alert'){
+    tk.classList.add('emergency');
+    tk.innerHTML = `🚨 <b>BÃO LŨ ĐỔ BỘ!</b> Kiểm tra kho tài nguyên của ${esc(me.name)} · <u>Bấm để mở Bảng thông báo</u>`;
+  } else if(['talk2','transfer'].includes(t.id)){
+    const notes = all.filter(p => p.publicNote && p.status === 'active');
+    const noteStr = notes.length ? notes.slice(0,3).map(p=>`<b>${esc(p.name)}:</b> ${esc(p.publicNote)}`).join(' · ') : 'Chạm vào ngôi nhà hàng xóm trên bản đồ để gửi tiếp tế!';
+    tk.innerHTML = `📢 ${noteStr}`;
+  } else {
+    tk.innerHTML = `📌 <b>${esc(t.label)}</b> · <u>Bấm để mở Bảng nhiệm vụ</u>`;
+  }
 }
 
 function myInvHtml(m){
-  return `<div class="note"><b>📦 KHO RIÊNG CỦA NHÀ MÌNH (Chỉ mình bạn thấy):</b><div class="invGrid">
+  return `<div class="note"><b>📦 KHO RIÊNG CỦA ${esc(m.name.toUpperCase())} (Chỉ mình bạn thấy):</b><div class="invGrid">
     <div class="invBox">🥫 Thực phẩm: <b>${m.food||0}/${m.reqFood||2}</b></div>
     <div class="invBox">💧 Nước uống: <b>${m.water||0}/${m.reqWater||2}</b></div>
     <div class="invBox">💊 Thuốc đặc trị: <b>${m.medQty||0}</b> ${m.needMed?(m.medQty?'✅':'<b style="color:#b63e3e">(Cần!)</b>'):''}</div>
@@ -435,8 +1014,8 @@ async function toggleCheck(i){
 
 async function sendTransfer(){
   const me = room.players[myId];
-  if(me.sendLocked) return toast('🚫 Nhà bạn đang bị cô lập dòng nước xiết, không thể gửi đồ!');
-  if(!selectedRecipient) return toast('Hãy chạm vào nhà nhận trên bản đồ trước.');
+  if(me.sendLocked) return toast(`🚫 ${me.name} đang bị cô lập dòng nước xiết, không thể gửi đồ!`);
+  if(!selectedRecipient) return toast('Hãy chọn nhà nhận ở danh sách hoặc chạm trên bản đồ.');
   const blocked = (room.blockedPairs || []).some(p => (p[0]===myId && p[1]===selectedRecipient) || (p[1]===myId && p[0]===selectedRecipient));
   if(blocked) return toast('🚧 Tuyến đường trực tiếp bị ngập chia cắt! Hãy gửi bắc cầu qua nhà trung gian.');
 
@@ -444,8 +1023,19 @@ async function sendTransfer(){
   if(f+w+m+b+pd <= 0) return toast('Chọn ít nhất 1 vật phẩm.');
   if(f>(me.food||0) || w>(me.water||0) || m>(me.medQty||0) || b>(me.babyQty||0) || pd>(me.padsQty||0)) return toast('Không đủ vật phẩm trong kho!');
 
-  await DB.ref('room/transfers').push({ from: myId, to: selectedRecipient, food: f, water: w, med: m, baby: b, pads: pd, status: 'pending', at: Date.now() });
-  toast('✓ Đã gửi đề nghị hỗ trợ!');
+  await DB.ref('room/transfers').push({ from: myId, to: selectedRecipient, food: f, water: w, med: m, baby: b, pads: pd, evacAssist: false, status: 'pending', at: Date.now() });
+  toast(`✓ Đã gửi đề nghị tiếp tế tới ${room.players[selectedRecipient]?.name || 'hàng xóm'}!`);
+}
+
+async function sendEvacHelp(){
+  const me = room.players[myId];
+  if(me.sendLocked) return toast(`🚫 ${me.name} đang bị cô lập dòng nước xiết!`);
+  if(!selectedRecipient) return toast('Hãy chọn nhà nhận ở danh sách hoặc chạm trên bản đồ.');
+  const blocked = (room.blockedPairs || []).some(p => (p[0]===myId && p[1]===selectedRecipient) || (p[1]===myId && p[0]===selectedRecipient));
+  if(blocked) return toast('🚧 Tuyến đường trực tiếp bị ngập chia cắt!');
+
+  await DB.ref('room/transfers').push({ from: myId, to: selectedRecipient, food: 0, water: 0, med: 0, baby: 0, pads: 0, evacAssist: true, status: 'pending', at: Date.now() });
+  toast(`🤝 Đã cử người sang hỗ trợ sơ tán cho ${room.players[selectedRecipient]?.name || 'hàng xóm'}!`);
 }
 
 async function respondTr(tid, accept){
@@ -455,74 +1045,69 @@ async function respondTr(tid, accept){
   if(!accept){
     await DB.ref(`room/transfers/${tid}/status`).set('rejected');
   } else {
-    if((from.food||0)<tr.food || (from.water||0)<tr.water || (from.medQty||0)<tr.med || (from.babyQty||0)<tr.baby || (from.padsQty||0)<tr.pads){
+    if((from.food||0)<(tr.food||0) || (from.water||0)<(tr.water||0) || (from.medQty||0)<(tr.med||0) || (from.babyQty||0)<(tr.baby||0) || (from.padsQty||0)<(tr.pads||0)){
       await DB.ref(`room/transfers/${tid}/status`).set('cancelled');
-      return toast('Người gửi không còn đủ đồ!');
+      return toast(`${from.name} không còn đủ đồ!`);
     }
     const updates = {};
-    updates[`players/${tr.from}/food`] = (from.food||0) - tr.food;
-    updates[`players/${tr.from}/water`] = (from.water||0) - tr.water;
-    updates[`players/${tr.from}/medQty`] = (from.medQty||0) - tr.med;
-    updates[`players/${tr.from}/babyQty`] = (from.babyQty||0) - tr.baby;
-    updates[`players/${tr.from}/padsQty`] = (from.padsQty||0) - tr.pads;
-    updates[`players/${myId}/food`] = (to.food||0) + tr.food;
-    updates[`players/${myId}/water`] = (to.water||0) + tr.water;
-    updates[`players/${myId}/medQty`] = (to.medQty||0) + tr.med;
-    updates[`players/${myId}/babyQty`] = (to.babyQty||0) + tr.baby;
-    updates[`players/${myId}/padsQty`] = (to.padsQty||0) + tr.pads;
+    updates[`players/${tr.from}/food`] = (from.food||0) - (tr.food||0);
+    updates[`players/${tr.from}/water`] = (from.water||0) - (tr.water||0);
+    updates[`players/${tr.from}/medQty`] = (from.medQty||0) - (tr.med||0);
+    updates[`players/${tr.from}/babyQty`] = (from.babyQty||0) - (tr.baby||0);
+    updates[`players/${tr.from}/padsQty`] = (from.padsQty||0) - (tr.pads||0);
+    updates[`players/${myId}/food`] = (to.food||0) + (tr.food||0);
+    updates[`players/${myId}/water`] = (to.water||0) + (tr.water||0);
+    updates[`players/${myId}/medQty`] = (to.medQty||0) + (tr.med||0);
+    updates[`players/${myId}/babyQty`] = (to.babyQty||0) + (tr.baby||0);
+    updates[`players/${myId}/padsQty`] = (to.padsQty||0) + (tr.pads||0);
     if(to.needEvac) updates[`players/${myId}/evacHelped`] = true;
     updates[`transfers/${tid}/status`] = 'accepted';
     await DB.ref('room').update(updates);
-    toast('✓ Đã nhận hàng hỗ trợ từ hàng xóm!');
+    toast(`✓ Đã nhận hỗ trợ từ ${from.name}!`);
   }
 }
 
-function renderInfoBoard(me, all, t){
-  const b = $('infoBoard'); b.className = 'infoBoard';
-  if(!t){ b.innerHTML = ''; return; }
-  if(['profile_card','bag_90s'].includes(t.id)){
-    b.innerHTML = `<b>🪪 ${esc(me.profile?.title)} (${esc(me.profile?.groupLabel)})</b><p style="margin:4px 0 0;font-size:13px">${esc(me.profile?.needText)}</p>`;
-  } else if(['news','talk1','vote_news'].includes(t.id)){
-    const nw = NEWS[me.news];
-    b.innerHTML = `<b>📰 MẢNH TIN NHÀ MÌNH · ${esc(nw?.source)}</b><p style="margin:5px 0 0">${esc(nw?.text)}</p>`;
-  } else if(['board_decide','checklist'].includes(t.id)){
-    const board = (room.boardIndices||[]).map(i => NEWS[i]?.text).filter(Boolean);
-    b.innerHTML = `<b>📢 BẢNG TIN CỘNG ĐỒNG (TOP 5 BÌNH CHỌN)</b><div class="small" style="margin-top:4px">${board.map((x,i)=>`${i+1}. ${esc(x)}`).join('<br>')}</div>`;
-  } else if(t.id === 'alert'){
-    b.classList.add('emergency');
-    b.innerHTML = `<b>🚨 BÃO LŨ ĐÃ ĐỔ BỘ VÀO HỘI AN!</b><p style="margin:4px 0 0">Mực nước sông Thu Bồn dâng cao tràn vào khu dân cư. Kiểm tra ngay kho tài nguyên và tình trạng của gia đình bạn!</p>`;
-  } else if(['talk2','transfer'].includes(t.id)){
-    const notes = all.filter(p => p.publicNote && p.status === 'active');
-    b.innerHTML = `<b>🎯 MỤC TIÊU: Mở mic thương lượng & hỗ trợ nhau vượt lũ!</b>` + (notes.length ? '<div style="margin-top:5px">'+notes.map(p=>`<span class="tag" style="margin:2px"><b>${esc(p.name)}:</b> ${esc(p.publicNote)}</span>`).join(' ')+'</div>' : '');
-  } else if(t.id === 'ending'){
-    b.innerHTML = '<b>🌅 NGÀY MAI TRỜI LẠI SÁNG · BÌNH MINH TRÊN PHỐ HỘI</b>';
-  } else b.innerHTML = '';
-}
-
-// ================= BẢN ĐỒ PIXEL ART =================
+// ================= BẢN ĐỒ PIXEL ART FULL-SCREEN =================
 const C = $('map'), ctx = C.getContext('2d'); ctx.imageSmoothingEnabled = false;
 const images = {};
 if(typeof EMBEDDED_ASSETS !== 'undefined'){
   Object.keys(EMBEDDED_ASSETS).forEach(k => { const im=new Image(); im.src=EMBEDDED_ASSETS[k]; images[k]=im; });
 }
-const spots = Array.from({length:25},(_,i)=>({x:115+(i%5)*170,y:95+Math.floor(i/5)*108}));
+const spots = Array.from({length:25},(_,i)=>({x:115+(i%5)*170,y:105+Math.floor(i/5)*102}));
+
 $('map').addEventListener('click', e => {
-  if(!room || TASKS[room.taskIdx]?.id !== 'transfer') return;
-  const r = C.getBoundingClientRect(), x = (e.clientX-r.left)*960/r.width, y = (e.clientY-r.top)*624/r.height;
-  const all = Object.values(room.players || {}).filter(p => p.status === 'active' && p.id !== myId);
+  if(!room || !myId) return;
+  const r = C.getBoundingClientRect();
+  const scale = Math.max(r.width / 960, r.height / 624);
+  const drawW = 960 * scale, drawH = 624 * scale;
+  const offsetX = (r.width - drawW) / 2, offsetY = (r.height - drawH) / 2;
+  const x = (e.clientX - r.left - offsetX) / scale;
+  const y = (e.clientY - r.top - offsetY) / scale;
+
+  const all = Object.values(room.players || {}).filter(p => p.status === 'active');
   let best = null, dist = 1e9;
   all.forEach(p => { const v = spots[(p.slot-1)%25], d = Math.hypot(x-v.x, y-(v.y+10)); if(d<dist){dist=d;best=p;} });
-  if(best && dist < 65){ selectedRecipient = best.id; renderGame(); }
+  if(best && dist < 68){
+    if(best.id === myId){
+      openTaskModal();
+    } else if(TASKS[room.taskIdx]?.id === 'transfer'){
+      selectedRecipient = best.id;
+      openTaskModal();
+      renderGame();
+    } else {
+      toast(`🏠 ${best.name} ${best.publicNote ? '· ' + best.publicNote : ''}`);
+    }
+  }
 });
 
-let tick = 0;
+let tick = 0, lightningTimer = 0;
 function draw(){
   tick++; ctx.fillStyle='#8eb88d'; ctx.fillRect(0,0,960,624);
   for(let y=0;y<624;y+=32) for(let x=0;x<960;x+=32){
     const tile=(y>260&&y<300)||(x>845&&x<880)?1:0, im=images['tiles.png'];
     if(im?.complete&&im.naturalWidth) ctx.drawImage(im,tile*32,0,32,32,x,y,32,32);
   }
-  ctx.fillStyle='#72aeb4'; ctx.fillRect(890,0,70,624);
+  ctx.fillStyle='#5c9ca3'; ctx.fillRect(890,0,70,624);
   ctx.fillStyle='#b6a68c'; ctx.fillRect(25,266,825,34);
   const tid = TASKS[room?.taskIdx]?.id || '';
   const phase = TASKS[room?.taskIdx]?.phase || 1;
@@ -538,10 +1123,21 @@ function draw(){
     else if(phase === 3 && p.prepared === false) st = 'cracked';
     const im = images[`house_${(p.slot-1)%12}_${st}.png`];
     if(im?.complete&&im.naturalWidth) ctx.drawImage(im, x-34, y-22, 68, 68);
-    if(p.id === myId){ ctx.strokeStyle='#fff1a6'; ctx.lineWidth=3; ctx.strokeRect(x-40,y-27,80,82); }
-    ctx.fillStyle = p.id===myId ? '#e8c56d' : '#4d675f'; ctx.fillRect(x-46,y+44,92,20);
+
+    if(p.id === myId){ ctx.strokeStyle='#fff1a6'; ctx.lineWidth=3.5; ctx.strokeRect(x-40,y-27,80,82); }
+    else if(p.id === selectedRecipient && tid === 'transfer'){ ctx.strokeStyle='#7ef9d0'; ctx.lineWidth=3.5; ctx.strokeRect(x-40,y-27,80,82); }
+
+    ctx.fillStyle = p.id===myId ? '#e8c56d' : '#4d675f'; ctx.fillRect(x-52,y+44,104,20);
     ctx.fillStyle = p.id===myId ? '#2c3e38' : '#fff8e7'; ctx.font='bold 11px Arial'; ctx.textAlign='center';
-    ctx.fillText(p.name.slice(0,13), x, y+58);
+    ctx.fillText(p.name.slice(0,15), x, y+58);
+
+    if(p.publicNote && ['talk2','transfer'].includes(tid)){
+      ctx.fillStyle = 'rgba(255, 250, 232, 0.94)';
+      ctx.fillRect(x-56, y-44, 112, 16);
+      ctx.strokeStyle = '#96734e'; ctx.lineWidth = 1.5; ctx.strokeRect(x-56, y-44, 112, 16);
+      ctx.fillStyle = '#2c3e38'; ctx.font = 'bold 9.5px Arial';
+      ctx.fillText(p.publicNote.slice(0,18), x, y-33);
+    }
 
     ctx.font = '16px Arial';
     if(p.status === 'flooded') ctx.fillText('🌊', x+24, y-18);
@@ -556,24 +1152,52 @@ function draw(){
   });
 
   if(phase === 2 && tid !== 'break'){
-    ctx.fillStyle='#d1e8f055';
-    for(let i=0;i<55;i++) ctx.fillRect((i*197+tick*2)%960,(i*97+tick*5)%624,1.5,7);
+    ctx.fillStyle='rgba(18, 38, 48, 0.24)'; ctx.fillRect(0,0,960,624);
+    ctx.fillStyle='rgba(209, 236, 248, 0.55)';
+    for(let i=0;i<95;i++) ctx.fillRect((i*197+tick*2.5)%960,(i*97+tick*6)%624,1.8,9);
   }
   if(phase === 3){
-    ctx.fillStyle='#173c5540'; ctx.fillRect(0,0,960,624);
-    ctx.fillStyle='#d1e8f0a8';
-    for(let i=0;i<145;i++) ctx.fillRect((i*173+tick*3)%960,(i*83+tick*8)%624,2,10);
-    const level = ({alert:0.10, talk2:0.18, transfer:0.26})[tid] || 0.16;
-    ctx.fillStyle='rgba(74,148,180,0.26)';
-    ctx.fillRect(0, 624 - 624*level, 960, 624*level);
+    ctx.fillStyle='rgba(10, 22, 34, 0.52)'; ctx.fillRect(0,0,960,624);
+
+    const level = ({alert:0.18, talk2:0.28, transfer:0.38})[tid] || 0.26;
+    const floodTop = 624 - 624*level;
+    ctx.fillStyle='rgba(36, 98, 130, 0.44)';
+    ctx.fillRect(0, floodTop, 960, 624*level);
+    ctx.fillStyle='rgba(186, 235, 255, 0.45)';
+    ctx.fillRect(0, floodTop, 960, 3);
+    for(let w=0; w<24; w++){
+      const wx = ((w*83 + tick*1.6)%980) - 20;
+      const wy = floodTop + 12 + (w*29)%Math.max(20, 624*level - 15);
+      ctx.fillRect(wx, wy, 22, 2);
+    }
+
+    ctx.strokeStyle='rgba(220, 245, 255, 0.72)';
+    ctx.lineWidth=1.6;
+    ctx.beginPath();
+    for(let i=0;i<210;i++){
+      const rx = (i*173 + tick*5)%960;
+      const ry = (i*83 + tick*11)%624;
+      ctx.moveTo(rx, ry);
+      ctx.lineTo(rx - 5, ry + 14);
+    }
+    ctx.stroke();
+
+    if(tick % 240 === 0) lightningTimer = 8;
+    if(lightningTimer > 0){
+      lightningTimer--;
+      ctx.fillStyle = lightningTimer % 2 === 0 ? 'rgba(235, 248, 255, 0.42)' : 'rgba(235, 248, 255, 0.15)';
+      ctx.fillRect(0, 0, 960, 624);
+    }
   }
-  if(phase === 4){ ctx.fillStyle='#ffe3a024'; ctx.fillRect(0,0,960,624); }
+  if(phase === 4){
+    ctx.fillStyle='rgba(255, 227, 160, 0.18)'; ctx.fillRect(0,0,960,624);
+  }
   requestAnimationFrame(draw);
 }
 requestAnimationFrame(draw);
 
 const savedId = localStorage.getItem('floodline_gh_id');
-if(savedId){ myId = savedId; $('login').classList.add('hidden'); $('game').classList.remove('hidden'); }
+if(savedId){ myId = savedId; $('loginWrap').classList.add('hidden'); $('hudLayer').classList.remove('hidden'); }
 </script>
 </body>
 </html>
