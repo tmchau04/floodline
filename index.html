@@ -467,7 +467,7 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// ================= HỆ THỐNG POP-UP BIẾN CỐ ĐẶC BIỆT (CHỈ HIỆN KHI CÓ BIẾN CỐ THỰC SỰ) =================
+// ================= HỆ THỐNG POP-UP BIẾN CỐ & CỨU TRỢ ĐẶC BIỆT =================
 function showEventPopup(rawText) {
   let theme = '', icon = '', tag = '', title = '', shake = false;
 
@@ -480,9 +480,14 @@ function showEventPopup(rawText) {
   } else if (rawText.includes('Nước xiết') || rawText.includes('không thể gửi')) {
     theme = 'ev-danger'; icon = '🚫';
     tag = 'CÔ LẬP DÒNG NƯỚC XIẾT'; title = 'Tuyến đường tiếp tế bị phong tỏa!';
-  } else if (rawText.includes('cứu trợ')) {
-    theme = 'ev-relief'; icon = '🚁';
-    tag = 'CHI VIỆN KHẨN CẤP'; title = 'Trực thăng cứu trợ thả hàng!';
+  } else if (rawText.includes('cứu trợ') || rawText.includes('Cứu trợ')) {
+    theme = 'ev-relief';
+    if (rawText.includes('Thuốc')) icon = '💊';
+    else if (rawText.includes('Sữa')) icon = '🍼';
+    else if (rawText.includes('Băng vệ sinh')) icon = '🌸';
+    else icon = '🚁';
+    tag = 'CHI VIỆN KHẨN CẤP';
+    title = rawText.includes('đặc biệt') ? 'Đội cứu trợ gửi vật phẩm đặc biệt!' : 'Trực thăng cứu trợ thả hàng!';
   } else if (rawText.includes('lũ cuốn') || rawText.includes('loại')) {
     theme = 'ev-danger'; icon = '🆘';
     tag = 'BÁO ĐỘNG ĐỎ'; title = 'Có hộ dân gặp nạn do lũ cuốn!'; shake = true;
@@ -1073,14 +1078,22 @@ function renderBottomTicker(me, all, t){
 }
 
 function myInvHtml(m){
-  return `<div class="note"><b>📦 KHO RIÊNG CỦA ${esc(m.name.toUpperCase())} (Chỉ mình bạn thấy):</b><div class="invGrid">
-    <div class="invBox">🥫 Thực phẩm: <b>${m.food||0}/${m.reqFood||2}</b></div>
-    <div class="invBox">💧 Nước uống: <b>${m.water||0}/${m.reqWater||2}</b></div>
-    <div class="invBox">💊 Thuốc đặc trị: <b>${m.medQty||0}</b> ${m.needMed?(m.medQty?'✅':'<b style="color:#b63e3e">(Cần!)</b>'):''}</div>
-    <div class="invBox">🍼 Sữa & Tã bé: <b>${m.babyQty||0}</b> ${m.needBaby?(m.babyQty?'✅':'<b style="color:#b63e3e">(Cần!)</b>'):''}</div>
-    <div class="invBox">🌸 Băng vệ sinh: <b>${m.padsQty||0}</b> ${m.needPads?(m.padsQty?'✅':'<b style="color:#b63e3e">(Cần!)</b>'):''}</div>
-    <div class="invBox">👴 Sơ tán cụ yếu: <b>${m.needEvac?(m.evacHelped?'✅ Đã xong':'<b style="color:#b63e3e">🚨 Cần hỗ trợ!</b>'):'Không'}</b></div>
-  </div></div>`;
+  const bagNames = (m.bag?.selected || [])
+    .map(id => {
+      const found = BAG_ITEMS.find(x => x[0] === id);
+      return found ? `${found[1]} ${found[2]}` : id;
+    });
+
+  return `<div class="note"><b>📦 KHO RIÊNG CỦA ${esc(m.name.toUpperCase())} (Chỉ mình bạn thấy):</b>
+    ${bagNames.length ? `<div class="small" style="margin:4px 0 6px;color:#2f423e"><b>Đồ trong balo đã chọn:</b> ${esc(bagNames.join(', '))}</div>` : ''}
+    <div class="invGrid">
+      <div class="invBox">🥫 Thực phẩm: <b>${m.food||0}/${m.reqFood||2}</b></div>
+      <div class="invBox">💧 Nước uống: <b>${m.water||0}/${m.reqWater||2}</b></div>
+      <div class="invBox">💊 Thuốc đặc trị: <b>${m.medQty||0}</b> ${m.needMed?(m.medQty?'✅':'<b style="color:#b63e3e">(Cần!)</b>'):''}</div>
+      <div class="invBox">🍼 Sữa & Tã bé: <b>${m.babyQty||0}</b> ${m.needBaby?(m.babyQty?'✅':'<b style="color:#b63e3e">(Cần!)</b>'):''}</div>
+      <div class="invBox">🌸 Băng vệ sinh: <b>${m.padsQty||0}</b> ${m.needPads?(m.padsQty?'✅':'<b style="color:#b63e3e">(Cần!)</b>'):''}</div>
+      <div class="invBox">👴 Sơ tán cụ yếu: <b>${m.needEvac?(m.evacHelped?'✅ Đã xong':'<b style="color:#b63e3e">🚨 Cần hỗ trợ!</b>'):'Không'}</b></div>
+    </div></div>`;
 }
 
 function toggleBag(id){
@@ -1091,11 +1104,32 @@ function toggleBag(id){
   else toast('⚠️ Tối đa 12 món và 5.0 kg!');
   renderGame();
 }
+
 async function saveBag(){
   const w = BAG_ITEMS.reduce((s,x)=>s+(bagSel.has(x[0])?x[3]:0),0);
-  await DB.ref(`room/players/${myId}/bag`).set({ containerType: bagContainer, selected: [...bagSel], weightTenths: w });
-  toast('✓ Đã chốt ba lô khẩn cấp!');
+  const selectedArr = [...bagSel];
+  const me = room?.players?.[myId] || {};
+  const prof = me.profile || {};
+
+  const extraFood = (selectedArr.includes('food') ? 3 : 0) + (selectedArr.includes('bags') ? 1 : 0);
+  const extraWater = (selectedArr.includes('water') ? 3 : 0) + (selectedArr.includes('bottle') ? 1 : 0);
+  const food = (prof.baseFood || 0) + extraFood;
+  const water = (prof.baseWater || 0) + extraWater;
+  const medQty = selectedArr.includes('med') ? 1 : 0;
+  const babyQty = (selectedArr.includes('milk') && selectedArr.includes('diaper')) ? 1 : 0;
+  const padsQty = selectedArr.includes('pads') ? 1 : 0;
+
+  await DB.ref(`room/players/${myId}`).update({
+    bag: { containerType: bagContainer, selected: selectedArr, weightTenths: w },
+    food,
+    water,
+    medQty,
+    babyQty,
+    padsQty
+  });
+  toast('✓ Đã chốt ba lô và cập nhật kho đồ!');
 }
+
 function toggleVote(idx){
   if(voteSel.has(idx)) voteSel.delete(idx);
   else if(voteSel.size < 3) voteSel.add(idx);
