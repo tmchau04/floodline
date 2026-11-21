@@ -29,6 +29,16 @@ label{display:block;font-weight:700;margin:8px 0 4px}
 .hidden{display:none!important}
 .tag{display:inline-block;padding:4px 8px;border-radius:7px;background:#dceacb;font-size:12px;font-weight:700}
 .board{background:#fffdf3;border:1px solid #d7c29c;padding:9px;margin:7px 0;border-radius:8px}
+.storyListBoard{
+  background:#fffdf3;
+  border:1.5px solid #d7c29c;
+  padding:11px 13px;
+  margin:9px 0;
+  border-radius:10px;
+  font-size:14.5px;
+  line-height:1.6;
+  color:#2d423e;
+}
 
 /* === 1. MÀN HÌNH INTRO / TITLE SCREEN === */
 #introScreen {
@@ -238,7 +248,7 @@ label{display:block;font-weight:700;margin:8px 0 4px}
   font-weight:700; box-shadow:0 8px 20px rgba(0,0,0,0.4); display:none;
 }
 
-/* === HIỆU ỨNG CHUYỂN CẢNH ĐỒNG BỘ INTRO === */
+/* === HIỆU ỨNG CHUYỂN CẢNH TẬP TRUNG DÒNG THỜI GIAN === */
 #phaseOverlay {
   position: fixed; inset: 0; z-index: 9999; background: #132933;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -249,21 +259,37 @@ label{display:block;font-weight:700;margin:8px 0 4px}
 #phaseCanvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; z-index: 1; }
 .ovContent {
   position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center;
-  padding: 26px 30px; border-radius: 18px;
-  background: radial-gradient(ellipse at center, rgba(16,38,46,0.78) 0%, rgba(16,38,46,0.28) 80%, transparent 100%);
+  padding: 26px 32px; border-radius: 20px; max-width: 680px; width: 100%;
+  background: radial-gradient(ellipse at center, rgba(16,38,46,0.86) 0%, rgba(16,38,46,0.48) 82%, transparent 100%);
 }
 #phaseOverlay .ovBadge {
-  font-size: 12px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;
-  padding: 6px 15px; border-radius: 99px; background: rgba(245, 201, 107, 0.22);
-  border: 1.5px solid #f5c96b; color: #ffe8a3; margin-bottom: 14px;
+  font-size: clamp(24px, 4vw, 38px); font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
+  padding: 10px 24px; border-radius: 16px; background: rgba(245, 201, 107, 0.24);
+  border: 2.5px solid #f5c96b; color: #ffe8a3; margin-bottom: 12px;
+  text-shadow: 0 4px 0 rgba(70, 32, 12, 0.85), 0 8px 20px rgba(0,0,0,0.65);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
 }
 #phaseOverlay h2 {
-  font-size: clamp(26px, 4.5vw, 44px); font-weight: 900; letter-spacing: 2px; margin-bottom: 12px;
-  color: #fff6dc; text-shadow: 0 4px 0 #7a3e20, 0 8px 20px rgba(0,0,0,0.65);
+  font-size: clamp(19px, 2.6vw, 26px); font-weight: 850; letter-spacing: 1px; margin-bottom: 12px;
+  color: #fff6dc; text-shadow: 0 3px 0 #7a3e20, 0 6px 16px rgba(0,0,0,0.65);
 }
 #phaseOverlay p {
-  max-width: 600px; font-size: clamp(15px, 2vw, 18px); line-height: 1.6;
-  color: #f3efe2; margin-bottom: 24px; text-shadow: 0 2px 6px rgba(0,0,0,0.75);
+  max-width: 600px; font-size: clamp(14.5px, 1.9vw, 17.5px); line-height: 1.6;
+  color: #f3efe2; margin-bottom: 18px; text-shadow: 0 2px 6px rgba(0,0,0,0.75);
+}
+.ovTopics {
+  width: 100%; max-width: 560px; text-align: left;
+  background: rgba(255, 248, 231, 0.95); color: #2f423e;
+  border: 2.5px solid #e6c68a; border-radius: 14px;
+  padding: 14px 18px; margin-bottom: 20px;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.45);
+}
+.ovTopicsTitle {
+  font-size: 12px; font-weight: 900; letter-spacing: 1.2px; text-transform: uppercase;
+  color: #7a4b1e; margin-bottom: 8px;
+}
+.ovTopics ul {
+  margin: 0; padding-left: 18px; font-size: 14.5px; line-height: 1.65; font-weight: 600;
 }
 #phaseOverlay .ovSkip {
   background: linear-gradient(180deg, #f6c95e 0%, #e09f3e 100%);
@@ -291,7 +317,7 @@ body.shaking { animation: screenShake 0.55s ease-in-out 2; }
   <div class="introFooter">RÁNG MỠ GÀ: CÓ NHÀ THÌ GIỮ · MÔ PHỎNG CỘNG ĐỒNG ỨNG PHÓ THIÊN TAI</div>
 </div>
 
-<!-- 2. BẢN ĐỒ KÉO VUỐT ĐA HƯỚNG LÀM THẾ GIỚI CHÍNH -->
+<!-- 2. BẢN ĐỒ KÉO THẢ CHUỘT / VUỐT ĐA HƯỚNG LÀM THẾ GIỚI CHÍNH -->
 <div id="gameWorld">
   <canvas id="map"></canvas>
 
@@ -383,10 +409,11 @@ body.shaking { animation: screenShake 0.55s ease-in-out 2; }
 <div id="phaseOverlay">
   <canvas id="phaseCanvas" width="480" height="270"></canvas>
   <div class="ovContent">
-    <div class="ovBadge" id="ovBadge">PART I</div>
+    <div class="ovBadge" id="ovBadge">T–72 GIỜ</div>
     <h2 id="ovTitle">TIÊU ĐỀ PHẦN</h2>
     <p id="ovDesc">Mô tả bối cảnh...</p>
-    <button class="ovSkip" onclick="hidePhaseOverlay()">Tiếp tục →</button>
+    <div id="ovTopics" class="ovTopics hidden"></div>
+    <button class="ovSkip" id="ovActionBtn" onclick="handlePhaseOverlayAction()">Tiếp tục →</button>
   </div>
 </div>
 
@@ -419,6 +446,7 @@ function peekMapFromStudio() {
 }
 function openTaskModal() {
   const tid = TASKS[room?.taskIdx]?.id || '';
+  if (tid === 'break') return;
   if (isStudioTask(tid)) {
     studioPeekingMap = false;
     renderGame();
@@ -439,9 +467,9 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// ================= HỆ THỐNG POP-UP BIẾN CỐ ĐẶC BIỆT =================
+// ================= HỆ THỐNG POP-UP BIẾN CỐ ĐẶC BIỆT (CHỈ HIỆN KHI CÓ BIẾN CỐ THỰC SỰ) =================
 function showEventPopup(rawText) {
-  let theme = 'ev-warning', icon = '⚠️', tag = 'THÔNG BÁO KHU PHỐ', title = 'Biến cố mới phát sinh!', shake = false;
+  let theme = '', icon = '', tag = '', title = '', shake = false;
 
   if (rawText.includes('cuốn thực phẩm') || rawText.includes('nhiễm bẩn nước')) {
     theme = 'ev-danger'; icon = rawText.includes('nước') ? '🚱' : '🌊';
@@ -461,6 +489,8 @@ function showEventPopup(rawText) {
   } else if (rawText.includes('chia cắt đường')) {
     theme = 'ev-warning'; icon = '🚧';
     tag = 'CHIA CẮT GIAO THÔNG'; title = 'Đường liên xóm bị ngập sâu!';
+  } else {
+    return;
   }
 
   $('evBanner').className = 'eventArtBanner ' + theme;
@@ -608,37 +638,48 @@ function renderHoiAnPanorama(ctx, frame, mood) {
   requestAnimationFrame(drawIntroLoop);
 })();
 
-// ================= CHUYỂN CẢNH TỪNG PHẦN =================
+// ================= CHUYỂN CẢNH TẬP TRUNG DÒNG THỜI GIAN =================
+const SHARING_TOPICS = [
+  'Theo dõi cảnh báo và thông tin chính thống.',
+  'Chuẩn bị ba lô khẩn cấp.',
+  'Bảo vệ giấy tờ, thuốc men và tài sản thiết yếu.',
+  'Quan tâm đến trẻ em, người cao tuổi và người có nhu cầu đặc biệt.',
+  'Tinh thần phối hợp, hỗ trợ giữa các gia đình.'
+];
+
 const PHASE_SCENES = {
   profile_card: {
-    mood: 'p1', theme: '', badge: 'PART I · T–72 GIỜ TRƯỚC BÃO',
-    title: '🌤️ RÁNG MỠ GÀ BÁO BÃO',
-    desc: 'Chân trời ửng sắc ráng mỡ gà, áp thấp nhiệt đới đang mạnh lên hướng vào miền Trung. Hãy nhận thẻ phân vai để khám phá hoàn cảnh và câu chuyện của gia đình bạn.'
+    mood: 'p1', theme: '', badge: 'T–72 GIỜ',
+    title: '🌤️ RÁNG MỠ GÀ KHU PHỐ',
+    desc: 'Chân trời ửng sắc ráng mỡ gà, không khí quanh khu phố bắt đầu có nhiều thay đổi. Hãy nhận thẻ phân vai để khám phá hoàn cảnh và câu chuyện của gia đình bạn.'
   },
   news: {
-    mood: 'p2', theme: '', badge: 'PART II · T–48 GIỜ TRƯỚC LŨ',
+    mood: 'p2', theme: '', badge: 'T–48 GIỜ',
     title: '🌧️ BẢNG TIN CỘNG ĐỒNG',
-    desc: 'Mưa bắt đầu kéo dài, mực nước sông Thu Bồn dâng lên. Nhiều nguồn tin thật – giả bắt đầu lan truyền trong khu phố.'
+    desc: 'Mưa bắt đầu kéo dài, mực nước trên sông dâng lên. Nhiều nguồn tin thật – giả bắt đầu lan truyền trong khu phố.'
   },
   break: {
-    mood: 'break', theme: '', badge: 'BREAK · SHARING SESSION',
-    title: '☕ KHOẢNG LẶNG TRƯỚC CƠN BÃO',
-    desc: 'Tạm gác lại những lựa chọn. Đây là lúc cả cộng đồng cùng ngồi lại chia sẻ góc nhìn và kinh nghiệm ứng phó thiên tai thực tế.'
+    mood: 'break', theme: '', badge: 'KHOẢNG LẶNG CHIA SẺ',
+    title: '☕ SHARING SESSION',
+    desc: 'Tạm gác lại các thao tác. Đây là lúc cả khu phố cùng ngồi lại trao đổi góc nhìn và kinh nghiệm thực tế theo các nội dung dưới đây:',
+    topics: SHARING_TOPICS,
+    stayUntilNext: true,
+    btnText: 'Tiếp tục sang Bão lũ đổ bộ →'
   },
   alert: {
-    mood: 'p3', theme: 'theme-p3', badge: 'PART III · BÃO LŨ ĐỔ BỘ',
+    mood: 'p3', theme: 'theme-p3', badge: 'BÃO LŨ ĐỔ BỘ',
     title: '⛈️ NƯỚC SÔNG THU BỒN TRÀN BỜ!',
-    desc: 'Gió giật dữ dội, nước lũ dâng nhanh tràn vào khu dân cư! Mọi sự chuẩn bị ở Part I và quyết định ở Part II bắt đầu bộc lộ hệ quả thực tế.',
+    desc: 'Gió giật dữ dội, nước lũ dâng nhanh tràn vào khu dân cư! Mọi sự chuẩn bị và quyết định vừa qua bắt đầu bộc lộ hệ quả thực tế.',
     shake: true
   },
   ending: {
-    mood: 'p4', theme: '', badge: 'PART IV · HẬU BÃO LŨ',
+    mood: 'p4', theme: '', badge: 'HẬU BÃO LŨ',
     title: '🌅 NGÀY MAI TRỜI LẠI SÁNG',
     desc: 'Mưa đã ngớt, nước lũ rút dần trả lại ánh bình minh trên mái ngói phố Hội. Cùng nhìn lại hành trình của cả khu phố.'
   }
 };
 
-let overlayTimer = null, phaseAnimActive = false, phaseFrame = 0, currentPhaseMood = 'p1';
+let overlayTimer = null, phaseAnimActive = false, phaseFrame = 0, currentPhaseMood = 'p1', activeOverlayTaskId = '';
 function runPhaseCanvasLoop() {
   if (!phaseAnimActive) return;
   const pc = $('phaseCanvas');
@@ -648,11 +689,23 @@ function runPhaseCanvasLoop() {
 function triggerPhaseScene(taskId) {
   const sc = PHASE_SCENES[taskId];
   if (!sc) return;
+  activeOverlayTaskId = taskId;
   const ov = $('phaseOverlay');
   ov.className = 'show ' + (sc.theme || '');
   $('ovBadge').textContent = sc.badge;
   $('ovTitle').textContent = sc.title;
   $('ovDesc').textContent = sc.desc;
+
+  const topicsEl = $('ovTopics');
+  if (sc.topics && sc.topics.length) {
+    topicsEl.innerHTML = `<div class="ovTopicsTitle">💬 Các mục thảo luận</div><ul>${sc.topics.map(item => `<li>${esc(item)}</li>`).join('')}</ul>`;
+    topicsEl.classList.remove('hidden');
+  } else {
+    topicsEl.innerHTML = '';
+    topicsEl.classList.add('hidden');
+  }
+
+  $('ovActionBtn').textContent = sc.btnText || 'Tiếp tục →';
   currentPhaseMood = sc.mood;
   if (!phaseAnimActive) { phaseAnimActive = true; requestAnimationFrame(runPhaseCanvasLoop); }
   if (sc.shake) {
@@ -660,12 +713,35 @@ function triggerPhaseScene(taskId) {
     setTimeout(() => document.body.classList.remove('shaking'), 1200);
   }
   if (overlayTimer) clearTimeout(overlayTimer);
-  overlayTimer = setTimeout(hidePhaseOverlay, 3800);
+  if (!sc.stayUntilNext) {
+    overlayTimer = setTimeout(hidePhaseOverlay, 35000);
+  }
 }
+
+async function handlePhaseOverlayAction() {
+  if (activeOverlayTaskId === 'break') {
+    const alertIdx = TASKS.findIndex(x => x.id === 'alert');
+    if (alertIdx >= 0 && room) {
+      const nxt = TASKS[alertIdx];
+      const dur = nxt.id === 'transfer' ? (room.shareSec || 360) : nxt.sec;
+      await DB.ref('room').update({
+        taskIdx: alertIdx,
+        paused: false,
+        deadline: Date.now() + dur * 1000,
+        remaining: dur * 1000
+      });
+      return;
+    }
+  }
+  hidePhaseOverlay();
+}
+
 function hidePhaseOverlay() {
+  if (overlayTimer) { clearTimeout(overlayTimer); overlayTimer = null; }
   $('phaseOverlay').classList.remove('show');
   phaseAnimActive = false;
   const tid = TASKS[room?.taskIdx]?.id || '';
+  if (tid === 'break') return;
   if (!isStudioTask(tid)) openTaskModal();
 }
 
@@ -770,8 +846,10 @@ function renderGame(){
     evEntries.forEach(([eid, ev]) => {
       if(!seenEvents.has(eid)){
         seenEvents.add(eid);
-        if(room.locked && ev.text && !ev.text.startsWith('🎬 Chuyển sang:')){
-          showEventPopup(ev.text);
+        const txt = ev.text || '';
+        const isSystemLog = txt.startsWith('🎬 Chuyển sang:') || txt.startsWith('🚀') || txt.includes('chính thức bắt đầu mô phỏng');
+        if(room.locked && txt && !isSystemLog){
+          showEventPopup(txt);
         }
       }
     });
@@ -780,7 +858,7 @@ function renderGame(){
   const incomingPending = Object.entries(room.transfers || {}).filter(([_,x]) => x.to === myId && x.status === 'pending');
   if(incomingPending.length > lastPendingCount){
     toast(`📦 Có hàng xóm vừa gửi tiếp tế cho ${me.name}!`);
-    if(!inStudio) openTaskModal();
+    if(!inStudio && tid !== 'break') openTaskModal();
   }
   lastPendingCount = incomingPending.length;
 
@@ -790,10 +868,17 @@ function renderGame(){
     triggerPhaseScene(lastTaskId);
     if(lastTaskId === 'bag_90s'){ bagSel = new Set(me.bag?.selected || []); bagContainer = me.bag?.containerType || 'backpack'; bagFilter = 'all'; }
     if(lastTaskId === 'vote_news'){ voteSel = new Set(me.votes || []); }
-    if(!inStudio) openTaskModal();
+    if(!inStudio && lastTaskId !== 'break') openTaskModal();
+    if(lastTaskId === 'break') closeTaskModal();
   }
 
-  if(inStudio && !studioPeekingMap){
+  if(tid === 'break'){
+    $('miniGameStage').classList.add('hidden');
+    $('taskModalBackdrop').classList.add('hidden');
+    $('hudBottomBar').classList.add('hidden');
+    $('hudBtnIcon').textContent = '☕';
+    $('hudTaskBtnText').textContent = 'Sharing Session';
+  } else if(inStudio && !studioPeekingMap){
     $('miniGameStage').classList.remove('hidden');
     $('taskModalBackdrop').classList.add('hidden');
     $('hudBottomBar').classList.add('hidden');
@@ -881,11 +966,19 @@ function renderGame(){
     const checks = Array.isArray(me.checks) ? me.checks : [];
     html = me.prepared === true ? `<p>❤️ Rà soát danh mục an toàn trước bão của <b>${esc(me.name)}</b> (${checks.length}/${CHECKLIST.length}):</p>` + CHECKLIST.map((x,i)=>`<label class="card"><input type="checkbox" style="width:auto" ${checks.includes(i)?'checked':''} onchange="toggleCheck(${i})"> ${esc(x)}</label>`).join('') : `<div class="card">⏳ <b>${esc(me.name)}</b> đã chọn phương án B (Tạm thời chờ đợi thêm thông tin).</div>`;
   } else if(t.id === 'break'){
-    html = `<div class="card">☕ <b>BREAK · SHARING SESSION</b><br><br>• Theo dõi cảnh báo và thông tin chính thống.<br>• Chuẩn bị ba lô khẩn cấp.<br>• Bảo vệ giấy tờ, thuốc men và tài sản thiết yếu.<br>• Quan tâm đến trẻ em, người cao tuổi và người có nhu cầu đặc biệt.<br>• Tinh thần phối hợp, hỗ trợ giữa các gia đình.</div>`;
+    html = `<div class="card">☕ <b>SHARING SESSION</b> · Đang hiển thị trên màn hình chuyển cảnh.</div>`;
   } else if(t.id === 'alert'){
-    html = `<div class="card">🚨 <b>BÃO LŨ ĐỔ BỘ!</b> Diễn biến thực tế tại <b>${esc(me.name)}</b>:</div>` +
-    (me.consequenceLogs||[]).map(l=>`<div class="board">${esc(l)}</div>`).join('') + myInvHtml(me) +
-    `<div class="note small">💡 <b>Quy tắc sống còn:</b> Mỗi thành viên cần đủ <b>1 Ăn + 1 Nước</b> (tối thiểu 2 Ăn, 2 Nước/nhà). Các nhu cầu đặc thù (Thuốc, Sữa/Tã, Sơ tán cụ yếu) nếu thiếu sẽ gây tổn thất nghiêm trọng cho gia đình!</div>`;
+    const logs = me.consequenceLogs || [];
+    html = `<div class="card">
+      <div style="font-size:12px;font-weight:800;letter-spacing:0.8px;color:#9e3b24;text-transform:uppercase;margin-bottom:4px">Tình hình thực tế tại ${esc(me.name)}</div>
+      <h3 style="margin-bottom:6px">⛈️ Nước lũ đã tràn vào khu phố</h3>
+      <p class="small" style="margin-bottom:0;color:#4a5e59">Dưới đây là những gì đang diễn ra tại nhà bạn sau các quyết định trước đó:</p>
+    </div>` +
+    (logs.length
+      ? logs.map(l=>`<div class="storyListBoard">${esc(l)}</div>`).join('')
+      : `<div class="storyListBoard">Hiện chưa có ghi nhận biến cố bổ sung nào tại nhà bạn.</div>`) +
+    myInvHtml(me) +
+    `<div class="note" style="font-size:13.5px;line-height:1.55"><b>💡 Cách đọc kho đồ của bạn:</b><br>• Mỗi người cần tối thiểu <b>1 Thực phẩm + 1 Nước uống</b> (mức chuẩn của nhà bạn đang là <b>${me.reqFood||2} Ăn · ${me.reqWater||2} Nước</b>).<br>• Các mục có dấu <b>(Cần!)</b> hoặc <b>🚨</b> là nhu cầu đặc thù đang thiếu — bạn có thể trao đổi, nhờ hàng xóm hỗ trợ ở bước tiếp theo.</div>`;
   } else if(t.id === 'talk2'){
     html = (me.muted?`<div class="note danger">📵 <b>${esc(me.name)} đang bị đứt đường truyền / mất điện!</b> Vui lòng tắt mic & không chat trên Zoom.</div>`:'') +
     `<div class="card">📻 <b>MỞ MIC THƯƠNG LƯỢNG NGUỒN LỰC</b><br>Hệ thống KHÔNG công khai kho đồ từng nhà. Hãy mở mic báo ngay tình trạng thiếu/dư của <b>${esc(me.name)}</b> cho hàng xóm biết!</div>` + myInvHtml(me);
@@ -951,7 +1044,7 @@ function renderGame(){
       4. Điều gì khiến bạn thay đổi quyết định trong quá trình chơi?
     </div>`;
   }
-  if(room.paused) html = '<div class="note">⏸ Host đang tạm dừng đồng hồ để thảo luận.</div>' + html;
+  if(room.paused && t?.id !== 'break') html = '<div class="note">⏸ Host đang tạm dừng đồng hồ để thảo luận.</div>' + html;
 
   if(inStudio){
     $('studioBody').innerHTML = html;
@@ -1092,7 +1185,6 @@ let isDragging = false, dragMoved = false, startPointerX = 0, startPointerY = 0,
 
 function getDefaultZoom() {
   const w = window.innerWidth, h = window.innerHeight;
-  // Trên laptop/màn hình ngang: giữ zoom vừa tầm ~0.82 - 0.92 để không phóng to quá mức và vẫn kéo vuốt thoải mái
   if (w >= 900) return Math.max(0.75, Math.min(0.95, w / 1360));
   if (w >= 640) return 0.9;
   return 0.82;
@@ -1128,7 +1220,6 @@ function adjustZoom(delta) {
 function clampCamera() {
   const viewW = window.innerWidth / camZoom;
   const viewH = window.innerHeight / camZoom;
-  // Đệm rộng phần trên và dưới để mái nhà, icon trạng thái và ghi chú không bị cắt sát mép
   const padX = 140, padTop = 155, padBottom = 130;
 
   if (WORLD_W + padX * 2 <= viewW) {
