@@ -265,8 +265,11 @@ function applyConsequencesToUpdates(active, updates){
 
   active.forEach(p => {
     const prof = p.profile || PROFILES[0];
-    const bag = p.bag || {containerType:'backpack', selected:[]};
-    const items = bag.selected || [];
+    const rawBag = p.bag;
+    const bag = Array.isArray(rawBag)
+      ? { containerType: 'backpack', selected: rawBag }
+      : (rawBag || { containerType: 'backpack', selected: [] });
+    const items = Array.isArray(bag.selected) ? bag.selected : [];
     const logs = [];
 
     let food = (prof.baseFood||0) + (items.includes('food')?3:0) + (items.includes('bags')?1:0);
@@ -274,7 +277,8 @@ function applyConsequencesToUpdates(active, updates){
     let medQty = items.includes('med') ? 1 : 0;
     let babyQty = (items.includes('milk') && items.includes('diaper')) ? 1 : 0;
     let padsQty = items.includes('pads') ? 1 : 0;
-    let reqFood = prof.reqFood, reqWater = prof.reqWater;
+    let reqFood = prof.reqFood || 2;
+    let reqWater = prof.reqWater || 2;
 
     if(p.prepared !== true){
       const lostF = food>0?1:0, lostW = water>0?1:0;
@@ -333,8 +337,8 @@ function applyConsequencesToUpdates(active, updates){
       logs.push(`⚠️ Do ngập kéo dài làm phát sinh thêm nhu cầu sinh hoạt, mức tối thiểu gia đình cần giữ lúc này là ${reqFood} Thực phẩm và ${reqWater} Nước uống.`);
     }
 
-    updates[`players/${p.id}/food`] = food;
-    updates[`players/${p.id}/water`] = water;
+    updates[`players/${p.id}/food`] = Math.max(0, food);
+    updates[`players/${p.id}/water`] = Math.max(0, water);
     updates[`players/${p.id}/medQty`] = medQty;
     updates[`players/${p.id}/babyQty`] = babyQty;
     updates[`players/${p.id}/padsQty`] = padsQty;
@@ -349,7 +353,7 @@ function applyConsequencesToUpdates(active, updates){
   });
 }
 
-// ================= QUYỀN NĂNG "ÔNG TRỜI" =================
+// ================= QUYỀN NĂNG "ÔNG TRỜI" & CỨU TRỢ ĐẶC BIỆT =================
 async function godAction(type, id){
   const p = room.players?.[id];
   if(!p) return;
@@ -370,6 +374,15 @@ async function godAction(type, id){
   } else if(type === 'relief'){
     await DB.ref(`room/players/${id}`).update({ food: (p.food||0)+3, water: (p.water||0)+3 });
     await appendLog(id, `🚁 ${p.name} nhận được gói hàng cứu trợ (+3 Đồ ăn, +3 Nước uống)!`);
+  } else if(type === 'relief_med'){
+    await DB.ref(`room/players/${id}/medQty`).set((p.medQty||0)+1);
+    await appendLog(id, `🚁 Cứu trợ đặc biệt gửi tới ${p.name}: +1 Thuốc đặc trị!`);
+  } else if(type === 'relief_baby'){
+    await DB.ref(`room/players/${id}/babyQty`).set((p.babyQty||0)+1);
+    await appendLog(id, `🚁 Cứu trợ đặc biệt gửi tới ${p.name}: +1 Sữa & Tã bé!`);
+  } else if(type === 'relief_pads'){
+    await DB.ref(`room/players/${id}/padsQty`).set((p.padsQty||0)+1);
+    await appendLog(id, `🚁 Cứu trợ đặc biệt gửi tới ${p.name}: +1 Băng vệ sinh!`);
   } else if(type === 'flood'){
     if(!confirm(`Xác nhận LŨ CUỐN loại ${p.name} khỏi cuộc chơi?`)) return;
     await DB.ref(`room/players/${id}`).update({ status:'flooded', food:0, water:0, medQty:0, babyQty:0, padsQty:0 });
@@ -450,14 +463,17 @@ function renderHost(){
     <p><b>Part II:</b> <b>${sel.prepared===true?'A (Tiếp tục chuẩn bị)':sel.prepared===false?'B (Tạm thời chờ đợi)':'Chưa chọn'}</b> · Checklist: ${(sel.checks||[]).length}/6</p>
     <p><b>Kho thực tế:</b> 🥫${sel.food||0}/${sel.reqFood||2} · 💧${sel.water||0}/${sel.reqWater||2} · 💊${sel.medQty||0} · 🍼${sel.babyQty||0} · 🌸${sel.padsQty||0}</p>
     ${(sel.consequenceLogs||[]).length ? `<div style="background:#f3ebd3;padding:8px;border-radius:8px;margin:8px 0;max-height:140px;overflow:auto"><b>Nhật ký hệ quả:</b><br><span class="small">${sel.consequenceLogs.map(x=>esc(x)).join('<br>')}</span></div>` : ''}
-    ${sel.status==='active' && room.locked ? `<h4>⚡ Kích hoạt Biến cố "Ông Trời"</h4>
+    ${sel.status==='active' && room.locked ? `<h4>⚡ Kích hoạt Biến cố & Cứu trợ "Ông Trời"</h4>
     <div class="godGrid">
       <button class="warn" onclick="godAction('food_loss','${sel.id}')">🌊 Cuốn thực phẩm (-1 Ăn)</button>
       <button class="warn" onclick="godAction('water_dirty','${sel.id}')">🚱 Nhiễm bẩn nước (-1 Nước)</button>
       <button class="warn" onclick="godAction('mute','${sel.id}')">${sel.muted?'📶 Mở liên lạc':'📵 Đứt cáp (Cấm mic)'}</button>
       <button class="warn" onclick="godAction('lock_send','${sel.id}')">${sel.sendLocked?'✅ Mở khóa gửi':'🚫 Cô lập (Khóa gửi)'}</button>
       <button class="primary" onclick="godAction('relief','${sel.id}')">🚁 Cứu trợ (+3 Ăn, +3 Nước)</button>
-      <button class="danger" onclick="godAction('flood','${sel.id}')">🆘 Lũ cuốn (Loại hộ)</button>
+      <button class="primary" onclick="godAction('relief_med','${sel.id}')">💊 Cứu trợ Thuốc đặc trị (+1)</button>
+      <button class="primary" onclick="godAction('relief_baby','${sel.id}')">🍼 Cứu trợ Sữa & Tã (+1)</button>
+      <button class="primary" onclick="godAction('relief_pads','${sel.id}')">🌸 Cứu trợ Băng vệ sinh (+1)</button>
+      <button class="danger" style="grid-column:span 2" onclick="godAction('flood','${sel.id}')">🆘 Lũ cuốn (Loại hộ)</button>
     </div>` : ''}
   ` : 'Chưa có gia đình nào đăng ký.';
 
