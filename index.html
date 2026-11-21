@@ -82,13 +82,13 @@ label{display:block;font-weight:700;margin:8px 0 4px}
 /* === 3. FULL-SCREEN PANNABLE MAP & FLOATING HUD === */
 #gameWorld {
   position: fixed; inset: 0; width: 100vw; height: 100vh; overflow: hidden;
-  background: #2b4a42; touch-action: none;
+  background: #2b4a42; touch-action: none; user-select: none; -webkit-user-select: none;
 }
 #map {
   position: absolute; inset: 0; width: 100%; height: 100%;
   image-rendering: pixelated; cursor: grab; display: block;
 }
-#map:active { cursor: grabbing; }
+#map.dragging { cursor: grabbing; }
 
 .hudTop {
   position: fixed; top: 10px; left: 10px; right: 10px; z-index: 250;
@@ -301,6 +301,8 @@ body.shaking { animation: screenShake 0.55s ease-in-out 2; }
         <strong id="roomTitle" style="font-size:14.5px">Khu phố Hội An</strong>
         <span id="clock" class="clockBadge">CHỜ HOST</span>
         <button style="padding:4px 8px;font-size:12px" onclick="centerOnMyHouse(true)" title="Đưa camera về nhà mình">🎯 Nhà mình</button>
+        <button style="padding:4px 8px;font-size:12px" onclick="adjustZoom(-0.15)" title="Thu nhỏ bản đồ">🔍-</button>
+        <button style="padding:4px 8px;font-size:12px" onclick="adjustZoom(0.15)" title="Phóng to bản đồ">🔍+</button>
         <button id="leaveBtn" style="padding:4px 8px;font-size:12px" onclick="leaveGame()">Rời</button>
       </div>
       <button class="hudActionBtn" id="hudSwitchBtn" onclick="handleHudAction()">
@@ -311,7 +313,7 @@ body.shaking { animation: screenShake 0.55s ease-in-out 2; }
 
     <div class="hudBottom" id="hudBottomBar">
       <div id="bottomTicker" class="tickerBar" onclick="openTaskModal()">
-        Kéo vuốt để khám phá khu phố · Chạm vào ngôi nhà hoặc bấm vào đây để mở Bảng thông tin.
+        Kéo thả chuột / vuốt để khám phá khu phố · Cuộn để zoom · Chạm vào nhà hoặc bấm vào đây mở Bảng thông tin.
       </div>
     </div>
   </div>
@@ -498,7 +500,6 @@ const SCENE_DROPS = Array.from({ length: 110 }, (_, i) => ({
 function renderHoiAnPanorama(ctx, frame, mood) {
   ctx.imageSmoothingEnabled = false;
   const cfg = {
-    // Cảnh Intro Ráng Mỡ Gà: Bầu trời chuyển vàng cam ráng chiều báo bão, mây giông sẫm kéo về
     intro: { skyTop:'#2b2238', skyMid:'#b85d3b', skyBot:'#f5b041', sun:true, sunY:122, rainCount:25, waterY:180, lanternsOn:true, cloudAlpha:0.68 },
     p1:    { skyTop:'#234854', skyMid:'#4b6f75', skyBot:'#e0ab63', sun:true, sunY:112, rainCount:25, waterY:180, lanternsOn:true, cloudAlpha:0.45 },
     p2:    { skyTop:'#12222b', skyMid:'#223742', skyBot:'#4f5d61', sun:false, sunY:0,  rainCount:75, waterY:172, lanternsOn:true, cloudAlpha:0.80 },
@@ -761,7 +762,6 @@ function renderGame(){
   $('leaveBtn').disabled = !!room.locked;
   $('roomTitle').textContent = `🏠 ${me.name}`;
 
-  // 1. Biến cố mới -> Bật Pop-up Cinematic Event nổi bật
   const evEntries = Object.entries(room.events || {});
   if(!initialEventsLoaded){
     evEntries.forEach(([eid]) => seenEvents.add(eid));
@@ -777,7 +777,6 @@ function renderGame(){
     });
   }
 
-  // 2. Hàng xóm gửi tiếp tế -> Bật Pop-up nhận hàng ngay
   const incomingPending = Object.entries(room.transfers || {}).filter(([_,x]) => x.to === myId && x.status === 'pending');
   if(incomingPending.length > lastPendingCount){
     toast(`📦 Có hàng xóm vừa gửi tiếp tế cho ${me.name}!`);
@@ -785,7 +784,6 @@ function renderGame(){
   }
   lastPendingCount = incomingPending.length;
 
-  // 3. Chuyển vòng mới
   if(tid !== lastTaskId){
     lastTaskId = tid;
     studioPeekingMap = false;
@@ -795,7 +793,6 @@ function renderGame(){
     if(!inStudio) openTaskModal();
   }
 
-  // 4. Điều phối Giao diện Mini-game chuyên biệt vs Bản đồ Kéo Vuốt
   if(inStudio && !studioPeekingMap){
     $('miniGameStage').classList.remove('hidden');
     $('taskModalBackdrop').classList.add('hidden');
@@ -822,7 +819,7 @@ function renderGame(){
   let html = '';
 
   if(!t){
-    html = `<div class="card">${room.locked ? `Cảm ơn <b>${esc(me.name)}</b> đã tham gia <b>Ráng Mỡ Gà: Có Nhà Thì Giữ</b>!` : `✅ Chào mừng <b>${esc(me.name)}</b> đến với khu phố Hội An!<br><br>Ngôi nhà <b>${esc(me.name)}</b> đang tỏa sáng viền vàng trên bản đồ. Bạn có thể bấm <b>"🗺️ Xem bản đồ"</b> rồi <b>kéo vuốt tự do</b> để dạo quanh khu phố trong lúc chờ Host bắt đầu!`}</div>`;
+    html = `<div class="card">${room.locked ? `Cảm ơn <b>${esc(me.name)}</b> đã tham gia <b>Ráng Mỡ Gà: Có Nhà Thì Giữ</b>!` : `✅ Chào mừng <b>${esc(me.name)}</b> đến với khu phố Hội An!<br><br>Ngôi nhà <b>${esc(me.name)}</b> đang tỏa sáng viền vàng trên bản đồ. Bạn có thể bấm <b>"🗺️ Xem bản đồ"</b> rồi <b>kéo thả chuột / vuốt</b> để dạo quanh khu phố trong lúc chờ Host bắt đầu!`}</div>`;
   } else if(t.id === 'profile_card'){
     const prof = me.profile;
     const roleSubtitle = cleanRoleSubtitle(prof?.title);
@@ -910,7 +907,7 @@ function renderGame(){
     (me.sendLocked?`<div class="note danger">🚫 <b>Nước chảy xiết:</b> ${esc(me.name)} không thể gửi đồ đi, chỉ có thể nhận hỗ trợ.</div>`:'') +
     myInvHtml(me) +
     `<div class="board"><b>📢 Đăng tin kêu gọi / chia sẻ (hiện trên bản đồ):</b><div class="row" style="margin-top:5px"><input id="pubNote" maxlength="55" value="${esc(me.publicNote||'')}" placeholder="VD: Dư 2 nước, cần xin 1 thuốc..."><button style="flex:none" onclick="DB.ref('room/players/${myId}/publicNote').set(document.getElementById('pubNote').value.trim())">Đăng</button></div></div>
-    <label>🏠 Chọn nhà hàng xóm muốn hỗ trợ (hoặc bấm "Xem bản đồ" rồi kéo vuốt chạm vào nhà đó):</label>
+    <label>🏠 Chọn nhà hàng xóm muốn hỗ trợ (hoặc bấm "Xem bản đồ" rồi kéo thả chạm vào nhà đó):</label>
     <select onchange="selectedRecipient=this.value;renderGame()">
       <option value="">-- Chọn gia đình nhận hỗ trợ --</option>
       ${otherActive.map(x => `<option value="${x.id}" ${x.id===selectedRecipient?'selected':''}>${esc(x.name)}</option>`).join('')}
@@ -967,7 +964,7 @@ function renderBottomTicker(me, all, t){
   const tk = $('bottomTicker');
   tk.className = 'tickerBar';
   if(!t){
-    tk.innerHTML = `🖐️ <b>Kéo vuốt bản đồ</b> để xem khu phố · <u>Bấm vào đây để mở Bảng thông tin</u>`;
+    tk.innerHTML = `🖐️ <b>Kéo thả chuột / vuốt bản đồ</b> · Cuộn để zoom · <u>Bấm vào đây mở Bảng thông tin</u>`;
     return;
   }
   if(t.id === 'alert'){
@@ -975,7 +972,7 @@ function renderBottomTicker(me, all, t){
     tk.innerHTML = `🚨 <b>BÃO LŨ ĐỔ BỘ!</b> Kiểm tra kho tài nguyên của ${esc(me.name)} · <u>Bấm để mở Bảng thông báo</u>`;
   } else if(['talk2','transfer'].includes(t.id)){
     const notes = all.filter(p => p.publicNote && p.status === 'active');
-    const noteStr = notes.length ? notes.slice(0,3).map(p=>`<b>${esc(p.name)}:</b> ${esc(p.publicNote)}`).join(' · ') : 'Kéo vuốt bản đồ & chạm vào nhà hàng xóm để gửi tiếp tế!';
+    const noteStr = notes.length ? notes.slice(0,3).map(p=>`<b>${esc(p.name)}:</b> ${esc(p.publicNote)}`).join(' · ') : 'Kéo thả chuột / vuốt bản đồ & chạm vào nhà hàng xóm để gửi tiếp tế!';
     tk.innerHTML = `📢 ${noteStr}`;
   } else {
     tk.innerHTML = `📌 <b>${esc(t.label)}</b> · <u>Bấm để mở Bảng nhiệm vụ</u>`;
@@ -1077,7 +1074,7 @@ async function respondTr(tid, accept){
   }
 }
 
-// ================= CAMERA KÉO VUỐT ĐA HƯỚNG (PANNABLE WORLD MAP) =================
+// ================= CAMERA KÉO THẢ CHUỘT / VUỐT ĐA HƯỚNG =================
 const WORLD_W = 1120, WORLD_H = 740;
 const C = $('map'), ctx = C.getContext('2d');
 const images = {};
@@ -1090,8 +1087,16 @@ const spots = Array.from({length:25},(_,i)=>({
   y: 135 + Math.floor(i / 5) * 115
 }));
 
-let camX = 0, camY = 0, targetCamX = 0, targetCamY = 0, camZoom = 1, hasInitialCentered = false;
+let camX = 0, camY = 0, targetCamX = 0, targetCamY = 0, camZoom = 0.85, hasInitialCentered = false;
 let isDragging = false, dragMoved = false, startPointerX = 0, startPointerY = 0, startCamX = 0, startCamY = 0;
+
+function getDefaultZoom() {
+  const w = window.innerWidth, h = window.innerHeight;
+  // Trên laptop/màn hình ngang: giữ zoom vừa tầm ~0.82 - 0.92 để không phóng to quá mức và vẫn kéo vuốt thoải mái
+  if (w >= 900) return Math.max(0.75, Math.min(0.95, w / 1360));
+  if (w >= 640) return 0.9;
+  return 0.82;
+}
 
 function updateViewportSize() {
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -1100,21 +1105,38 @@ function updateViewportSize() {
   C.height = h * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.imageSmoothingEnabled = false;
-  camZoom = w < 640 ? 1.05 : 1.15;
+  camZoom = getDefaultZoom();
   clampCamera();
 }
 window.addEventListener('resize', updateViewportSize);
 updateViewportSize();
 
+function adjustZoom(delta) {
+  const viewW = window.innerWidth / camZoom;
+  const viewH = window.innerHeight / camZoom;
+  const centerWorldX = targetCamX + viewW / 2;
+  const centerWorldY = targetCamY + viewH / 2;
+
+  camZoom = Math.max(0.65, Math.min(1.5, Number((camZoom + delta).toFixed(2))));
+  const nextViewW = window.innerWidth / camZoom;
+  const nextViewH = window.innerHeight / camZoom;
+  targetCamX = centerWorldX - nextViewW / 2;
+  targetCamY = centerWorldY - nextViewH / 2;
+  clampCamera();
+}
+
 function clampCamera() {
   const viewW = window.innerWidth / camZoom;
   const viewH = window.innerHeight / camZoom;
-  const padX = 90, padTop = 95, padBottom = 85;
+  // Đệm rộng phần trên và dưới để mái nhà, icon trạng thái và ghi chú không bị cắt sát mép
+  const padX = 140, padTop = 155, padBottom = 130;
+
   if (WORLD_W + padX * 2 <= viewW) {
     targetCamX = (WORLD_W - viewW) / 2;
   } else {
     targetCamX = Math.max(-padX, Math.min(WORLD_W - viewW + padX, targetCamX));
   }
+
   if (WORLD_H + padTop + padBottom <= viewH) {
     targetCamY = (WORLD_H - viewH) / 2;
   } else {
@@ -1129,26 +1151,27 @@ function centerOnMyHouse(showNotice) {
   const viewW = window.innerWidth / camZoom;
   const viewH = window.innerHeight / camZoom;
   targetCamX = s.x - viewW / 2;
-  targetCamY = s.y - viewH / 2 + 15;
+  targetCamY = s.y - viewH / 2;
   clampCamera();
   if (showNotice) toast(`🎯 Đã đưa camera về ${me.name}`);
 }
 
 C.addEventListener('pointerdown', e => {
+  if (e.button !== undefined && e.button !== 0 && e.pointerType === 'mouse') return;
   isDragging = true;
   dragMoved = false;
   startPointerX = e.clientX;
   startPointerY = e.clientY;
   startCamX = targetCamX;
   startCamY = targetCamY;
-  C.setPointerCapture(e.pointerId);
+  C.classList.add('dragging');
 });
 
-C.addEventListener('pointermove', e => {
+window.addEventListener('pointermove', e => {
   if (!isDragging) return;
   const dx = e.clientX - startPointerX;
   const dy = e.clientY - startPointerY;
-  if (Math.hypot(dx, dy) > 6) dragMoved = true;
+  if (Math.hypot(dx, dy) > 4) dragMoved = true;
   if (dragMoved) {
     targetCamX = startCamX - dx / camZoom;
     targetCamY = startCamY - dy / camZoom;
@@ -1156,14 +1179,26 @@ C.addEventListener('pointermove', e => {
   }
 });
 
-C.addEventListener('pointerup', e => {
+window.addEventListener('pointerup', e => {
   if (!isDragging) return;
+  const wasMoved = dragMoved;
   isDragging = false;
-  C.releasePointerCapture(e.pointerId);
-  if (!dragMoved) {
+  dragMoved = false;
+  C.classList.remove('dragging');
+  if (!wasMoved && e.target === C) {
     handleMapTap(e.clientX, e.clientY);
   }
 });
+
+C.addEventListener('wheel', e => {
+  e.preventDefault();
+  if (e.shiftKey) {
+    targetCamX += e.deltaY / camZoom;
+    clampCamera();
+  } else {
+    adjustZoom(e.deltaY < 0 ? 0.08 : -0.08);
+  }
+}, { passive: false });
 
 function handleMapTap(clientX, clientY) {
   if (!room || !myId) return;
@@ -1194,8 +1229,8 @@ function handleMapTap(clientX, clientY) {
 let tick = 0, lightningTimer = 0;
 function draw(){
   tick++;
-  camX += (targetCamX - camX) * 0.22;
-  camY += (targetCamY - camY) * 0.22;
+  camX += (targetCamX - camX) * 0.24;
+  camY += (targetCamY - camY) * 0.24;
 
   const vw = window.innerWidth, vh = window.innerHeight;
   ctx.fillStyle = '#2b4a42';
