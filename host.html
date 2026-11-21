@@ -175,7 +175,7 @@ async function updateShareMin(){
 async function lockAndStart(){
   const players = Object.values(room.players || {}).filter(p => p.status === 'active').sort((a,b)=>a.slot-b.slot);
   if(players.length < 1) return say('Chưa có người chơi nào đăng ký!');
-  if(!confirm(`Chốt danh sách ${players.length} gia đình và bắt đầu Part I?`)) return;
+  if(!confirm(`Chốt danh sách ${players.length} gia đình và bắt đầu?`)) return;
 
   const profs = assignProfilesStratified(players.length);
   const news = assignNewsViral(players.length);
@@ -260,6 +260,8 @@ function applyConsequencesToUpdates(active, updates){
   const shuffled = [...active].sort(()=>Math.random()-0.5);
   const periodTargets = new Set(shuffled.slice(0, Math.max(1, Math.floor(active.length/5))).map(p=>p.id));
   const extraNeedTargets = new Set(shuffled.slice(1, 1 + Math.max(1, Math.floor(active.length/6))).map(p=>p.id));
+  const boardTexts = (room.boardIndices || []).map(i => NEWS[i]?.text || '').join(' ');
+  const hasMisleadingSignal = boardTexts.includes('không đáng ngại') || boardTexts.includes('rút nhanh') || boardTexts.includes('chưa cần');
 
   active.forEach(p => {
     const prof = p.profile || PROFILES[0];
@@ -277,40 +279,58 @@ function applyConsequencesToUpdates(active, updates){
     if(p.prepared !== true){
       const lostF = food>0?1:0, lostW = water>0?1:0;
       food -= lostF; water -= lostW;
-      logs.push(`⏳ Chọn Chờ đợi ở Part II: nước dâng bất ngờ làm hỏng ${lostF} Thực phẩm & ${lostW} Nước uống.`);
+      const reasonLead = hasMisleadingSignal
+        ? 'Vì tin theo những thông tin kém chính xác trên bảng tin mà chọn chờ đợi, không kịp chủ động ứng phó sớm,'
+        : 'Vì chọn phương án chờ đợi và chưa kịp chằng chống, kê cao đồ đạc trước khi nước tràn vào nhà,';
+      logs.push(`⏳ ${reasonLead} nước lũ dâng nhanh làm mất ${lostF} phần Thực phẩm và ${lostW} phần Nước uống.`);
+
       const waterproof = (bag.containerType === 'bucket') || items.includes('bags');
       if(!waterproof){
-        if(medQty>0){ medQty=0; logs.push('🌧️ Dùng balo vải & chưa kê cao đồ: Thuốc đặc trị bị ngấm nước hỏng!'); }
-        else if(babyQty>0){ babyQty=0; logs.push('🌧️ Dùng balo vải & chưa kê cao đồ: Sữa & Tã em bé bị ngấm nước hỏng!'); }
+        if(medQty>0){
+          medQty=0;
+          logs.push('🌧️ Do đựng đồ trong balo vải thông thường và chưa kịp đưa lên cao, Thuốc đặc trị đã bị ngấm nước hư hỏng.');
+        } else if(babyQty>0){
+          babyQty=0;
+          logs.push('🌧️ Do đựng đồ trong balo vải thông thường và chưa kịp đưa lên cao, Sữa & Tã cho em bé đã bị ngấm nước hư hỏng.');
+        }
+      } else if(medQty>0 || babyQty>0) {
+        logs.push('🪣 Nhờ đựng trong vật chứa chống thấm kín nước nên đồ y tế/chăm sóc vẫn giữ được dù chọn chờ đợi.');
       }
     } else {
-      logs.push('🛡️ Chủ động chuẩn bị ở Part II giúp bảo toàn toàn bộ đồ đạc trong nhà.');
+      logs.push('🛡️ Vì đã chủ động chọn phương án chuẩn bị và kê cao đồ đạc từ sớm, gia đình giữ được phần lớn tài sản dự trữ khi nước tràn về.');
     }
 
     let needMed = false, needBaby = false, needEvac = false, evacHelped = false, needPads = false;
     if(prof.group === 'chronic'){
       needMed = true;
-      logs.push(medQty>0 ? '✅ Đã có sẵn Thuốc đặc trị cho người bệnh nền.' : '🚨 Gia đình có người bệnh nền nhưng đang thiếu Thuốc đặc trị! Cần xin hàng xóm.');
+      logs.push(medQty>0
+        ? '💊 Gia đình có người bệnh nền và hiện đã có sẵn Thuốc đặc trị để duy trì.'
+        : '🚨 Gia đình có người bệnh nền nhưng đang thiếu Thuốc đặc trị — cần nhanh chóng tìm sự hỗ trợ từ hàng xóm.');
     }
     if(prof.group === 'baby'){
       needBaby = true;
-      logs.push(babyQty>0 ? '✅ Đã có đủ Sữa & Tã cho em bé.' : '🚨 Gia đình có em bé nhưng đang thiếu Sữa & Tã! Cần xin hàng xóm.');
+      logs.push(babyQty>0
+        ? '🍼 Gia đình có em bé nhỏ và hiện đã có sẵn Sữa & Tã dự phòng.'
+        : '🚨 Gia đình có em bé nhỏ nhưng đang thiếu Sữa & Tã — cần sớm kết nối với các hộ xung quanh để xin hỗ trợ.');
     }
     if(prof.group === 'elderly_weak'){
       needEvac = true;
       if(p.prepared === true && (items.includes('light') || items.includes('rain'))){
-        evacHelped = true; logs.push('✅ Đã chủ động đưa người cao tuổi yếu sơ tán sớm an toàn.');
+        evacHelped = true;
+        logs.push('👴 Nhờ chủ động chuẩn bị sớm và có đèn/áo mưa hỗ trợ, người cao tuổi đi lại khó khăn đã được đưa đến nơi an toàn.');
       } else {
-        logs.push('🚨 Người cao tuổi yếu đi lại khó khăn chưa kịp sơ tán! Cần hàng xóm sang hỗ trợ.');
+        logs.push('🚨 Người cao tuổi đi lại khó khăn chưa kịp di chuyển đến vị trí an toàn — rất cần hàng xóm sang hỗ trợ sơ tán.');
       }
     }
     if(periodTargets.has(p.id)){
       needPads = true;
-      logs.push(padsQty>0 ? '✅ Thành viên nữ tới kỳ — đã có sẵn Băng vệ sinh.' : '🌸 Phát sinh nhu cầu Băng vệ sinh khẩn cấp trong gia đình!');
+      logs.push(padsQty>0
+        ? '🌸 Thành viên trong nhà tới kỳ — gia đình đã chuẩn bị sẵn Băng vệ sinh.'
+        : '🌸 Thành viên trong nhà phát sinh nhu cầu Băng vệ sinh khẩn cấp trong lúc nước ngập.');
     }
     if(extraNeedTargets.has(p.id)){
       reqFood += 1; reqWater += 1;
-      logs.push(`⚠️ Phát sinh nhu cầu khẩn cấp do kẹt lũ kéo dài: mức duy trì cần ${reqFood} Ăn · ${reqWater} Nước.`);
+      logs.push(`⚠️ Do ngập kéo dài làm phát sinh thêm nhu cầu sinh hoạt, mức tối thiểu gia đình cần giữ lúc này là ${reqFood} Thực phẩm và ${reqWater} Nước uống.`);
     }
 
     updates[`players/${p.id}/food`] = food;
