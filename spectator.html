@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RÁNG MỠ GÀ: CÓ NHÀ THÌ GIỮ · CAMERA KHU PHỐ (ZOOM)</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="art.js"></script>
+<script src="game-data.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#14282e;color:#2f4842;font:14px system-ui,Arial}
+button,input{font:inherit;border:2px solid #ae956f;border-radius:8px;padding:8px 11px;background:#fffdf5;color:#2f4842}
+button{cursor:pointer;font-weight:750;background:#e0eacb}
+button.primary{background:#3e8a70;color:#fff;border-color:#2b6350}
+.hidden{display:none!important}
+.small{font-size:12px;color:#63726a}
+
+/* Đăng nhập màn hình trình chiếu */
+#authScreen{position:fixed;inset:0;z-index:500;background:rgba(16,38,44,0.88);display:flex;align-items:center;justify-content:center;padding:16px}
+.authBox{background:#fff8e7;border:4px solid #ad8a5c;border-radius:16px;padding:22px;width:100%;max-width:420px;box-shadow:0 16px 40px rgba(0,0,0,0.5)}
+.authBox h2{margin:0 0 8px}
+.errMsg{color:#b63e3e;font-weight:700;font-size:12.5px;min-height:18px;margin-top:6px}
+
+/* Vùng bản đồ toàn màn hình */
+#stageWrap{position:fixed;inset:0;width:100vw;height:100vh;overflow:hidden;background:#2b4a42;user-select:none}
+#specMap{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;cursor:grab;display:block}
+#specMap.dragging{cursor:grabbing}
+
+/* Thanh trên cùng: Pha, Đồng hồ, Camera */
+.topHud{position:fixed;top:10px;left:10px;right:10px;z-index:25;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;pointer-events:none;flex-wrap:wrap}
+.hudCard{pointer-events:auto;background:rgba(255,247,229,0.95);border:3px solid #96734e;border-radius:14px;padding:8px 13px;box-shadow:0 6px 18px rgba(0,0,0,0.3);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.phasePill{background:#2c5e4e;color:#fff6dc;font-weight:800;padding:4px 10px;border-radius:8px;font-size:13px}
+.clockBox{background:#f6c95e;color:#2b1d0e;font-weight:900;padding:4px 11px;border-radius:8px;font-size:15px;letter-spacing:0.5px}
+
+/* Bảng tin cộng đồng / Bảng tin tổng kết cuối game */
+.communityBoard{position:fixed;top:72px;left:12px;width:min(395px,37vw);max-height:54vh;z-index:22;background:rgba(255,248,231,0.96);border:3px solid #96734e;border-radius:14px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,0.35);display:flex;flex-direction:column;overflow:hidden}
+.communityBoard.collapsed{display:none}
+.boardHeader{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.boardSectionTitle{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:0.8px;color:#5c4328}
+.boardScroll{flex:1;overflow-y:auto;padding-right:3px}
+.newsCard{background:#fffdf4;border:1.5px solid #d7c29c;border-radius:9px;padding:8px 10px;margin-bottom:7px;font-size:12.5px;line-height:1.45}
+.newsSource{font-weight:800;color:#2c5e4e;font-size:12px;margin-bottom:2px}
+.summaryHighlight{background:#fdf3d7;border:2px solid #cfa96e;border-radius:10px;padding:9px 11px;margin-bottom:8px;font-size:12.5px;line-height:1.5}
+.heroBox{background:#eef8f2;border:1.5px solid #589c82;border-radius:10px;padding:9px 11px;margin-bottom:8px;font-size:12.5px;line-height:1.5}
+
+/* Khung Chat Box nhỏ góc phải (giữ tin nhắn & biến cố Part III, đóng/mở được) */
+.chatWindow{position:fixed;top:72px;right:12px;bottom:58px;width:min(365px,35vw);z-index:22;background:rgba(255,248,231,0.96);border:3px solid #96734e;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.35);display:flex;flex-direction:column;overflow:hidden;transition:all 0.2s ease}
+.chatWindow.minimized{top:auto;bottom:58px;height:auto;width:auto}
+.chatHeader{background:linear-gradient(180deg,#4f3a23,#3b2a19);color:#fff6dc;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer}
+.chatHeaderTitle{font-size:12.5px;font-weight:850;letter-spacing:0.4px}
+.chatToggleBtn{padding:3px 8px;font-size:11.5px;border-radius:6px;background:#f6c95e;color:#2b1d0e;border:1.5px solid #fff3c4}
+.chatBody{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:7px;background:#fdf8ec}
+.chatWindow.minimized .chatBody{display:none}
+.chatBubble{background:#fffdf6;border:1.5px solid #d5c19b;border-radius:10px;padding:8px 10px;font-size:12.5px;line-height:1.45}
+.chatBubble.playerPost{border-left:4px solid #3e8a70;background:#f4fbf7}
+.chatBubble.alertPost{border-left:4px solid #c94a38;background:#fff4f2}
+.chatMeta{display:flex;justify-content:space-between;gap:6px;font-size:11px;color:#63726a;margin-bottom:3px;font-weight:700}
+
+/* Thanh diễn biến dưới cùng */
+.bottomBar{position:fixed;bottom:10px;left:12px;right:12px;z-index:25;background:rgba(28,53,52,0.94);color:#fff7e5;border:2px solid #c9a66b;border-radius:12px;padding:9px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:0 6px 18px rgba(0,0,0,0.35)}
+.bottomBar.storm{background:rgba(130,32,32,0.95);border-color:#ffd166}
+
+/* Màn hình chuyển cảnh trình chiếu cho Spectator */
+#specPhaseOverlay{position:fixed;inset:0;z-index:200;background:#132933;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;color:#fff8e7;opacity:0;pointer-events:none;transition:opacity 0.45s ease}
+#specPhaseOverlay.show{opacity:1}
+#specPhaseCanvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;image-rendering:pixelated;z-index:1}
+.specOvContent{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;padding:26px 32px;border-radius:20px;max-width:680px;width:100%;background:radial-gradient(ellipse at center,rgba(16,38,46,0.88) 0%,rgba(16,38,46,0.52) 82%,transparent 100%)}
+.specOvBadge{font-size:clamp(22px,3.8vw,36px);font-weight:900;letter-spacing:2px;text-transform:uppercase;padding:9px 22px;border-radius:16px;background:rgba(245,201,107,0.24);border:2.5px solid #f5c96b;color:#ffe8a3;margin-bottom:12px;text-shadow:0 4px 0 rgba(70,32,12,0.85)}
+.specOvContent h2{font-size:clamp(19px,2.6vw,26px);font-weight:850;letter-spacing:1px;margin:0 0 10px;color:#fff6dc;text-shadow:0 3px 0 #7a3e20}
+.specOvContent p{max-width:600px;font-size:clamp(14.5px,1.9vw,17.5px);line-height:1.6;color:#f3efe2;margin:0 0 16px}
+.specOvTopics{width:100%;max-width:560px;text-align:left;background:rgba(255,248,231,0.95);color:#2f423e;border:2.5px solid #e6c68a;border-radius:14px;padding:12px 18px}
+.specOvTopics ul{margin:0;padding-left:18px;font-size:14px;line-height:1.6;font-weight:600}
+.specThemeP3{animation:specLightning 1.4s ease}
+@keyframes specLightning{0%,100%{filter:brightness(1)}12%{filter:brightness(2.4)}20%{filter:brightness(0.85)}28%{filter:brightness(2.0)}40%{filter:brightness(1)}}
+@keyframes specShake{0%,100%{transform:translate(0,0)}20%{transform:translate(-6px,4px)}40%{transform:translate(6px,-4px)}60%{transform:translate(-4px,-3px)}80%{transform:translate(4px,3px)}}
+body.specShaking{animation:specShake 0.55s ease-in-out 2}
+
+@media(max-width:860px){
+  .communityBoard{left:10px;right:10px;width:auto;max-height:28vh}
+  .chatWindow:not(.minimized){top:auto;left:10px;right:10px;bottom:56px;width:auto;max-height:34vh}
+}
+</style>
+</head>
+<body>
+
+<div id="authScreen">
+  <div class="authBox">
+    <h2>📺 CAMERA KHU PHỐ · TRÌNH CHIẾU ZOOM</h2>
+    <p class="small">Màn hình quan sát toàn cảnh theo thời gian thực (chỉ xem, không can thiệp thao tác chơi). Nhập mã PIN Host để mở:</p>
+    <input type="password" id="specPin" placeholder="Nhập mã PIN Host" style="width:100%;margin-top:8px" onkeydown="if(event.key==='Enter') unlockSpectator()">
+    <div class="errMsg" id="pinErr"></div>
+    <button class="primary" style="width:100%;margin-top:6px" onclick="unlockSpectator()">MỞ MÀN HÌNH TRÌNH CHIẾU</button>
+  </div>
+</div>
+
+<div id="stageWrap" class="hidden">
+  <canvas id="specMap"></canvas>
+
+  <div class="topHud">
+    <div class="hudCard">
+      <strong id="roomCount">🏘️ Khu phố Hội An (0/25)</strong>
+      <span id="phaseBadge" class="phasePill">Chờ bắt đầu</span>
+      <span id="specClock" class="clockBox">--:--</span>
+    </div>
+    <div class="hudCard">
+      <button style="padding:5px 9px;font-size:12px" onclick="resetCam()">🎯 Toàn cảnh</button>
+      <button style="padding:5px 9px;font-size:12px" onclick="zoomBy(-0.15)">🔍-</button>
+      <button style="padding:5px 9px;font-size:12px" onclick="zoomBy(0.15)">🔍+</button>
+      <button style="padding:5px 9px;font-size:12px" onclick="toggleCommunityBoard()">📰 Bảng tin / Tổng kết</button>
+    </div>
+  </div>
+
+  <!-- Bảng tin cộng đồng khu phố (Part II) / Bảng tin tổng kết cuối game (Part IV) -->
+  <section id="communityBoard" class="communityBoard">
+    <div class="boardHeader">
+      <span id="boardHeading" class="boardSectionTitle">📰 Bảng tin cộng đồng khu phố</span>
+      <button style="padding:2px 7px;font-size:11px" onclick="toggleCommunityBoard()">✕</button>
+    </div>
+    <div id="boardList" class="boardScroll">
+      <div class="newsCard small">Chưa có tin tức trên bảng tin cộng đồng.</div>
+    </div>
+  </section>
+
+  <!-- Khung Chat Box nhỏ góc phải (giữ tin nhắn & biến cố Part III, đóng/mở được) -->
+  <aside id="chatWindow" class="chatWindow">
+    <div class="chatHeader" onclick="toggleChatWindow()">
+      <span class="chatHeaderTitle">💬 Tin khu phố & Biến cố Part III</span>
+      <button type="button" id="chatToggleBtn" class="chatToggleBtn" onclick="event.stopPropagation();toggleChatWindow()">Thu gọn</button>
+    </div>
+    <div id="chatBody" class="chatBody">
+      <div class="small">Các tin đăng thương lượng/chia sẻ ở Part III và thông báo biến cố sẽ hiển thị và lưu lại tại đây.</div>
+    </div>
+  </aside>
+
+  <div id="bottomBar" class="bottomBar">
+    <span id="weatherTicker">☀️ Đang theo dõi khu phố Hội An...</span>
+    <span class="small" style="color:#f5c96b;white-space:nowrap">Kéo thả để di chuyển · Cuộn để zoom</span>
+  </div>
+
+  <!-- Màn chuyển cảnh y hệt người chơi cho Spectator -->
+  <div id="specPhaseOverlay">
+    <canvas id="specPhaseCanvas" width="480" height="270"></canvas>
+    <div class="specOvContent">
+      <div class="specOvBadge" id="specOvBadge">T–72 GIỜ</div>
+      <h2 id="specOvTitle">TIÊU ĐỀ PHẦN</h2>
+      <p id="specOvDesc">Mô tả bối cảnh...</p>
+      <div id="specOvTopics" class="specOvTopics hidden"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let room = null;
+let lastTaskId = '';
+let lastSceneSignalAt = 0;
+let specOverlayTimer = null;
+let specPhaseAnimActive = false;
+let specPhaseFrame = 0;
+let currentSpecMood = 'p1';
+
+let boardAutoOpenedForPhase2 = false;
+let boardAutoOpenedForPhase4 = false;
+let persistentChatItems = [];
+let seenPersistentKeys = new Set();
+
+let camX = 0, camY = 0, targetCamX = 0, targetCamY = 0, camZoom = 0.88;
+let isDragging = false, startX = 0, startY = 0, startCamX = 0, startCamY = 0;
+let tick = 0, lightningTimer = 0;
+const artImgs = {};
+
+if (typeof EMBEDDED_ASSETS !== 'undefined') {
+  Object.keys(EMBEDDED_ASSETS).forEach(k => {
+    const im = new Image();
+    im.src = EMBEDDED_ASSETS[k];
+    artImgs[k] = im;
+  });
+}
+
+// Panorama chuyển cảnh giống giao diện người chơi
+const SPEC_HOIAN_HOUSES = [
+  { x: 18, w: 62, h: 48, wall: '#e8b948', roof: '#8c3b2b' },
+  { x: 84, w: 74, h: 56, wall: '#f6d465', roof: '#9e4737' },
+  { x: 164, w: 58, h: 44, wall: '#edd074', roof: '#7d3325' },
+  { x: 235, w: 80, h: 52, wall: '#f2c14e', roof: '#8c3b2b' },
+  { x: 322, w: 66, h: 46, wall: '#f6d465', roof: '#9e4737' },
+  { x: 394, w: 72, h: 54, wall: '#e8b948', roof: '#7d3325' }
+];
+const SPEC_CLOUDS = [
+  { x: 40, y: 28, w: 90, s: 0.12 },
+  { x: 210, y: 18, w: 120, s: 0.08 },
+  { x: 360, y: 36, w: 85, s: 0.15 }
+];
+const SPEC_DROPS = Array.from({ length: 110 }, (_, i) => ({
+  x: (i * 37) % 480, y: (i * 53) % 270, len: 5 + (i % 5), spd: 2.5 + (i % 3) * 0.8
+}));
+
+const SPEC_SHARING_TOPICS = [
+  'Theo dõi cảnh báo và thông tin chính thống.',
+  'Chuẩn bị ba lô khẩn cấp.',
+  'Bảo vệ giấy tờ, thuốc men và tài sản thiết yếu.',
+  'Quan tâm đến trẻ em, người cao tuổi và người có nhu cầu đặc biệt.',
+  'Tinh thần phối hợp, hỗ trợ giữa các gia đình.'
+];
+
+const SPEC_PHASE_SCENES = {
+  profile_card: {
+    mood: 'p1', theme: '', badge: 'T–72 GIỜ',
+    title: '🌤️ RÁNG MỠ GÀ KHU PHỐ',
+    desc: 'Chân trời ửng sắc ráng mỡ gà, không khí quanh khu phố bắt đầu có nhiều thay đổi. Các gia đình nhận thẻ phân vai và chuẩn bị trước bão.'
+  },
+  news: {
+    mood: 'p2', theme: '', badge: 'T–48 GIỜ',
+    title: '🌧️ BẢNG TIN CỘNG ĐỒNG',
+    desc: 'Mưa bắt đầu kéo dài, mực nước trên sông dâng lên. Nhiều nguồn tin thật – giả bắt đầu lan truyền trong khu phố.'
+  },
+  break: {
+    mood: 'break', theme: '', badge: 'KHOẢNG LẶNG CHIA SẺ',
+    title: '☕ SHARING SESSION',
+    desc: 'Khoảng nghỉ chia sẻ góc nhìn và kinh nghiệm thực tế của cộng đồng:',
+    topics: SPEC_SHARING_TOPICS
+  },
+  alert: {
+    mood: 'p3', theme: 'specThemeP3', badge: 'BÃO LŨ ĐỔ BỘ',
+    title: '⛈️ NƯỚC SÔNG THU BỒN TRÀN BỜ!',
+    desc: 'Gió giật dữ dội, nước lũ dâng nhanh tràn vào khu dân cư! Mọi sự chuẩn bị và quyết định bắt đầu bộc lộ hệ quả thực tế.',
+    shake: true
+  },
+  ending: {
+    mood: 'p4', theme: '', badge: 'HẬU BÃO LŨ',
+    title: '🌅 NGÀY MAI TRỜI LẠI SÁNG',
+    desc: 'Mưa đã ngớt, nước lũ rút dần trả lại ánh bình minh trên mái ngói phố Hội. Cùng nhìn lại hành trình và tổng kết của cả khu phố.'
+  }
+};
+
+function renderSpecPanorama(ctxP, frame, mood) {
+  ctxP.imageSmoothingEnabled = false;
+  const cfg = {
+    p1:    { skyTop:'#234854', skyMid:'#4b6f75', skyBot:'#e0ab63', sun:true, sunY:112, rainCount:25, waterY:180, lanternsOn:true, cloudAlpha:0.45 },
+    p2:    { skyTop:'#12222b', skyMid:'#223742', skyBot:'#4f5d61', sun:false, sunY:0,  rainCount:75, waterY:172, lanternsOn:true, cloudAlpha:0.80 },
+    break: { skyTop:'#1c1829', skyMid:'#382a3b', skyBot:'#7d5338', sun:false, sunY:0,  rainCount:20, waterY:178, lanternsOn:true, cloudAlpha:0.40 },
+    p3:    { skyTop:'#070d12', skyMid:'#111c24', skyBot:'#25323b', sun:false, sunY:0,  rainCount:110, waterY:148, lanternsOn:false, cloudAlpha:0.94 },
+    p4:    { skyTop:'#2b6777', skyMid:'#68a691', skyBot:'#ffd180', sun:true, sunY:98,  rainCount:0,  waterY:182, lanternsOn:true, cloudAlpha:0.22 }
+  }[mood] || { skyTop:'#234854', skyMid:'#4b6f75', skyBot:'#e0ab63', sun:true, sunY:112, rainCount:25, waterY:180, lanternsOn:true, cloudAlpha:0.45 };
+
+  const sky = ctxP.createLinearGradient(0, 0, 0, 175);
+  sky.addColorStop(0, cfg.skyTop); sky.addColorStop(0.55, cfg.skyMid); sky.addColorStop(1, cfg.skyBot);
+  ctxP.fillStyle = sky; ctxP.fillRect(0, 0, 480, 175);
+
+  if (cfg.sun) {
+    ctxP.fillStyle = 'rgba(255, 232, 163, 0.25)';
+    ctxP.beginPath(); ctxP.arc(355, cfg.sunY, 30, 0, Math.PI * 2); ctxP.fill();
+    ctxP.fillStyle = '#ffe8a3';
+    ctxP.beginPath(); ctxP.arc(355, cfg.sunY, 17, 0, Math.PI * 2); ctxP.fill();
+  }
+
+  ctxP.fillStyle = `rgba(22, 24, 34, ${cfg.cloudAlpha})`;
+  SPEC_CLOUDS.forEach(cl => {
+    cl.x += cl.s * (mood === 'p3' ? 2.6 : 1.1);
+    if (cl.x > 500) cl.x = -cl.w;
+    ctxP.fillRect(Math.floor(cl.x), cl.y, cl.w, 13);
+    ctxP.fillRect(Math.floor(cl.x) + 12, cl.y - 6, cl.w - 24, 9);
+  });
+
+  SPEC_HOIAN_HOUSES.forEach((h, idx) => {
+    const topY = 175 - h.h;
+    ctxP.fillStyle = h.wall; ctxP.fillRect(h.x, topY + 14, h.w, h.h - 14);
+    ctxP.fillStyle = h.roof;
+    ctxP.beginPath(); ctxP.moveTo(h.x - 4, topY + 15); ctxP.lineTo(h.x + h.w / 2, topY); ctxP.lineTo(h.x + h.w + 4, topY + 15); ctxP.closePath(); ctxP.fill();
+
+    const lit = cfg.lanternsOn && (mood === 'break' || mood === 'p4' || idx % 2 === 0);
+    ctxP.fillStyle = lit ? '#ffe58f' : '#2b1e14';
+    ctxP.fillRect(h.x + 12, topY + 24, 10, 12);
+    ctxP.fillRect(h.x + h.w - 22, topY + 24, 10, 12);
+
+    const swing = Math.sin(frame * (mood === 'p3' ? 0.16 : 0.06) + idx) * (mood === 'p3' ? 4 : 2.2);
+    const lx = Math.floor(h.x + h.w / 2 + swing);
+    const ly = topY + 17;
+    ctxP.fillStyle = cfg.lanternsOn ? ((idx % 2 === 0) ? '#ff4d4f' : '#faad14') : '#4a2e1e';
+    ctxP.fillRect(lx - 3, ly, 6, 7);
+    if (cfg.lanternsOn) { ctxP.fillStyle = '#fff1b8'; ctxP.fillRect(lx - 1, ly + 2, 2, 3); }
+  });
+
+  ctxP.fillStyle = '#5c4d3c'; ctxP.fillRect(0, 173, 480, 7);
+
+  const river = ctxP.createLinearGradient(0, cfg.waterY, 0, 270);
+  if (mood === 'p3') { river.addColorStop(0, 'rgba(28, 64, 82, 0.90)'); river.addColorStop(1, '#091820'); }
+  else { river.addColorStop(0, '#1f4e5f'); river.addColorStop(1, '#102933'); }
+  ctxP.fillStyle = river; ctxP.fillRect(0, cfg.waterY, 480, 270 - cfg.waterY);
+
+  ctxP.fillStyle = 'rgba(255, 224, 163, 0.36)'; ctxP.fillRect(0, cfg.waterY, 480, 2);
+
+  if (cfg.lanternsOn) {
+    SPEC_HOIAN_HOUSES.forEach((h, idx) => {
+      const rx = Math.floor(h.x + h.w / 2 + Math.sin(frame * 0.06 + idx) * 3);
+      ctxP.fillStyle = (idx % 2 === 0) ? 'rgba(255, 110, 90, 0.35)' : 'rgba(255, 210, 100, 0.35)';
+      ctxP.fillRect(rx - 4, cfg.waterY + 6, 8, 3); ctxP.fillRect(rx - 2, cfg.waterY + 14, 5, 2);
+    });
+  }
+
+  ctxP.fillStyle = 'rgba(255, 220, 175, 0.22)';
+  for (let w = 0; w < 20; w++) {
+    const wx = ((w * 67 + frame * (mood === 'p3' ? 1.3 : 0.45)) % 500) - 20;
+    const wy = cfg.waterY + 6 + (w * 19) % Math.max(20, 265 - cfg.waterY);
+    ctxP.fillRect(Math.floor(wx), wy, 18 + (w % 12), 2);
+  }
+
+  if (cfg.rainCount > 0) {
+    ctxP.fillStyle = mood === 'p3' ? 'rgba(225, 245, 255, 0.65)' : 'rgba(215, 240, 255, 0.38)';
+    for (let i = 0; i < cfg.rainCount; i++) {
+      const d = SPEC_DROPS[i];
+      d.y += d.spd * (mood === 'p3' ? 1.6 : 1);
+      d.x -= (mood === 'p3' ? 1.6 : 0.5);
+      if (d.y > 270) { d.y = -5; d.x = (i * 41 + frame) % 480; }
+      if (d.x < 0) d.x += 480;
+      ctxP.fillRect(Math.floor(d.x), Math.floor(d.y), mood === 'p3' ? 1.5 : 1, d.len);
+    }
+  }
+}
+
+function runSpecPhaseLoop() {
+  if (!specPhaseAnimActive) return;
+  const pc = $('specPhaseCanvas');
+  if (pc) {
+    specPhaseFrame++;
+    renderSpecPanorama(pc.getContext('2d'), specPhaseFrame, currentSpecMood);
+  }
+  requestAnimationFrame(runSpecPhaseLoop);
+}
+
+function triggerSpecPhaseScene(taskId) {
+  const sc = SPEC_PHASE_SCENES[taskId];
+  if (!sc) return;
+  const ov = $('specPhaseOverlay');
+  ov.className = 'show ' + (sc.theme || '');
+  $('specOvBadge').textContent = sc.badge;
+  $('specOvTitle').textContent = sc.title;
+  $('specOvDesc').textContent = sc.desc;
+
+  const topicsEl = $('specOvTopics');
+  if (sc.topics && sc.topics.length) {
+    topicsEl.innerHTML = `<ul>${sc.topics.map(item => `<li>${esc(item)}</li>`).join('')}</ul>`;
+    topicsEl.classList.remove('hidden');
+  } else {
+    topicsEl.innerHTML = '';
+    topicsEl.classList.add('hidden');
+  }
+
+  currentSpecMood = sc.mood;
+  if (!specPhaseAnimActive) {
+    specPhaseAnimActive = true;
+    requestAnimationFrame(runSpecPhaseLoop);
+  }
+  if (sc.shake) {
+    document.body.classList.add('specShaking');
+    setTimeout(() => document.body.classList.remove('specShaking'), 1200);
+  }
+  if (specOverlayTimer) clearTimeout(specOverlayTimer);
+  const autoHideMs = taskId === 'break' ? 6500 : 4200;
+  specOverlayTimer = setTimeout(() => {
+    ov.classList.remove('show');
+    specPhaseAnimActive = false;
+  }, autoHideMs);
+}
+
+async function unlockSpectator() {
+  const pin = $('specPin').value.trim();
+  if (pin.length < 4) {
+    $('pinErr').textContent = 'Vui lòng nhập mã PIN (tối thiểu 4 ký tự).';
+    return;
+  }
+  const snap = await DB.ref('room').get();
+  if (snap.exists()) {
+    const data = snap.val();
+    if (data.hostPin && data.hostPin !== pin) {
+      $('pinErr').textContent = 'Mã PIN không khớp với phòng hiện tại.';
+      return;
+    }
+  }
+  $('authScreen').classList.add('hidden');
+  $('stageWrap').classList.remove('hidden');
+  resizeCanvas();
+  resetCam();
+
+  DB.ref('room').on('value', s => {
+    room = s.val() || { players: {} };
+    syncPersistentChat(room);
+    renderSpectatorUI();
+  });
+  setInterval(updateClock, 500);
+}
+
+function toggleCommunityBoard() {
+  $('communityBoard').classList.toggle('collapsed');
+}
+
+function toggleChatWindow() {
+  const win = $('chatWindow');
+  const isMin = win.classList.toggle('minimized');
+  $('chatToggleBtn').textContent = isMin ? 'Mở' : 'Thu gọn';
+  if (!isMin) {
+    const body = $('chatBody');
+    body.scrollTop = body.scrollHeight;
+  }
+}
+
+function pushPersistentItem(key, item) {
+  if (seenPersistentKeys.has(key)) {
+    const idx = persistentChatItems.findIndex(x => x.key === key);
+    if (idx >= 0) {
+      persistentChatItems[idx] = { ...persistentChatItems[idx], ...item };
+    }
+    return;
+  }
+  seenPersistentKeys.add(key);
+  persistentChatItems.push({ key, ...item });
+  persistentChatItems.sort((a, b) => (a.at || 0) - (b.at || 0));
+}
+
+function syncPersistentChat(r) {
+  if (!r) return;
+  const prevCount = persistentChatItems.length;
+
+  const evEntries = Object.entries(r.events || {});
+  evEntries.forEach(([eid, ev]) => {
+    if (!ev || !ev.text) return;
+    const isIncident = ev.text.includes('cuốn') || ev.text.includes('nhiễm bẩn') ||
+      ev.text.includes('đứt đường truyền') || ev.text.includes('mất điện') ||
+      ev.text.includes('Nước xiết') || ev.text.includes('cứu trợ') ||
+      ev.text.includes('Cứu trợ') || ev.text.includes('lũ cuốn') ||
+      ev.text.includes('chia cắt') || ev.text.includes('gặp nạn');
+    pushPersistentItem('ev_' + eid, {
+      kind: isIncident ? 'alert' : 'sys',
+      sender: isIncident ? '⚡ Thông báo biến cố' : '📡 Bản tin hệ thống',
+      text: ev.text,
+      at: ev.at || 0,
+      timeLabel: ev.at ? new Date(ev.at).toLocaleTimeString('vi-VN') : ''
+    });
+  });
+
+  const players = Object.values(r.players || {}).filter(p => p && p.status !== 'left');
+  players.forEach(p => {
+    const note = String(p.publicNote || '').trim();
+    if (!note) return;
+    pushPersistentItem('note_' + p.id + '_' + note, {
+      kind: 'player',
+      sender: `🏠 ${p.name || 'Gia đình'}`,
+      text: note,
+      at: p.publicNoteAt || Date.now(),
+      timeLabel: 'Part III'
+    });
+  });
+
+  const body = $('chatBody');
+  if (!body) return;
+
+  if (!persistentChatItems.length) {
+    body.innerHTML = `<div class="small">Chưa có tin đăng Part III hoặc thông báo biến cố nào.</div>`;
+    return;
+  }
+
+  const nearBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 60;
+  body.innerHTML = persistentChatItems.map(m => `
+    <div class="chatBubble ${m.kind === 'player' ? 'playerPost' : (m.kind === 'alert' ? 'alertPost' : '')}">
+      <div class="chatMeta">
+        <span>${esc(m.sender)}</span>
+        <span>${esc(m.timeLabel || '')}</span>
+      </div>
+      <div>${esc(m.text)}</div>
+    </div>
+  `).join('');
+
+  if (persistentChatItems.length > prevCount || nearBottom) {
+    body.scrollTop = body.scrollHeight;
+  }
+}
+
+function updateClock() {
+  if (!room || !room.locked || room.taskIdx < 0 || room.taskIdx >= TASKS.length) {
+    $('specClock').textContent = room?.locked ? 'KẾT THÚC' : 'CHỜ HOST';
+    return;
+  }
+  const rem = room.paused ? (room.remaining || 0) : Math.max(0, (room.deadline || 0) - Date.now());
+  const sec = Math.ceil(rem / 1000);
+  const mm = String(Math.floor(sec / 60)).padStart(2, '0');
+  const ss = String(sec % 60).padStart(2, '0');
+  $('specClock').textContent = `${mm}:${ss}${room.paused ? ' ⏸' : ''}`;
+}
+
+function renderFinalSummaryBoard(r) {
+  const res = typeof calcResultsFromState === 'function' ? calcResultsFromState(r) : null;
+  if (!res) {
+    $('boardList').innerHTML = `<div class="newsCard small">Đang tổng hợp kết quả toàn khu phố...</div>`;
+    return;
+  }
+
+  const transfers = Object.values(r.transfers || {}).filter(x => x && x.status === 'accepted');
+  const playersMap = r.players || {};
+  const heroCounts = {};
+  transfers.forEach(tr => {
+    const giverId = tr.to; // người chuyển đồ/hỗ trợ sang nhà nhận (tr.to) trong luồng giao dịch
+    if (!giverId || !playersMap[giverId]) return;
+    heroCounts[giverId] = (heroCounts[giverId] || 0) + 1;
+  });
+
+  const topHeroes = Object.entries(heroCounts)
+    .map(([pid, cnt]) => ({ name: playersMap[pid]?.name || 'Gia đình', count: cnt }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 3);
+
+  const medals = ['🥇', '🥈', '🥉'];
+  const heroHtml = topHeroes.length
+    ? topHeroes.map((h, i) => `<div>${medals[i] || '🏅'} <b>${esc(h.name)}</b> — ${h.count} lượt chia sẻ</div>`).join('')
+    : `<div class="small">Chưa ghi nhận lượt chia sẻ nào được xác nhận.</div>`;
+
+  const houseRows = res.houses.map(h => `
+    <div class="newsCard">
+      <div class="newsSource">${esc(h.name)} · <span class="small">${esc(h.group)}</span></div>
+      <div>${esc(h.outcomeLabel)}</div>
+    </div>
+  `).join('');
+
+  $('boardList').innerHTML = `
+    <div class="summaryHighlight">
+      <div><b>🏘️ Tổng số nhà bình an trọn vẹn:</b> <b>${res.safeHouses}/${res.totalHouses}</b> hộ</div>
+      <div><b>👥 Thành viên an toàn:</b> <b>${res.survivedMembers}/${res.totalMembers}</b> người</div>
+      <div class="small" style="margin-top:3px">Có tổn thương/sinh hoạt khó: ${res.damagedHouses} hộ · Gặp nạn do lũ: ${res.floodedHouses} hộ</div>
+    </div>
+    <div class="heroBox">
+      <div class="newsSource">🏅 Người hùng khu phố (Top 3)</div>
+      ${heroHtml}
+    </div>
+    <div class="boardSectionTitle" style="margin:8px 0 6px">📋 Tình trạng từng gia đình</div>
+    ${houseRows}
+  `;
+}
+
+function renderSpectatorUI() {
+  if (!room) return;
+  const players = Object.values(room.players || {}).filter(p => p && p.status !== 'left');
+  const t = TASKS[room.taskIdx];
+  const tid = t?.id || '';
+  const phase = t?.phase || 1;
+
+  // Chuyển cảnh đồng bộ theo từng bước hoặc khi Host phát lại màn chuyển cảnh
+  if (tid && tid !== lastTaskId) {
+    lastTaskId = tid;
+    if (SPEC_PHASE_SCENES[tid]) {
+      triggerSpecPhaseScene(tid);
+    }
+  }
+  const sigAt = room.sceneSignal?.at || 0;
+  if (sigAt && sigAt !== lastSceneSignalAt) {
+    lastSceneSignalAt = sigAt;
+    if (room.sceneSignal.taskId && SPEC_PHASE_SCENES[room.sceneSignal.taskId]) {
+      triggerSpecPhaseScene(room.sceneSignal.taskId);
+    }
+  }
+
+  $('roomCount').textContent = `🏘️ Khu phố Hội An (${players.length}/25)`;
+  $('phaseBadge').textContent = t ? `Pha ${t.phase} · ${t.label}` : (room.locked ? 'Đã tổng kết' : 'Đang mở đăng ký');
+
+  const isEndingPhase = phase === 4 || tid === 'ending';
+
+  if (isEndingPhase) {
+    $('boardHeading').textContent = '🏆 Bảng tin tổng kết khu phố';
+    if (!boardAutoOpenedForPhase4) {
+      boardAutoOpenedForPhase4 = true;
+      $('communityBoard').classList.remove('collapsed');
+    }
+    renderFinalSummaryBoard(room);
+  } else {
+    boardAutoOpenedForPhase4 = false;
+    $('boardHeading').textContent = '📰 Bảng tin cộng đồng khu phố';
+    if (phase === 2 && !boardAutoOpenedForPhase2) {
+      boardAutoOpenedForPhase2 = true;
+      $('communityBoard').classList.remove('collapsed');
+    } else if (phase !== 2) {
+      boardAutoOpenedForPhase2 = false;
+    }
+
+    const board = (room.boardIndices || []).map(i => NEWS[i]).filter(Boolean);
+    if (board.length) {
+      $('boardList').innerHTML = board.map((nw, i) => `
+        <div class="newsCard">
+          <div class="newsSource">Tin #${i + 1} · ${esc(nw.source)}</div>
+          <div>${esc(nw.text)}</div>
+        </div>
+      `).join('');
+    } else {
+      const activeNewsIndices = [...new Set(players.map(p => p.news).filter(i => typeof i === 'number' && i >= 0 && NEWS[i]))];
+      if (phase === 2 && activeNewsIndices.length) {
+        $('boardList').innerHTML = activeNewsIndices.map((idx, i) => `
+          <div class="newsCard">
+            <div class="newsSource">Nguồn tin #${i + 1} · ${esc(NEWS[idx].source)}</div>
+            <div>${esc(NEWS[idx].text)}</div>
+          </div>
+        `).join('');
+      } else {
+        $('boardList').innerHTML = `<div class="newsCard small">Chưa có bản tin nào được công bố trên bảng tin khu phố.</div>`;
+      }
+    }
+  }
+
+  const bar = $('bottomBar');
+  bar.classList.toggle('storm', phase === 3);
+  const latestItem = persistentChatItems[persistentChatItems.length - 1];
+  if (latestItem) {
+    $('weatherTicker').textContent = `⚡ ${latestItem.sender}: ${latestItem.text}`;
+  } else if (isEndingPhase) {
+    $('weatherTicker').textContent = '🌅 Trời quang mây tạnh — Bảng tin tổng kết toàn khu phố đã cập nhật.';
+  } else if (phase === 3) {
+    $('weatherTicker').textContent = '⛈️ Bão lũ đang đổ bộ — Mưa lớn, gió giật và mực nước dâng cao trong khu phố.';
+  } else if (phase === 2 && tid !== 'break') {
+    $('weatherTicker').textContent = '🌧️ Mưa kéo dài, bảng tin cộng đồng khu phố đang cập nhật thông tin.';
+  } else {
+    $('weatherTicker').textContent = '🌤️ Ráng mỡ gà — Các gia đình đang làm quen bối cảnh và chuẩn bị trước bão.';
+  }
+}
+
+// Camera kéo thả & zoom giống màn chơi
+const WORLD_W = 1120, WORLD_H = 740;
+const canvas = $('specMap');
+const ctx = canvas.getContext('2d');
+const spots = Array.from({ length: 25 }, (_, i) => ({
+  x: 155 + (i % 5) * 195,
+  y: 135 + Math.floor(i / 5) * 115
+}));
+
+function resizeCanvas() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  clampCam();
+}
+window.addEventListener('resize', resizeCanvas);
+
+function clampCam() {
+  const vw = window.innerWidth / camZoom;
+  const vh = window.innerHeight / camZoom;
+  targetCamX = WORLD_W <= vw ? (WORLD_W - vw) / 2 : Math.max(-120, Math.min(WORLD_W - vw + 120, targetCamX));
+  targetCamY = WORLD_H <= vh ? (WORLD_H - vh) / 2 : Math.max(-120, Math.min(WORLD_H - vh + 120, targetCamY));
+}
+
+function resetCam() {
+  camZoom = Math.max(0.7, Math.min(1.0, window.innerWidth / 1320));
+  const vw = window.innerWidth / camZoom;
+  const vh = window.innerHeight / camZoom;
+  targetCamX = (WORLD_W - vw) / 2;
+  targetCamY = (WORLD_H - vh) / 2;
+  clampCam();
+}
+
+function zoomBy(d) {
+  const vw = window.innerWidth / camZoom;
+  const vh = window.innerHeight / camZoom;
+  const cx = targetCamX + vw / 2;
+  const cy = targetCamY + vh / 2;
+  camZoom = Math.max(0.6, Math.min(1.5, Number((camZoom + d).toFixed(2))));
+  targetCamX = cx - (window.innerWidth / camZoom) / 2;
+  targetCamY = cy - (window.innerHeight / camZoom) / 2;
+  clampCam();
+}
+
+canvas.addEventListener('pointerdown', e => {
+  isDragging = true;
+  startX = e.clientX;
+  startY = e.clientY;
+  startCamX = targetCamX;
+  startCamY = targetCamY;
+  canvas.classList.add('dragging');
+});
+window.addEventListener('pointermove', e => {
+  if (!isDragging) return;
+  targetCamX = startCamX - (e.clientX - startX) / camZoom;
+  targetCamY = startCamY - (e.clientY - startY) / camZoom;
+  clampCam();
+});
+window.addEventListener('pointerup', () => {
+  isDragging = false;
+  canvas.classList.remove('dragging');
+});
+canvas.addEventListener('wheel', e => {
+  e.preventDefault();
+  zoomBy(e.deltaY < 0 ? 0.08 : -0.08);
+}, { passive: false });
+
+function drawLoop() {
+  tick++;
+  camX += (targetCamX - camX) * 0.22;
+  camY += (targetCamY - camY) * 0.22;
+
+  const vw = window.innerWidth, vh = window.innerHeight;
+  ctx.fillStyle = '#2b4a42';
+  ctx.fillRect(0, 0, vw, vh);
+
+  ctx.save();
+  ctx.scale(camZoom, camZoom);
+  ctx.translate(-camX, -camY);
+
+  ctx.fillStyle = '#8eb88d';
+  ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+
+  for (let y = 0; y < WORLD_H; y += 32) {
+    for (let x = 0; x < WORLD_W; x += 32) {
+      const tile = ((y > 320 && y < 365) || (x > 995 && x < 1035)) ? 1 : 0;
+      const im = artImgs['tiles.png'];
+      if (im?.complete && im.naturalWidth) ctx.drawImage(im, tile * 32, 0, 32, 32, x, y, 32, 32);
+    }
+  }
+
+  ctx.fillStyle = '#5c9ca3';
+  ctx.fillRect(1040, 0, 80, WORLD_H);
+  ctx.fillStyle = '#b6a68c';
+  ctx.fillRect(30, 328, 975, 36);
+
+  const t = TASKS[room?.taskIdx];
+  const tid = t?.id || '';
+  const phase = t?.phase || 1;
+  const players = Object.values(room?.players || {}).filter(p => p && p.status !== 'left');
+  const res = phase === 4 && room ? calcResultsFromState(room) : null;
+
+  players.forEach(p => {
+    const s = spots[(p.slot - 1) % 25];
+    const x = s.x, y = s.y;
+    const out = res?.houses.find(h => h.id === p.id)?.outcome;
+
+    let st = 'normal';
+    if (p.status === 'flooded') st = 'flooded';
+    else if (phase === 4 && out === 'damaged') st = 'cracked';
+    else if (phase === 3 && p.prepared === false) st = 'cracked';
+
+    const im = artImgs[`house_${(p.slot - 1) % 12}_${st}.png`];
+    if (im?.complete && im.naturalWidth) ctx.drawImage(im, x - 36, y - 24, 72, 72);
+
+    ctx.fillStyle = '#4d675f';
+    ctx.fillRect(x - 54, y + 46, 108, 21);
+    ctx.fillStyle = '#fff8e7';
+    ctx.font = 'bold 11.5px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(String(p.name || '').slice(0, 15), x, y + 60);
+
+    if (p.publicNote && ['talk2', 'transfer'].includes(tid)) {
+      ctx.fillStyle = 'rgba(255, 250, 232, 0.95)';
+      ctx.fillRect(x - 58, y - 46, 116, 17);
+      ctx.strokeStyle = '#96734e';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(x - 58, y - 46, 116, 17);
+      ctx.fillStyle = '#2c3e38';
+      ctx.font = 'bold 10px Arial';
+      ctx.fillText(String(p.publicNote).slice(0, 18), x, y - 34);
+    }
+
+    ctx.font = '17px Arial';
+    if (p.status === 'flooded') ctx.fillText('🌊', x + 25, y - 18);
+    else if (phase === 4) {
+      if (out === 'safe') ctx.fillText('☀️', x + 23, y - 18);
+      else if (out === 'damaged') ctx.fillText('🩹', x + 23, y - 18);
+    } else if (phase === 3) {
+      if (p.muted) ctx.fillText('📵', x + 23, y - 18);
+      else if (p.sendLocked) ctx.fillText('🚫', x + 23, y - 18);
+      else if (p.prepared === true) ctx.fillText('❤️', x + 21, y - 18);
+    } else if (p.prepared === true) {
+      ctx.fillText('❤️', x + 21, y - 18);
+    }
+  });
+
+  if (phase === 2 && tid !== 'break') {
+    ctx.fillStyle = 'rgba(18, 38, 48, 0.24)';
+    ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+    ctx.fillStyle = 'rgba(209, 236, 248, 0.55)';
+    for (let i = 0; i < 110; i++) ctx.fillRect((i * 197 + tick * 2.5) % WORLD_W, (i * 97 + tick * 6) % WORLD_H, 1.8, 9);
+  }
+
+  if (phase === 3) {
+    ctx.fillStyle = 'rgba(10, 22, 34, 0.52)';
+    ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+
+    const level = ({ alert: 0.18, talk2: 0.28, transfer: 0.38 })[tid] || 0.26;
+    const floodTop = WORLD_H - WORLD_H * level;
+    ctx.fillStyle = 'rgba(36, 98, 130, 0.44)';
+    ctx.fillRect(0, floodTop, WORLD_W, WORLD_H * level);
+    ctx.fillStyle = 'rgba(186, 235, 255, 0.45)';
+    ctx.fillRect(0, floodTop, WORLD_W, 3);
+
+    ctx.strokeStyle = 'rgba(220, 245, 255, 0.72)';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    for (let i = 0; i < 240; i++) {
+      const rx = (i * 173 + tick * 5) % WORLD_W;
+      const ry = (i * 83 + tick * 11) % WORLD_H;
+      ctx.moveTo(rx, ry);
+      ctx.lineTo(rx - 5, ry + 14);
+    }
+    ctx.stroke();
+
+    if (tick % 240 === 0) lightningTimer = 8;
+    if (lightningTimer > 0) {
+      lightningTimer--;
+      ctx.fillStyle = lightningTimer % 2 === 0 ? 'rgba(235, 248, 255, 0.42)' : 'rgba(235, 248, 255, 0.15)';
+      ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+    }
+  }
+
+  if (phase === 4) {
+    ctx.fillStyle = 'rgba(255, 227, 160, 0.18)';
+    ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+  }
+
+  ctx.restore();
+  requestAnimationFrame(drawLoop);
+}
+requestAnimationFrame(drawLoop);
+</script>
+</body>
+</html>
