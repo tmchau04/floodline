@@ -446,6 +446,7 @@ Kéo thả chuột / vuốt để khám phá khu phố · Cuộn để zoom · C
 const STUDIO_TASKS = new Set(['profile_card', 'bag_90s', 'vote_news', 'checklist']);
 
 let mode='join', myId=null, room=null, lastTaskId='', bagSel=new Set(), bagContainer='backpack', bagFilter='all', voteSel=new Set(), selectedRecipient='', seenEvents=new Set(), initialEventsLoaded=false, lastPendingCount=0, modalOpen=true, studioPeekingMap=false;
+let lastSceneSignalAt = 0;
 const $ = id => document.getElementById(id);
 const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(s){ const e=$('toast'); e.textContent=s; e.style.display='block'; setTimeout(()=>e.style.display='none',4200); }
@@ -1205,6 +1206,12 @@ const me = room.players[myId];
 const all = Object.values(room.players || {}).filter(p => p.status !== 'left');
 const t = TASKS[room.taskIdx];
 const tid = t?.id || '';
+  // Lắng nghe khi Host bấm nút "Hiện màn chuyển cảnh"
+  const sigAt = room.sceneSignal?.at || 0;
+  if(sigAt && sigAt !== lastSceneSignalAt){
+    lastSceneSignalAt = sigAt;
+    if(room.sceneSignal.taskId) triggerPhaseScene(room.sceneSignal.taskId);
+  }
 const inStudio = isStudioTask(tid);
 
 $('leaveBtn').disabled = !!room.locked;
