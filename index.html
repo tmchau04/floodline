@@ -1469,8 +1469,8 @@ html = `<p>Đọc kỹ thẻ phân vai của <b>${esc(me.name)}</b> trước khi
 const w = BAG_ITEMS.reduce((s,it)=>s+(bagSel.has(it[0])?it[3]:0),0);
 const filtered = BAG_ITEMS.filter(it => bagFilter === 'all' || it[4] === bagFilter);
 const roleSubtitle = cleanRoleSubtitle(me.profile?.title);
-html = stageCountdownHtml('Thời gian chọn ba lô khẩn cấp') +
-`<div class="note" style="font-size:13.5px"><b>🎭 ${esc(me.name)} (${esc(roleSubtitle)}):</b> ${esc(me.profile?.membersText)}. Hãy tự suy luận từ câu chuyện gia đình để chọn đồ thiết yếu nhất!</div>
+html = stageCountdownHtml() +
+`<div class="note" style="font-size:13.5px"><b> ${esc(me.name)} (${esc(roleSubtitle)}):</b> ${esc(me.profile?.membersText)}.</div>
    <div class="row">
      <button class="${bagContainer==='backpack'?'primary':''}" onclick="bagContainer='backpack';renderGame()">🎒 Balo vải<br><span style="font-size:11px;font-weight:400"></span></button>
      <button class="${bagContainer==='bucket'?'primary':''}" onclick="bagContainer='bucket';renderGame()">🪣 Xô nhựa có nắp<br><span style="font-size:11px;font-weight:400"></span></button>
@@ -1478,7 +1478,7 @@ html = stageCountdownHtml('Thời gian chọn ba lô khẩn cấp') +
    <div style="margin-top:10px;display:flex;justify-content:space-between"><b>Đã chọn: ${bagSel.size}/12 món</b><b>Trọng lượng: ${(w/10).toFixed(1)}/5.0 kg</b></div>
    <div class="bar"><div class="fill" style="width:${Math.min(100,Math.max(bagSel.size/12,w/50)*100)}%"></div></div>
    <div class="bagGrid">${filtered.map(([bid,em,nm,bw,_,hint])=>`<button class="bagItem ${bagSel.has(bid)?'sel':''}" onclick="toggleBag('${bid}')"><span style="font-size:22px">${em}</span><b>${nm}</b><span class="small">${hint}</span><span><b>${(bw/10).toFixed(1)}kg</b> ${bagSel.has(bid)?'✅':''}</span></button>`).join('')}</div>
-   <button class="primary" style="width:100%;padding:12px" onclick="saveBag()">${me.bag ? '✅ ĐÃ CHỐT BA LÔ (Bấm để cập nhật lại)' : '🎒 CHỐT BA LÔ KHẨN CẤP'}</button>`;
+   <button class="primary" style="width:100%;padding:12px" onclick="saveBag()">${me.bag ? '✅ ĐÃ CHỐT BA LÔ (Bấm để cập nhật lại)' : '🎒 CHỐT BA LÔ'}</button>`;
 } else if(t.id === 'news' || t.id === 'talk1'){
 const nw = NEWS[me.news];
 html = `<div class="roleTicket">
@@ -1486,20 +1486,20 @@ html = `<div class="roleTicket">
      <div style="font-weight:700;margin:4px 0">${esc(nw?.source)}</div>
      <div class="storyText">“${esc(nw?.text)}”</div>
    </div>
-   <div class="card">${t.id==='news' ? '⏳ Hãy đọc kỹ mẩu tin này. Chút nữa mic toàn khu phố sẽ mở để mọi người đối chiếu tin tức với nhau.' : '📻 <b>ĐANG MỞ MIC THẢO LUẬN:</b> Hãy chia sẻ ngắn gọn nội dung tin nhà bạn đang có và lắng nghe hàng xóm để nhận diện tin đồn!'}</div>`;
+   <div class="card">${t.id==='news' ? '⏳ Hãy đọc kỹ mẩu tin này! Thuyết phục cả khu phố tin bạn và đưa mẩu tin của bạn xuất hiện trên Top 3 Bảng tin cộng đồng' : '📻 <b>MỞ MIC THẢO LUẬN ZOOM:</b> Cả khu phố bắt đầu xôn xao về các mẩu tin!'}</div>`;
 } else if(t.id === 'vote_news'){
 const inPlay = [...new Set(all.map(p=>p.news).filter(i=>i>=0))];
 html = stageCountdownHtml('Thời gian bình chọn tin tức') +
-`<p>Chọn tối đa <b>3 mẩu tin</b> đáng tin cậy nhất đưa lên Bảng tin cộng đồng (${voteSel.size}/3):</p>` +
+`<p>Chọn tối đa <b>3 mẩu tin</b> đáng tin nhất đưa lên Bảng tin cộng đồng (${voteSel.size}/3):</p>` +
 inPlay.map(idx => `<button class="voteCard ${voteSel.has(idx)?'sel':''}" onclick="toggleVote(${idx})"><b>${voteSel.has(idx)?'✅ ':'⬜ '}${esc(NEWS[idx].source)}</b><div class="small" style="margin-top:4px;color:#354c48;font-size:13.5px">${esc(NEWS[idx].text)}</div></button>`).join('') +
-`<button class="primary" style="width:100%;padding:12px;margin-top:8px" onclick="saveVotes()">${(me.votes||[]).length ? '✅ ĐÃ GỬI PHIẾU (Bấm để sửa)' : '🗳️ GỬI PHIẾU BÌNH CHỌN'}</button>`;
+`<button class="primary" style="width:100%;padding:12px;margin-top:8px" onclick="saveVotes()">${(me.votes||[]).length ? '✅ Đã gửi phiếu' : '🗳️ Gửi phiếu bình chọn'}</button>`;
 } else if(t.id === 'news_after_vote'){
     const isRead = Boolean(me.readNoticeAfterVote || noticeReadLocal);
     const board = (room.boardIndices || []).map(i => NEWS[i]).filter(Boolean);
     html = `<div class="card" style="background:#fffdf5;border:2px solid #cfa96e">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px">
-        <span class="tag">📢 BẢNG TIN THÔNG BÁO CỘNG ĐỒNG</span>
-        <span class="small" style="font-weight:700">${isRead ? '✅ Đã xác nhận đã đọc' : '⏳ Chưa xác nhận'}</span>
+        <span class="tag">📢 THÔNG BÁO BẢNG TIN CỘNG ĐỒNG</span>
+        <span class="small" style="font-weight:700">${isRead ? '✅ Xác nhận đã đọc' : '⏳ Chưa xác nhận'}</span>
       </div>
       <p style="margin:6px 0 10px">Sau khi bình chọn, dưới đây là bảng tin thông báo tổng hợp để <b>${esc(me.name)}</b> nắm thông tin trước khi đưa ra lựa chọn:</p>
       ${board.length
@@ -1507,7 +1507,7 @@ inPlay.map(idx => `<button class="voteCard ${voteSel.has(idx)?'sel':''}" onclick
         : `<div class="board">Chưa có tin nào được đưa lên bảng tin.</div>`}
       <div class="note" style="margin-top:10px">
         <button class="primary" style="width:100%;padding:12px" onclick="markNoticeAfterVoteRead()">
-          ${isRead ? '✅ ĐÃ ĐỌC BẢNG TIN (Đã ghi nhận)' : '✅ ĐÃ ĐỌC BẢNG TIN'}
+          ${isRead ? '✅ Xác nhận đã đọc' : '✅  Đã đọc bảng tin'}
         </button>
       </div>
     </div>`;
@@ -1517,10 +1517,10 @@ inPlay.map(idx => `<button class="voteCard ${voteSel.has(idx)?'sel':''}" onclick
       ? 'Chủ động chuẩn bị ứng phó trước và sẵn sàng sơ tán'
       : (me.prepared === false ? 'Bình tĩnh chờ đợi thêm những thông tin chính xác hơn' : null);
 
-    html = (typeof stageCountdownHtml === 'function' ? stageCountdownHtml('Thời gian đưa ra lựa chọn') : '') +
+    html = (typeof stageCountdownHtml === 'function' ? stageCountdownHtml('Thời gian') : '') +
     `<div class="card">
       <h3>🧭 Lựa chọn của ${esc(me.name)}</h3>
-      <p class="small" style="margin:4px 0 12px">Dựa trên bảng tin cộng đồng và hoàn cảnh gia đình, bạn chọn phương án nào?</p>
+      <p class="small" style="margin:4px 0 12px">Dựa trên bảng tin cộng đồng và hoàn cảnh gia đình, bạn quyết định:</p>
       <div class="row" style="flex-direction:column;gap:10px">
         <button class="${me.prepared===true?'primary':''}" style="width:100%;text-align:left;padding:12px 14px" onclick="DB.ref('room/players/${myId}/prepared').set(true)">
           Chủ động chuẩn bị ứng phó trước và sẵn sàng sơ tán
@@ -1531,19 +1531,19 @@ inPlay.map(idx => `<button class="voteCard ${voteSel.has(idx)?'sel':''}" onclick
       </div>
       ${chosenText
         ? `<div class="note" style="margin-top:12px">✓ Đã ghi nhận: <b>${esc(chosenText)}</b></div>`
-        : `<div class="small" style="margin-top:10px">Hãy chọn một phương án ở trên.</div>`}
+        : `<div class="small" style="margin-top:10px">Hãy chọn một trong hai quyết định trên.</div>`}
     </div>`;  
 } else if(t.id === 'checklist'){
     const timerHtml = typeof stageCountdownHtml === 'function'
-      ? stageCountdownHtml('Thời gian sắp xếp thứ tự ưu tiên chuẩn bị')
+      ? stageCountdownHtml('Thời gian')
       : '';
     if (me.prepared === true) {
       const order = ensurePrioOrder(me);
       const roleSubtitle = cleanRoleSubtitle(me.profile?.title);
       html = timerHtml +
       `<div class="prioHintCard">
-        <b>🎭 Hoàn cảnh của ${esc(me.name)} (${esc(roleSubtitle)}):</b> ${esc(me.profile?.membersText || '')}<br>
-        <span class="small" style="color:#4a5e59">Kéo thả các mục hoặc bấm ▲/▼ để xếp từ <b>#1 (ưu tiên nhất)</b> đến <b>#${order.length}</b> theo kiến thức, trải nghiệm và hoàn cảnh gia đình bạn. Không có đáp án đúng/sai.</span>
+        <b> Hoàn cảnh của ${esc(me.name)} (${esc(roleSubtitle)}):</b> ${esc(me.profile?.membersText || '')}<br>
+        <span class="small" style="color:#4a5e59">Kéo thả các mục hoặc bấm ▲/▼ để xếp từ <b>#1 (ưu tiên nhất)</b> đến <b>#${order.length}</b> theo kiến thức, trải nghiệm và thẻ vai bạn nhận được.</span>
       </div>
       <div id="prioListBox" class="prioList">` +
       order.map((itemIdx, pos) => `
@@ -1560,8 +1560,8 @@ inPlay.map(idx => `<button class="voteCard ${voteSel.has(idx)?'sel':''}" onclick
       `</div>
       <button class="primary" style="width:100%;padding:12px" onclick="savePriorityOrder()">
         ${(Array.isArray(me.priorityOrder) && me.priorityOrder.length === CHECKLIST.length && prioSaved)
-          ? '✅ ĐÃ LƯU THỨ TỰ ƯU TIÊN (Bấm để cập nhật lại)'
-          : '📌 CHỐT THỨ TỰ ƯU TIÊN CHUẨN BỊ'}
+          ? '✅ ĐÃ LƯU (Bấm để cập nhật lại)'
+          : '📌 CHỐT THỨ TỰ ƯU TIÊN'}
       </button>`;
     } else {
       html = timerHtml +
@@ -2158,6 +2158,7 @@ if(savedId){ myId = savedId; $('loginWrap').classList.add('hidden'); $('hudLayer
 </script>
 </body>
 </html>
+
 
 
 
