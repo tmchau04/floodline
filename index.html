@@ -237,6 +237,30 @@ padding: 4px 12px; border-radius: 99px; background: rgba(0,0,0,0.35); border: 1p
 .bagItem{border:2px solid #cbb792;border-radius:10px;padding:8px;background:#fffdf6;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px}.bagItem.sel{background:#d9ebd0;border-color:#3a7d66}
 .bar{height:11px;background:#d8decb;border-radius:99px;overflow:hidden;margin:6px 0}.fill{height:100%;background:#448e75}
 .voteCard{border:2px solid #cbb792;border-radius:10px;padding:10px;margin:8px 0;background:#fffdf6;cursor:pointer;text-align:left;width:100%}.voteCard.sel{background:#d9ebd0;border-color:#3a7d66}
+/* Đồng hồ đếm ngược hiển thị ngay đầu các bước chơi */
+.stageTimerRow{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  background:#234747;
+  color:#fff6dc;
+  border:2px solid #96734e;
+  border-radius:10px;
+  padding:8px 12px;
+  margin-bottom:10px;
+  font-size:13.5px;
+  font-weight:750;
+}
+.stageTimerNum{
+  background:#f6c95e;
+  color:#2b1d0e;
+  padding:3px 10px;
+  border-radius:7px;
+  font-weight:900;
+  font-size:14px;
+  letter-spacing:0.5px;
+}
 .invGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0}.invBox{background:#fffdf5;border:1px solid #cbb792;border-radius:8px;padding:7px;font-size:13px}
 .incomingAlert{background:#fff3cd;border:2px solid #e0a800;border-radius:10px;padding:10px;margin-bottom:10px;animation:pulseBorder 1.5s infinite}
 @keyframes pulseBorder{0%,100%{box-shadow:0 0 0 0 rgba(224,168,0,0.4)}50%{box-shadow:0 0 0 6px rgba(224,168,0,0)}}
@@ -1149,15 +1173,34 @@ $('taskModalBackdrop').classList.add('hidden');
 $('loginWrap').classList.remove('hidden');
 }
 
-setInterval(() => {
-if(!room || !room.locked || room.taskIdx < 0 || room.taskIdx >= TASKS.length){
-$('clock').textContent = room?.locked ? 'ĐÃ KẾT THÚC' : 'CHỜ HOST';
-return;
+ function getCountdownText() {
+  if (!room || !room.locked || room.taskIdx < 0 || room.taskIdx >= TASKS.length) {
+    return room?.locked ? 'ĐÃ KẾT THÚC' : 'CHỜ HOST';
+  }
+  const rem = room.paused ? (room.remaining || 0) : Math.max(0, (room.deadline || 0) - Date.now());
+  const sec = Math.ceil(rem / 1000);
+  const mm = String(Math.floor(sec / 60)).padStart(2, '0');
+  const ss = String(sec % 60).padStart(2, '0');
+  return `${mm}:${ss}${room.paused ? ' ⏸' : ''}`;
 }
-const rem = room.paused ? room.remaining : Math.max(0, room.deadline - Date.now());
-const sec = Math.ceil(rem / 1000);
-const t = TASKS[room.taskIdx];
-$('clock').textContent = `P${t.phase} · ${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}${room.paused?' ⏸':''}`;
+
+function stageCountdownHtml(labelText) {
+  return `<div class="stageTimerRow">
+    <span>⏱️ ${esc(labelText)}</span>
+    <span class="stageTimerNum" data-stage-countdown="1">${esc(getCountdownText())}</span>
+  </div>`;
+} 
+setInterval(() => {
+  if(!room || !room.locked || room.taskIdx < 0 || room.taskIdx >= TASKS.length){
+    $('clock').textContent = room?.locked ? 'ĐÃ KẾT THÚC' : 'CHỜ HOST';
+  } else {
+    const t = TASKS[room.taskIdx];
+    $('clock').textContent = `P${t.phase} · ${getCountdownText()}`;
+  }
+  const cdText = getCountdownText();
+  document.querySelectorAll('[data-stage-countdown="1"]').forEach(el => {
+    el.textContent = cdText;
+  });
 }, 500);
 
 function renderGame(){
@@ -1260,7 +1303,8 @@ html = `<p>Đọc kỹ thẻ phân vai của <b>${esc(me.name)}</b> trước khi
 const w = BAG_ITEMS.reduce((s,it)=>s+(bagSel.has(it[0])?it[3]:0),0);
 const filtered = BAG_ITEMS.filter(it => bagFilter === 'all' || it[4] === bagFilter);
 const roleSubtitle = cleanRoleSubtitle(me.profile?.title);
-html = `<div class="note" style="font-size:13.5px"><b>🎭 ${esc(me.name)} (${esc(roleSubtitle)}):</b> ${esc(me.profile?.membersText)}. Hãy tự suy luận từ câu chuyện gia đình để chọn đồ thiết yếu nhất!</div>
+html = stageCountdownHtml('Thời gian chọn ba lô khẩn cấp') +
+`<div class="note" style="font-size:13.5px"><b>🎭 ${esc(me.name)} (${esc(roleSubtitle)}):</b> ${esc(me.profile?.membersText)}. Hãy tự suy luận từ câu chuyện gia đình để chọn đồ thiết yếu nhất!</div>
    <div class="row">
      <button class="${bagContainer==='backpack'?'primary':''}" onclick="bagContainer='backpack';renderGame()">🎒 Balo vải<br><span style="font-size:11px;font-weight:400">(Gọn nhẹ, dễ ngấm nước)</span></button>
      <button class="${bagContainer==='bucket'?'primary':''}" onclick="bagContainer='bucket';renderGame()">🪣 Xô nhựa có nắp<br><span style="font-size:11px;font-weight:400">(Chống thấm bảo vệ thuốc/sữa)</span></button>
@@ -1285,12 +1329,14 @@ html = `<div class="roleTicket">
    <div class="card">${t.id==='news' ? '⏳ Hãy đọc kỹ mẩu tin này. Chút nữa mic toàn khu phố sẽ mở để mọi người đối chiếu tin tức với nhau.' : '📻 <b>ĐANG MỞ MIC THẢO LUẬN:</b> Hãy chia sẻ ngắn gọn nội dung tin nhà bạn đang có và lắng nghe hàng xóm để nhận diện tin đồn!'}</div>`;
 } else if(t.id === 'vote_news'){
 const inPlay = [...new Set(all.map(p=>p.news).filter(i=>i>=0))];
-html = `<p>Chọn tối đa <b>3 mẩu tin</b> đáng tin cậy nhất đưa lên Bảng tin cộng đồng (${voteSel.size}/3):</p>` +
+html = stageCountdownHtml('Thời gian bình chọn tin tức') +
+`<p>Chọn tối đa <b>3 mẩu tin</b> đáng tin cậy nhất đưa lên Bảng tin cộng đồng (${voteSel.size}/3):</p>` +
 inPlay.map(idx => `<button class="voteCard ${voteSel.has(idx)?'sel':''}" onclick="toggleVote(${idx})"><b>${voteSel.has(idx)?'✅ ':'⬜ '}${esc(NEWS[idx].source)}</b><div class="small" style="margin-top:4px;color:#354c48;font-size:13.5px">${esc(NEWS[idx].text)}</div></button>`).join('') +
 `<button class="primary" style="width:100%;padding:12px;margin-top:8px" onclick="saveVotes()">${(me.votes||[]).length ? '✅ ĐÃ GỬI PHIẾU (Bấm để sửa)' : '🗳️ GỬI PHIẾU BÌNH CHỌN'}</button>`;
 } else if(t.id === 'board_decide'){
 const board = (room.boardIndices||[]).map(i => NEWS[i]?.text).filter(Boolean);
-html = `<p>📢 <b>BẢNG TIN CỘNG ĐỒNG (Top 5 bình chọn):</b></p>` +
+html = stageCountdownHtml('Thời gian đưa ra lựa chọn') +
+`<p>📢 <b>BẢNG TIN CỘNG ĐỒNG (Top 5 bình chọn):</b></p>` +
 board.map((x,i)=>`<div class="board"><b>Tin #${i+1}:</b> ${esc(x)}</div>`).join('') +
 `<div class="card"><b>Quyết định của ${esc(me.name)} trước giờ bão:</b>
      <div class="small" style="margin-top:4px">• <b>Chọn A (Chuẩn bị):</b> Khẩn trương kê cao đồ đạc, chằng chống nhà cửa, sẵn sàng sơ tán sớm.<br>• <b>Chọn B (Chờ đợi):</b> Giữ nguyên nhịp sinh hoạt hiện tại, chờ theo dõi thêm diễn biến thực tế.</div>
@@ -1298,7 +1344,8 @@ board.map((x,i)=>`<div class="board"><b>Tin #${i+1}:</b> ${esc(x)}</div>`).join(
    <div class="row"><button class="${me.prepared===true?'primary':''}" onclick="DB.ref('room/players/${myId}/prepared').set(true)">A · 🛡️ Tiếp tục chuẩn bị</button><button class="${me.prepared===false?'primary':''}" onclick="DB.ref('room/players/${myId}/prepared').set(false)">B · ⏳ Tạm thời chờ đợi</button></div>`;
 } else if(t.id === 'checklist'){
 const checks = Array.isArray(me.checks) ? me.checks : [];
-html = me.prepared === true ? `<p>❤️ Rà soát danh mục an toàn trước bão của <b>${esc(me.name)}</b> (${checks.length}/${CHECKLIST.length}):</p>` + CHECKLIST.map((x,i)=>`<label class="card"><input type="checkbox" style="width:auto" ${checks.includes(i)?'checked':''} onchange="toggleCheck(${i})"> ${esc(x)}</label>`).join('') : `<div class="card">⏳ <b>${esc(me.name)}</b> đã chọn phương án B (Tạm thời chờ đợi thêm thông tin).</div>`;
+html = stageCountdownHtml('Thời gian sắp xếp thứ tự ưu tiên chuẩn bị') +
+(me.prepared === true ? `<p>❤️ Rà soát danh mục an toàn trước bão của <b>${esc(me.name)}</b> (${checks.length}/${CHECKLIST.length}):</p>` + CHECKLIST.map((x,i)=>`<label class="card"><input type="checkbox" style="width:auto" ${checks.includes(i)?'checked':''} onchange="toggleCheck(${i})"> ${esc(x)}</label>`).join('') : `<div class="card">⏳ <b>${esc(me.name)}</b> đã chọn phương án B (Tạm thời chờ đợi thêm thông tin).</div>`);
 } else if(t.id === 'break'){
 html = `<div class="card">☕ <b>SHARING SESSION</b> · Đang hiển thị trên màn hình chuyển cảnh.</div>`;
 } else if(t.id === 'alert'){
