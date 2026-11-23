@@ -31,77 +31,77 @@ button.danger{background:#b64c4c;color:white}button.warn{background:#e6a856;colo
 </head>
 <body>
 <header>
-<div><h1>🏘️ RÁNG MỠ GÀ: CÓ NHÀ THÌ GIỮ</h1><span class="small" style="color:#cfe0d8">Host Control Dashboard · Bảng điều khiển toàn cục</span></div>
-<div id="roleTabs" class="row hidden" style="max-width:460px">
-<button id="tabGod" class="tabBtn active" onclick="switchRole('god')">⚡ HOST "ÔNG TRỜI" (Vận hành)</button>
-<button id="tabMc" class="tabBtn" onclick="switchRole('mc')">🎙️ HOST MC (Dẫn dắt & Reflection)</button>
-</div>
+  <div><h1>🏘️ RÁNG MỠ GÀ: CÓ NHÀ THÌ GIỮ</h1><span class="small" style="color:#cfe0d8">Host Control Dashboard · Bảng điều khiển toàn cục</span></div>
+  <div id="roleTabs" class="row hidden" style="max-width:460px">
+    <button id="tabGod" class="tabBtn active" onclick="switchRole('god')">⚡ HOST "ÔNG TRỜI" (Vận hành)</button>
+    <button id="tabMc" class="tabBtn" onclick="switchRole('mc')">🎙️ HOST MC (Dẫn dắt & Reflection)</button>
+  </div>
 </header>
 
 <main>
 <section class="panel" id="auth" style="max-width:420px;margin:40px auto">
-<h2>🔐 Đăng nhập Điều phối viên</h2>
-<p class="small">Nhập mã PIN Host (tối thiểu 4 ký tự, lần đầu đăng nhập sẽ tự lưu làm PIN chính):</p>
-<input type="password" id="hostpin" placeholder="Ví dụ: HOIAN2026" style="margin:8px 0">
-<button class="primary" style="width:100%" onclick="login()">VÀO DASHBOARD HOST</button>
+  <h2>🔐 Đăng nhập Điều phối viên</h2>
+  <p class="small">Nhập mã PIN Host (tối thiểu 4 ký tự, lần đầu đăng nhập sẽ tự lưu làm PIN chính):</p>
+  <input type="password" id="hostpin" placeholder="Ví dụ: HOIAN2026" style="margin:8px 0">
+  <button class="primary" style="width:100%" onclick="login()">VÀO DASHBOARD HOST</button>
 </section>
 
 <section id="dashboard" class="hidden">
-<div class="panel">
-<div class="row">
-<div style="flex:2">
-<h3 id="taskTitle">Đang mở đăng ký...</h3>
-<span id="clock" style="font-size:20px;font-weight:800;color:#2c6655">--:--</span>
-<span id="progressBadge" class="badge" style="margin-left:8px">0/0 hoàn thành</span>
-</div>
-<div class="row" style="flex:3">
-<button id="startBtn" class="primary" onclick="lockAndStart()">🚀 Chốt DS & Bắt đầu</button>
-<button onclick="togglePause()">⏸ Tạm dừng / Tiếp</button>
-<button onclick="extendTime(60)">+ 1 phút</button>
-<button class="primary" onclick="nextTask()">Cảnh tiếp theo →</button>
-<button class="danger" onclick="resetRoom()">↻ Reset lượt mới</button>
-</div>
-</div>
-<div id="setupBar" class="row" style="margin-top:10px;border-top:1px dashed #cbb58e;padding-top:8px">
-<label style="max-width:240px">Thời gian chia đồ Part III (phút): <input type="number" id="shareMin" min="2" max="15" value="6" onchange="updateShareMin()"></label>
-<span class="small">Hỗ trợ tối đa 25 gia đình. Thuật toán tự động chia đều 4 nhóm hoàn cảnh dù số lượng người chơi ít hay nhiều.</span>
-</div>
-</div>
+  <div class="panel">
+    <div class="row">
+      <div style="flex:2">
+        <h3 id="taskTitle">Đang mở đăng ký...</h3>
+        <span id="clock" style="font-size:20px;font-weight:800;color:#2c6655">--:--</span>
+        <span id="progressBadge" class="badge" style="margin-left:8px">0/0 hoàn thành</span>
+      </div>
+      <div class="row" style="flex:3">
+        <button id="startBtn" class="primary" onclick="lockAndStart()">🚀 Chốt DS & Bắt đầu</button>
+        <button onclick="togglePause()">⏸ Tạm dừng / Tiếp</button>
+        <button onclick="extendTime(60)">+ 1 phút</button>
+        <button class="primary" onclick="nextTask()">Cảnh tiếp theo →</button>
+        <button class="danger" onclick="resetRoom()">↻ Reset lượt mới</button>
+      </div>
+    </div>
+    <div id="setupBar" class="row" style="margin-top:10px;border-top:1px dashed #cbb58e;padding-top:8px">
+      <label style="max-width:240px">Thời gian chia đồ Part III (phút): <input type="number" id="shareMin" min="2" max="15" value="6" onchange="updateShareMin()"></label>
+      <span class="small">Hỗ trợ tối đa 25 gia đình. Thuật toán tự động chia đều 4 nhóm hoàn cảnh dù số lượng người chơi ít hay nhiều.</span>
+    </div>
+  </div>
 
-<div id="viewGod" class="layout">
-<section class="panel">
-<h2>🗺️ Bản đồ Khu phố & Danh sách Gia đình</h2>
-<canvas class="hostMap" id="hostMap" width="960" height="624"></canvas>
-<div id="routeBlockBox" class="hidden" style="background:#f3ebd3;padding:8px;border-radius:8px;margin-top:8px">
-<b>🚧 Chia cắt tuyến đường trực tiếp:</b>
-<div class="row" style="margin-top:4px">
-<select id="blkA"></select><select id="blkB"></select>
-<button class="warn" onclick="blockRoute()" style="flex:none">Cắt đường</button>
-</div>
-</div>
-<div id="houseList" style="max-height:360px;overflow:auto;margin-top:8px"></div>
-</section>
+  <div id="viewGod" class="layout">
+    <section class="panel">
+      <h2>🗺️ Bản đồ Khu phố & Danh sách Gia đình</h2>
+      <canvas class="hostMap" id="hostMap" width="960" height="624"></canvas>
+      <div id="routeBlockBox" class="hidden" style="background:#f3ebd3;padding:8px;border-radius:8px;margin-top:8px">
+        <b>🚧 Chia cắt tuyến đường trực tiếp:</b>
+        <div class="row" style="margin-top:4px">
+          <select id="blkA"></select><select id="blkB"></select>
+          <button class="warn" onclick="blockRoute()" style="flex:none">Cắt đường</button>
+        </div>
+      </div>
+      <div id="houseList" style="max-height:360px;overflow:auto;margin-top:8px"></div>
+    </section>
 
-<section class="panel">
-<h2>⚡ Hồ sơ Gia đình & Quyền năng "Ông Trời"</h2>
-<div id="inspector">Chọn một ngôi nhà trên bản đồ hoặc danh sách bên trái để xem chi tiết và kích hoạt biến cố.</div>
-</section>
-</div>
+    <section class="panel">
+      <h2>⚡ Hồ sơ Gia đình & Quyền năng "Ông Trời"</h2>
+      <div id="inspector">Chọn một ngôi nhà trên bản đồ hoặc danh sách bên trái để xem chi tiết và kích hoạt biến cố.</div>
+    </section>
+  </div>
 
-<div id="viewMc" class="hidden">
-<div class="layout">
-<section class="panel">
-<h2>🎙️ Kịch bản dẫn dắt cho HOST MC</h2>
-<div class="mcBox" id="mcScriptBox">Đang tải kịch bản cảnh hiện tại...</div>
-<div id="mcBoardPreview"></div>
-<div id="mcReflectionPanel"></div>
-</section>
-<section class="panel">
-<h2>📡 Nhật ký Diễn biến Cộng đồng (Live)</h2>
-<div id="eventFeed" style="max-height:520px;overflow:auto"></div>
-</section>
-</div>
-</div>
+  <div id="viewMc" class="hidden">
+    <div class="layout">
+      <section class="panel">
+        <h2>🎙️ Kịch bản dẫn dắt cho HOST MC</h2>
+        <div class="mcBox" id="mcScriptBox">Đang tải kịch bản cảnh hiện tại...</div>
+        <div id="mcBoardPreview"></div>
+        <div id="mcReflectionPanel"></div>
+      </section>
+      <section class="panel">
+        <h2>📡 Nhật ký Diễn biến Cộng đồng (Live)</h2>
+        <div id="eventFeed" style="max-height:520px;overflow:auto"></div>
+      </section>
+    </div>
+  </div>
 </section>
 </main>
 <div id="message"></div>
@@ -114,272 +114,266 @@ function say(s){ $('message').textContent=s; $('message').style.display='block';
 function cleanRoleSubtitle(rawTitle) { return String(rawTitle || '').replace(/^Hộ\s*\d+\s*·\s*/i, '').trim(); }
 
 function switchRole(r){
-role = r;
-$('tabGod').classList.toggle('active', r==='god');
-$('tabMc').classList.toggle('active', r==='mc');
-$('viewGod').classList.toggle('hidden', r!=='god');
-$('viewMc').classList.toggle('hidden', r!=='mc');
+  role = r;
+  $('tabGod').classList.toggle('active', r==='god');
+  $('tabMc').classList.toggle('active', r==='mc');
+  $('viewGod').classList.toggle('hidden', r!=='god');
+  $('viewMc').classList.toggle('hidden', r!=='mc');
 }
 
 async function login(){
-const pin = $('hostpin').value.trim();
-if(pin.length < 4) return say('Mã PIN tối thiểu 4 ký tự.');
-const snap = await DB.ref('room').get();
-if(!snap.exists()){
-await initDefaultRoom(pin);
-} else {
-const data = snap.val();
-if(data.hostPin && data.hostPin !== pin) return say('❌ Sai mã Host!');
-if(!data.hostPin) await DB.ref('room/hostPin').set(pin);
-}
-loadArt();
-$('auth').classList.add('hidden');
-$('dashboard').classList.remove('hidden');
-$('roleTabs').classList.remove('hidden');
-listenRoom();
+  const pin = $('hostpin').value.trim();
+  if(pin.length < 4) return say('Mã PIN tối thiểu 4 ký tự.');
+  const snap = await DB.ref('room').get();
+  if(!snap.exists()){
+    await initDefaultRoom(pin);
+  } else {
+    const data = snap.val();
+    if(data.hostPin && data.hostPin !== pin) return say('❌ Sai mã Host!');
+    if(!data.hostPin) await DB.ref('room/hostPin').set(pin);
+  }
+  loadArt();
+  $('auth').classList.add('hidden');
+  $('dashboard').classList.remove('hidden');
+  $('roleTabs').classList.remove('hidden');
+  listenRoom();
 }
 
 async function initDefaultRoom(pin){
-await DB.ref('room').set({
-hostPin: pin, locked: false, taskIdx: -1, deadline: 0, remaining: 0, paused: false,
-shareSec: 360, players: {}, transfers: {}, blockedPairs: [], boardIndices: [], events: {}, consequencesApplied: false
-});
+  await DB.ref('room').set({
+    hostPin: pin, locked: false, taskIdx: -1, deadline: 0, remaining: 0, paused: false,
+    shareSec: 360, players: {}, transfers: {}, blockedPairs: [], boardIndices: [], events: {}, consequencesApplied: false
+  });
 }
 
 function listenRoom(){
-DB.ref('room').on('value', snap => {
-room = snap.val() || {};
-renderHost();
-});
-if(timerLoop) clearInterval(timerLoop);
-timerLoop = setInterval(tickClock, 500);
+  DB.ref('room').on('value', snap => {
+    room = snap.val() || {};
+    renderHost();
+  });
+  if(timerLoop) clearInterval(timerLoop);
+  timerLoop = setInterval(tickClock, 500);
 }
 
 function tickClock(){
-if(!room || !room.locked || room.taskIdx < 0 || room.taskIdx >= TASKS.length){
-$('clock').textContent = room?.locked ? 'ĐÃ KẾT THÚC' : 'CHỜ BẮT ĐẦU';
-return;
-}
-const rem = room.paused ? room.remaining : Math.max(0, room.deadline - Date.now());
-const sec = Math.ceil(rem / 1000);
-$('clock').textContent = `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}${room.paused?' ⏸':''}`;
-if(!room.paused && rem === 0) nextTask(true);
+  if(!room || !room.locked || room.taskIdx < 0 || room.taskIdx >= TASKS.length){
+    $('clock').textContent = room?.locked ? 'ĐÃ KẾT THÚC' : 'CHỜ BẮT ĐẦU';
+    return;
+  }
+  const rem = room.paused ? room.remaining : Math.max(0, room.deadline - Date.now());
+  const sec = Math.ceil(rem / 1000);
+  $('clock').textContent = `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}${room.paused?' ⏸':''}`;
+  if(!room.paused && rem === 0) nextTask(true);
 }
 
 async function updateShareMin(){
-const m = Math.max(2, Math.min(15, Number($('shareMin').value)||6));
-await DB.ref('room/shareSec').set(m*60);
-say('Đã lưu thời gian chia đồ: ' + m + ' phút');
+  const m = Math.max(2, Math.min(15, Number($('shareMin').value)||6));
+  await DB.ref('room/shareSec').set(m*60);
+  say('Đã lưu thời gian chia đồ: ' + m + ' phút');
 }
 
 async function lockAndStart(){
-const players = Object.values(room.players || {}).filter(p => p.status === 'active').sort((a,b)=>a.slot-b.slot);
-if(players.length < 1) return say('Chưa có người chơi nào đăng ký!');
-if(!confirm(`Chốt danh sách ${players.length} gia đình và bắt đầu?`)) return;
+  const players = Object.values(room.players || {}).filter(p => p.status === 'active').sort((a,b)=>a.slot-b.slot);
+  if(players.length < 1) return say('Chưa có người chơi nào đăng ký!');
+  if(!confirm(`Chốt danh sách ${players.length} gia đình và bắt đầu?`)) return;
 
-const profs = assignProfilesStratified(players.length);
-const news = assignNewsViral(players.length);
-const updates = {};
-players.forEach((p, i) => {
-updates[`players/${p.id}/profile`] = profs[i];
-updates[`players/${p.id}/reqFood`] = profs[i].reqFood;
-updates[`players/${p.id}/reqWater`] = profs[i].reqWater;
-updates[`players/${p.id}/news`] = news[i];
-});
-updates['locked'] = true;
-updates['taskIdx'] = 0;
-updates['deadline'] = Date.now() + TASKS[0].sec * 1000;
-updates['remaining'] = TASKS[0].sec * 1000;
-updates['paused'] = false;
-await DB.ref('room').update(updates);
-logEvent('🚀 Khu phố Hội An chính thức bắt đầu mô phỏng với ' + players.length + ' gia đình!');
+  const profs = assignProfilesStratified(players.length);
+  const news = assignNewsViral(players.length);
+  const updates = {};
+  players.forEach((p, i) => {
+    updates[`players/${p.id}/profile`] = profs[i];
+    updates[`players/${p.id}/reqFood`] = profs[i].reqFood;
+    updates[`players/${p.id}/reqWater`] = profs[i].reqWater;
+    updates[`players/${p.id}/news`] = news[i];
+  });
+  updates['locked'] = true;
+  updates['taskIdx'] = 0;
+  updates['deadline'] = Date.now() + TASKS[0].sec * 1000;
+  updates['remaining'] = TASKS[0].sec * 1000;
+  updates['paused'] = false;
+  await DB.ref('room').update(updates);
+  logEvent('🚀 Khu phố Hội An chính thức bắt đầu mô phỏng với ' + players.length + ' gia đình!');
 }
 
 async function togglePause(){
-if(!room.locked || room.taskIdx < 0) return;
-if(!room.paused){
-await DB.ref('room').update({ paused: true, remaining: Math.max(0, room.deadline - Date.now()) });
-} else {
-await DB.ref('room').update({ paused: false, deadline: Date.now() + (room.remaining||0) });
-}
+  if(!room.locked || room.taskIdx < 0) return;
+  if(!room.paused){
+    await DB.ref('room').update({ paused: true, remaining: Math.max(0, room.deadline - Date.now()) });
+  } else {
+    await DB.ref('room').update({ paused: false, deadline: Date.now() + (room.remaining||0) });
+  }
 }
 
 async function extendTime(sec){
-if(!room.locked || room.taskIdx < 0) return;
-if(room.paused) await DB.ref('room/remaining').set((room.remaining||0) + sec*1000);
-else await DB.ref('room/deadline').set((room.deadline||Date.now()) + sec*1000);
-say('Đã cộng thêm 1 phút!');
+  if(!room.locked || room.taskIdx < 0) return;
+  if(room.paused) await DB.ref('room/remaining').set((room.remaining||0) + sec*1000);
+  else await DB.ref('room/deadline').set((room.deadline||Date.now()) + sec*1000);
+  say('Đã cộng thêm 1 phút!');
 }
 
 let advancing = false;
 async function nextTask(auto=false){
-if(advancing || !room.locked) return;
-if(!auto && !confirm('Chuyển sang cảnh tiếp theo?')) return;
-advancing = true;
-try {
-const cur = TASKS[room.taskIdx];
-const updates = {};
-const active = Object.values(room.players || {}).filter(p => p.status === 'active');
+  if(advancing || !room.locked) return;
+  if(!auto && !confirm('Chuyển sang cảnh tiếp theo?')) return;
+  advancing = true;
+  try {
+    const cur = TASKS[room.taskIdx];
+    const updates = {};
+    const active = Object.values(room.players || {}).filter(p => p.status === 'active');
 
-if(cur?.id === 'bag_90s'){
-active.forEach(p => { if(!p.bag) updates[`players/${p.id}/bag`] = {containerType:'backpack',selected:[],weightTenths:0}; });
-}
-if(cur?.id === 'vote_news'){
-const inPlay = [...new Set(active.map(p=>p.news).filter(i=>i>=0))];
-const counts = {}; inPlay.forEach(i=>counts[i]=0);
-active.forEach(p => (p.votes||[]).forEach(i => { if(counts[i]!=null) counts[i]++; }));
-updates['boardIndices'] = inPlay.sort((a,b)=>counts[b]-counts[a]).slice(0,5);
-}
-if(cur?.id === 'board_decide'){
-active.forEach(p => { if(p.prepared === undefined || p.prepared === null) updates[`players/${p.id}/prepared`] = false; });
-}
+    if(cur?.id === 'bag_90s'){
+      active.forEach(p => { if(!p.bag) updates[`players/${p.id}/bag`] = {containerType:'backpack',selected:[],weightTenths:0}; });
+    }
+    if(cur?.id === 'vote_news'){
+      const inPlay = [...new Set(active.map(p=>p.news).filter(i=>i>=0))];
+      const counts = {}; inPlay.forEach(i=>counts[i]=0);
+      active.forEach(p => (p.votes||[]).forEach(i => { if(counts[i]!=null) counts[i]++; }));
+      updates['boardIndices'] = inPlay.sort((a,b)=>counts[b]-counts[a]).slice(0,5);
+    }
+    if(cur?.id === 'board_decide'){
+      active.forEach(p => { if(p.prepared === undefined || p.prepared === null) updates[`players/${p.id}/prepared`] = false; });
+    }
 
-const nextIdx = room.taskIdx + 1;
-const nxt = TASKS[nextIdx];
+    const nextIdx = room.taskIdx + 1;
+    const nxt = TASKS[nextIdx];
 
-if(nxt?.id === 'alert' && !room.consequencesApplied){
-applyConsequencesToUpdates(active, updates);
-updates['consequencesApplied'] = true;
-}
+    if(nxt?.id === 'alert' && !room.consequencesApplied){
+      applyConsequencesToUpdates(active, updates);
+      updates['consequencesApplied'] = true;
+    }
 
-updates['taskIdx'] = nextIdx;
-updates['paused'] = false;
-if(nxt){
-const dur = nxt.id === 'transfer' ? (room.shareSec || 360) : nxt.sec;
-updates['deadline'] = Date.now() + dur * 1000;
-updates['remaining'] = dur * 1000;
-} else {
-updates['deadline'] = 0; updates['remaining'] = 0;
-}
-await DB.ref('room').update(updates);
-if(nxt) logEvent(`🎬 Chuyển sang: ${nxt.label}`);
-} finally { advancing = false; }
+    updates['taskIdx'] = nextIdx;
+    updates['paused'] = false;
+    if(nxt){
+      const dur = nxt.id === 'transfer' ? (room.shareSec || 360) : nxt.sec;
+      updates['deadline'] = Date.now() + dur * 1000;
+      updates['remaining'] = dur * 1000;
+    } else {
+      updates['deadline'] = 0; updates['remaining'] = 0;
+    }
+    await DB.ref('room').update(updates);
+    if(nxt) logEvent(`🎬 Chuyển sang: ${nxt.label}`);
+  } finally { advancing = false; }
 }
 
 function applyConsequencesToUpdates(active, updates){
-const shuffled = [...active].sort(()=>Math.random()-0.5);
-const periodTargets = new Set(shuffled.slice(0, Math.max(1, Math.floor(active.length/5))).map(p=>p.id));
-const extraNeedTargets = new Set(shuffled.slice(1, 1 + Math.max(1, Math.floor(active.length/6))).map(p=>p.id));
-const boardTexts = (room.boardIndices || []).map(i => NEWS[i]?.text || '').join(' ');
-const hasMisleadingSignal = boardTexts.includes('không đáng ngại') || boardTexts.includes('rút nhanh') || boardTexts.includes('chưa cần');
+  const shuffled = [...active].sort(()=>Math.random()-0.5);
+  const periodTargets = new Set(shuffled.slice(0, Math.max(1, Math.floor(active.length/5))).map(p=>p.id));
+  const extraNeedTargets = new Set(shuffled.slice(1, 1 + Math.max(1, Math.floor(active.length/6))).map(p=>p.id));
+  const boardTexts = (room.boardIndices || []).map(i => NEWS[i]?.text || '').join(' ');
+  const hasMisleadingSignal = boardTexts.includes('không đáng ngại') || boardTexts.includes('rút nhanh') || boardTexts.includes('chưa cần');
 
-active.forEach(p => {
-const prof = p.profile || PROFILES[0];
-    const bag = p.bag || {containerType:'backpack', selected:[]};
-    const items = bag.selected || [];
+  active.forEach(p => {
+    const prof = p.profile || PROFILES[0];
     const rawBag = p.bag;
     const bag = Array.isArray(rawBag)
       ? { containerType: 'backpack', selected: rawBag }
       : (rawBag || { containerType: 'backpack', selected: [] });
     const items = Array.isArray(bag.selected) ? bag.selected : [];
-const logs = [];
+    const logs = [];
 
-let food = (prof.baseFood||0) + (items.includes('food')?3:0) + (items.includes('bags')?1:0);
-let water = (prof.baseWater||0) + (items.includes('water')?3:0) + (items.includes('bottle')?1:0);
-let medQty = items.includes('med') ? 1 : 0;
-let babyQty = (items.includes('milk') && items.includes('diaper')) ? 1 : 0;
-let padsQty = items.includes('pads') ? 1 : 0;
-    let reqFood = prof.reqFood, reqWater = prof.reqWater;
+    let food = (prof.baseFood||0) + (items.includes('food')?3:0) + (items.includes('bags')?1:0);
+    let water = (prof.baseWater||0) + (items.includes('water')?3:0) + (items.includes('bottle')?1:0);
+    let medQty = items.includes('med') ? 1 : 0;
+    let babyQty = (items.includes('milk') && items.includes('diaper')) ? 1 : 0;
+    let padsQty = items.includes('pads') ? 1 : 0;
     let reqFood = prof.reqFood || 2;
     let reqWater = prof.reqWater || 2;
 
-if(p.prepared !== true){
-const lostF = food>0?1:0, lostW = water>0?1:0;
-food -= lostF; water -= lostW;
-const reasonLead = hasMisleadingSignal
-? 'Vì tin theo những thông tin kém chính xác trên bảng tin mà chọn chờ đợi, không kịp chủ động ứng phó sớm,'
-: 'Vì chọn phương án chờ đợi và chưa kịp chằng chống, kê cao đồ đạc trước khi nước tràn vào nhà,';
-logs.push(`⏳ ${reasonLead} nước lũ dâng nhanh làm mất ${lostF} phần Thực phẩm và ${lostW} phần Nước uống.`);
+    if(p.prepared !== true){
+      const lostF = food>0?1:0, lostW = water>0?1:0;
+      food -= lostF; water -= lostW;
+      const reasonLead = hasMisleadingSignal
+        ? 'Vì tin theo những thông tin kém chính xác trên bảng tin mà chọn chờ đợi, không kịp chủ động ứng phó sớm,'
+        : 'Vì chọn phương án chờ đợi và chưa kịp chằng chống, kê cao đồ đạc trước khi nước tràn vào nhà,';
+      logs.push(`⏳ ${reasonLead} nước lũ dâng nhanh làm mất ${lostF} phần Thực phẩm và ${lostW} phần Nước uống.`);
 
-const waterproof = (bag.containerType === 'bucket') || items.includes('bags');
-if(!waterproof){
-if(medQty>0){
-medQty=0;
-logs.push('🌧️ Do đựng đồ trong balo vải thông thường và chưa kịp đưa lên cao, Thuốc đặc trị đã bị ngấm nước hư hỏng.');
-} else if(babyQty>0){
-babyQty=0;
-logs.push('🌧️ Do đựng đồ trong balo vải thông thường và chưa kịp đưa lên cao, Sữa & Tã cho em bé đã bị ngấm nước hư hỏng.');
-}
-} else if(medQty>0 || babyQty>0) {
-logs.push('🪣 Nhờ đựng trong vật chứa chống thấm kín nước nên đồ y tế/chăm sóc vẫn giữ được dù chọn chờ đợi.');
-}
-} else {
-logs.push('🛡️ Vì đã chủ động chọn phương án chuẩn bị và kê cao đồ đạc từ sớm, gia đình giữ được phần lớn tài sản dự trữ khi nước tràn về.');
-}
+      const waterproof = (bag.containerType === 'bucket') || items.includes('bags');
+      if(!waterproof){
+        if(medQty>0){
+          medQty=0;
+          logs.push('🌧️ Do đựng đồ trong balo vải thông thường và chưa kịp đưa lên cao, Thuốc đặc trị đã bị ngấm nước hư hỏng.');
+        } else if(babyQty>0){
+          babyQty=0;
+          logs.push('🌧️ Do đựng đồ trong balo vải thông thường và chưa kịp đưa lên cao, Sữa & Tã cho em bé đã bị ngấm nước hư hỏng.');
+        }
+      } else if(medQty>0 || babyQty>0) {
+        logs.push('🪣 Nhờ đựng trong vật chứa chống thấm kín nước nên đồ y tế/chăm sóc vẫn giữ được dù chọn chờ đợi.');
+      }
+    } else {
+      logs.push('🛡️ Vì đã chủ động chọn phương án chuẩn bị và kê cao đồ đạc từ sớm, gia đình giữ được phần lớn tài sản dự trữ khi nước tràn về.');
+    }
 
-let needMed = false, needBaby = false, needEvac = false, evacHelped = false, needPads = false;
-if(prof.group === 'chronic'){
-needMed = true;
-logs.push(medQty>0
-? '💊 Gia đình có người bệnh nền và hiện đã có sẵn Thuốc đặc trị để duy trì.'
-: '🚨 Gia đình có người bệnh nền nhưng đang thiếu Thuốc đặc trị — cần nhanh chóng tìm sự hỗ trợ từ hàng xóm.');
-}
-if(prof.group === 'baby'){
-needBaby = true;
-logs.push(babyQty>0
-? '🍼 Gia đình có em bé nhỏ và hiện đã có sẵn Sữa & Tã dự phòng.'
-: '🚨 Gia đình có em bé nhỏ nhưng đang thiếu Sữa & Tã — cần sớm kết nối với các hộ xung quanh để xin hỗ trợ.');
-}
-if(prof.group === 'elderly_weak'){
-needEvac = true;
-if(p.prepared === true && (items.includes('light') || items.includes('rain'))){
-evacHelped = true;
-logs.push('👴 Nhờ chủ động chuẩn bị sớm và có đèn/áo mưa hỗ trợ, người cao tuổi đi lại khó khăn đã được đưa đến nơi an toàn.');
-} else {
-logs.push('🚨 Người cao tuổi đi lại khó khăn chưa kịp di chuyển đến vị trí an toàn — rất cần hàng xóm sang hỗ trợ sơ tán.');
-}
-}
-if(periodTargets.has(p.id)){
-needPads = true;
-logs.push(padsQty>0
-? '🌸 Thành viên trong nhà tới kỳ — gia đình đã chuẩn bị sẵn Băng vệ sinh.'
-: '🌸 Thành viên trong nhà phát sinh nhu cầu Băng vệ sinh khẩn cấp trong lúc nước ngập.');
-}
-if(extraNeedTargets.has(p.id)){
-reqFood += 1; reqWater += 1;
-logs.push(`⚠️ Do ngập kéo dài làm phát sinh thêm nhu cầu sinh hoạt, mức tối thiểu gia đình cần giữ lúc này là ${reqFood} Thực phẩm và ${reqWater} Nước uống.`);
-}
+    let needMed = false, needBaby = false, needEvac = false, evacHelped = false, needPads = false;
+    if(prof.group === 'chronic'){
+      needMed = true;
+      logs.push(medQty>0
+        ? '💊 Gia đình có người bệnh nền và hiện đã có sẵn Thuốc đặc trị để duy trì.'
+        : '🚨 Gia đình có người bệnh nền nhưng đang thiếu Thuốc đặc trị — cần nhanh chóng tìm sự hỗ trợ từ hàng xóm.');
+    }
+    if(prof.group === 'baby'){
+      needBaby = true;
+      logs.push(babyQty>0
+        ? '🍼 Gia đình có em bé nhỏ và hiện đã có sẵn Sữa & Tã dự phòng.'
+        : '🚨 Gia đình có em bé nhỏ nhưng đang thiếu Sữa & Tã — cần sớm kết nối với các hộ xung quanh để xin hỗ trợ.');
+    }
+    if(prof.group === 'elderly_weak'){
+      needEvac = true;
+      if(p.prepared === true && (items.includes('light') || items.includes('rain'))){
+        evacHelped = true;
+        logs.push('👴 Nhờ chủ động chuẩn bị sớm và có đèn/áo mưa hỗ trợ, người cao tuổi đi lại khó khăn đã được đưa đến nơi an toàn.');
+      } else {
+        logs.push('🚨 Người cao tuổi đi lại khó khăn chưa kịp di chuyển đến vị trí an toàn — rất cần hàng xóm sang hỗ trợ sơ tán.');
+      }
+    }
+    if(periodTargets.has(p.id)){
+      needPads = true;
+      logs.push(padsQty>0
+        ? '🌸 Thành viên trong nhà tới kỳ — gia đình đã chuẩn bị sẵn Băng vệ sinh.'
+        : '🌸 Thành viên trong nhà phát sinh nhu cầu Băng vệ sinh khẩn cấp trong lúc nước ngập.');
+    }
+    if(extraNeedTargets.has(p.id)){
+      reqFood += 1; reqWater += 1;
+      logs.push(`⚠️ Do ngập kéo dài làm phát sinh thêm nhu cầu sinh hoạt, mức tối thiểu gia đình cần giữ lúc này là ${reqFood} Thực phẩm và ${reqWater} Nước uống.`);
+    }
 
-    updates[`players/${p.id}/food`] = food;
-    updates[`players/${p.id}/water`] = water;
     updates[`players/${p.id}/food`] = Math.max(0, food);
     updates[`players/${p.id}/water`] = Math.max(0, water);
-updates[`players/${p.id}/medQty`] = medQty;
-updates[`players/${p.id}/babyQty`] = babyQty;
-updates[`players/${p.id}/padsQty`] = padsQty;
-updates[`players/${p.id}/reqFood`] = reqFood;
-updates[`players/${p.id}/reqWater`] = reqWater;
-updates[`players/${p.id}/needMed`] = needMed;
-updates[`players/${p.id}/needBaby`] = needBaby;
-updates[`players/${p.id}/needEvac`] = needEvac;
-updates[`players/${p.id}/evacHelped`] = evacHelped;
-updates[`players/${p.id}/needPads`] = needPads;
-updates[`players/${p.id}/consequenceLogs`] = logs;
-});
+    updates[`players/${p.id}/medQty`] = medQty;
+    updates[`players/${p.id}/babyQty`] = babyQty;
+    updates[`players/${p.id}/padsQty`] = padsQty;
+    updates[`players/${p.id}/reqFood`] = reqFood;
+    updates[`players/${p.id}/reqWater`] = reqWater;
+    updates[`players/${p.id}/needMed`] = needMed;
+    updates[`players/${p.id}/needBaby`] = needBaby;
+    updates[`players/${p.id}/needEvac`] = needEvac;
+    updates[`players/${p.id}/evacHelped`] = evacHelped;
+    updates[`players/${p.id}/needPads`] = needPads;
+    updates[`players/${p.id}/consequenceLogs`] = logs;
+  });
 }
 
-// ================= QUYỀN NĂNG "ÔNG TRỜI" =================
 // ================= QUYỀN NĂNG "ÔNG TRỜI" & CỨU TRỢ ĐẶC BIỆT =================
 async function godAction(type, id){
-const p = room.players?.[id];
-if(!p) return;
-if(type === 'food_loss'){
-await DB.ref(`room/players/${id}/food`).set(Math.max(0, (p.food||0)-1));
-await appendLog(id, `🌊 ${p.name}: Thực phẩm bị nước lũ cuốn trôi (-1 Đồ ăn).`);
-} else if(type === 'water_dirty'){
-await DB.ref(`room/players/${id}/water`).set(Math.max(0, (p.water||0)-1));
-await appendLog(id, `🚱 ${p.name}: Nguồn nước dự trữ bị nhiễm bẩn (-1 Nước uống).`);
-} else if(type === 'mute'){
-const next = !p.muted;
-await DB.ref(`room/players/${id}/muted`).set(next);
-await appendLog(id, next ? `📵 ${p.name} bị đứt đường truyền cáp/mất điện! Tạm thời mất liên lạc (Host tắt mic & khóa chat Zoom).` : `📶 Đường truyền của ${p.name} đã khôi phục.`);
-} else if(type === 'lock_send'){
-const next = !p.sendLocked;
-await DB.ref(`room/players/${id}/sendLocked`).set(next);
-await appendLog(id, next ? `🚫 Nước xiết quanh ${p.name}: giữ nguyên kho đồ nhưng không thể gửi tiếp tế đi!` : `✅ Tuyến tiếp tế của ${p.name} đã thông.`);
-} else if(type === 'relief'){
-await DB.ref(`room/players/${id}`).update({ food: (p.food||0)+3, water: (p.water||0)+3 });
-await appendLog(id, `🚁 ${p.name} nhận được gói hàng cứu trợ (+3 Đồ ăn, +3 Nước uống)!`);
+  const p = room.players?.[id];
+  if(!p) return;
+  if(type === 'food_loss'){
+    await DB.ref(`room/players/${id}/food`).set(Math.max(0, (p.food||0)-1));
+    await appendLog(id, `🌊 ${p.name}: Thực phẩm bị nước lũ cuốn trôi (-1 Đồ ăn).`);
+  } else if(type === 'water_dirty'){
+    await DB.ref(`room/players/${id}/water`).set(Math.max(0, (p.water||0)-1));
+    await appendLog(id, `🚱 ${p.name}: Nguồn nước dự trữ bị nhiễm bẩn (-1 Nước uống).`);
+  } else if(type === 'mute'){
+    const next = !p.muted;
+    await DB.ref(`room/players/${id}/muted`).set(next);
+    await appendLog(id, next ? `📵 ${p.name} bị đứt đường truyền cáp/mất điện! Tạm thời mất liên lạc (Host tắt mic & khóa chat Zoom).` : `📶 Đường truyền của ${p.name} đã khôi phục.`);
+  } else if(type === 'lock_send'){
+    const next = !p.sendLocked;
+    await DB.ref(`room/players/${id}/sendLocked`).set(next);
+    await appendLog(id, next ? `🚫 Nước xiết quanh ${p.name}: giữ nguyên kho đồ nhưng không thể gửi tiếp tế đi!` : `✅ Tuyến tiếp tế của ${p.name} đã thông.`);
+  } else if(type === 'relief'){
+    await DB.ref(`room/players/${id}`).update({ food: (p.food||0)+3, water: (p.water||0)+3 });
+    await appendLog(id, `🚁 ${p.name} nhận được gói hàng cứu trợ (+3 Đồ ăn, +3 Nước uống)!`);
   } else if(type === 'relief_med'){
     await DB.ref(`room/players/${id}/medQty`).set((p.medQty||0)+1);
     await appendLog(id, `🚁 Cứu trợ đặc biệt gửi tới ${p.name}: +1 Thuốc đặc trị!`);
@@ -389,155 +383,153 @@ await appendLog(id, `🚁 ${p.name} nhận được gói hàng cứu trợ (+3 �
   } else if(type === 'relief_pads'){
     await DB.ref(`room/players/${id}/padsQty`).set((p.padsQty||0)+1);
     await appendLog(id, `🚁 Cứu trợ đặc biệt gửi tới ${p.name}: +1 Băng vệ sinh!`);
-} else if(type === 'flood'){
-if(!confirm(`Xác nhận LŨ CUỐN loại ${p.name} khỏi cuộc chơi?`)) return;
-await DB.ref(`room/players/${id}`).update({ status:'flooded', food:0, water:0, medQty:0, babyQty:0, padsQty:0 });
-logEvent(`🆘 ${p.name} mất liên lạc hoàn toàn và gặp nạn do lũ cuốn!`);
-}
+  } else if(type === 'flood'){
+    if(!confirm(`Xác nhận LŨ CUỐN loại ${p.name} khỏi cuộc chơi?`)) return;
+    await DB.ref(`room/players/${id}`).update({ status:'flooded', food:0, water:0, medQty:0, babyQty:0, padsQty:0 });
+    logEvent(`🆘 ${p.name} mất liên lạc hoàn toàn và gặp nạn do lũ cuốn!`);
+  }
 }
 
 async function blockRoute(){
-const a = $('blkA').value, b = $('blkB').value;
-if(!a || !b || a === b) return say('Chọn 2 gia đình khác nhau.');
-const pairs = room.blockedPairs || [];
-pairs.push([a, b]);
-await DB.ref('room/blockedPairs').set(pairs);
-logEvent(`🚧 Nước ngập chia cắt đường trực tiếp giữa ${room.players[a].name} và ${room.players[b].name}! Phải gửi bắc cầu qua nhà trung gian.`);
+  const a = $('blkA').value, b = $('blkB').value;
+  if(!a || !b || a === b) return say('Chọn 2 gia đình khác nhau.');
+  const pairs = room.blockedPairs || [];
+  pairs.push([a, b]);
+  await DB.ref('room/blockedPairs').set(pairs);
+  logEvent(`🚧 Nước ngập chia cắt đường trực tiếp giữa ${room.players[a].name} và ${room.players[b].name}! Phải gửi bắc cầu qua nhà trung gian.`);
 }
 
 async function appendLog(pid, text){
-const cur = room.players[pid].consequenceLogs || [];
-cur.push(text);
-await DB.ref(`room/players/${pid}/consequenceLogs`).set(cur);
-logEvent(text);
+  const cur = room.players[pid].consequenceLogs || [];
+  cur.push(text);
+  await DB.ref(`room/players/${pid}/consequenceLogs`).set(cur);
+  logEvent(text);
 }
 
 function logEvent(text){
-DB.ref('room/events').push({ text, at: Date.now() });
-say(text);
+  DB.ref('room/events').push({ text, at: Date.now() });
+  say(text);
 }
 
 async function resetRoom(){
-if(!confirm('RESET LƯỢT CHƠI MỚI? Toàn bộ người chơi sẽ bị xóa!')) return;
-await initDefaultRoom(room.hostPin);
-selectedId = null;
-say('Đã làm mới khu phố!');
+  if(!confirm('RESET LƯỢT CHƠI MỚI? Toàn bộ người chơi sẽ bị xóa!')) return;
+  await initDefaultRoom(room.hostPin);
+  selectedId = null;
+  say('Đã làm mới khu phố!');
 }
 
 function renderHost(){
-const curTask = TASKS[room.taskIdx];
-const all = Object.values(room.players || {}).filter(p => p && p.status !== 'left').sort((a,b)=>a.slot-b.slot);
-const active = all.filter(p => p.status === 'active');
+  const curTask = TASKS[room.taskIdx];
+  const all = Object.values(room.players || {}).filter(p => p && p.status !== 'left').sort((a,b)=>a.slot-b.slot);
+  const active = all.filter(p => p.status === 'active');
 
-$('startBtn').disabled = !!room.locked;
-$('setupBar').classList.toggle('hidden', !!room.locked);
-$('routeBlockBox').classList.toggle('hidden', !room.locked || all.length < 2);
-$('taskTitle').textContent = curTask ? `Giai đoạn ${curTask.phase} · ${curTask.label}` : (room.locked ? 'Đã kết thúc' : `Đang mở đăng ký (${all.length}/25 gia đình)`);
+  $('startBtn').disabled = !!room.locked;
+  $('setupBar').classList.toggle('hidden', !!room.locked);
+  $('routeBlockBox').classList.toggle('hidden', !room.locked || all.length < 2);
+  $('taskTitle').textContent = curTask ? `Giai đoạn ${curTask.phase} · ${curTask.label}` : (room.locked ? 'Đã kết thúc' : `Đang mở đăng ký (${all.length}/25 gia đình)`);
 
-const doneCount = active.filter(p => {
-if(!curTask) return false;
-if(curTask.id==='profile_card') return p.profileAck;
-if(curTask.id==='bag_90s') return !!p.bag;
-if(curTask.id==='vote_news') return (p.votes||[]).length > 0;
-if(curTask.id==='board_decide') return p.prepared !== undefined && p.prepared !== null;
-if(curTask.id==='checklist') return p.prepared !== true || (p.checks||[]).length >= 6;
-return false;
-}).length;
-$('progressBadge').textContent = `${doneCount}/${active.length} hoàn thành`;
+  const doneCount = active.filter(p => {
+    if(!curTask) return false;
+    if(curTask.id==='profile_card') return p.profileAck;
+    if(curTask.id==='bag_90s') return !!p.bag;
+    if(curTask.id==='vote_news') return (p.votes||[]).length > 0;
+    if(curTask.id==='board_decide') return p.prepared !== undefined && p.prepared !== null;
+    if(curTask.id==='checklist') return p.prepared !== true || (p.checks||[]).length >= 6;
+    return false;
+  }).length;
+  $('progressBadge').textContent = `${doneCount}/${active.length} hoàn thành`;
 
-if(all.length >= 2 && $('blkA').options.length !== all.length){
-$('blkA').innerHTML = all.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');
-$('blkB').innerHTML = all.map((x,i)=>`<option value="${x.id}" ${i===1?'selected':''}>${esc(x.name)}</option>`).join('');
-}
+  if(all.length >= 2 && $('blkA').options.length !== all.length){
+    $('blkA').innerHTML = all.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');
+    $('blkB').innerHTML = all.map((x,i)=>`<option value="${x.id}" ${i===1?'selected':''}>${esc(x.name)}</option>`).join('');
+  }
 
-$('houseList').innerHTML = all.map(p => `
-   <div class="house ${p.id===selectedId?'selectedRow':''}" onclick="selectedId='${p.id}';renderHost()">
-     <b>${esc(p.name)}</b> · <span class="badge">${esc(p.profile?.groupLabel||'Chờ chia vai')}</span>
-     ${p.status==='flooded'?'🌊 Bị loại':''} ${p.muted?'📵':''} ${p.sendLocked?'🚫':''}
-     <div class="small">Part II: ${p.prepared===true?'A (Chuẩn bị)':p.prepared===false?'B (Chờ đợi)':'—'} · Kho: 🥫${p.food||0}/${p.reqFood||2} 💧${p.water||0}/${p.reqWater||2}
-     ${p.needMed?(p.medQty?'💊✅':'💊❌'):''} ${p.needBaby?(p.babyQty?'🍼✅':'🍼❌'):''} ${p.needEvac?(p.evacHelped?'👴✅':'👴🚨'):''} ${p.needPads?(p.padsQty?'🌸✅':'🌸❌'):''}</div>
-   </div>
- `).join('');
+  $('houseList').innerHTML = all.map(p => `
+    <div class="house ${p.id===selectedId?'selectedRow':''}" onclick="selectedId='${p.id}';renderHost()">
+      <b>${esc(p.name)}</b> · <span class="badge">${esc(p.profile?.groupLabel||'Chờ chia vai')}</span>
+      ${p.status==='flooded'?'🌊 Bị loại':''} ${p.muted?'📵':''} ${p.sendLocked?'🚫':''}
+      <div class="small">Part II: ${p.prepared===true?'A (Chuẩn bị)':p.prepared===false?'B (Chờ đợi)':'—'} · Kho: 🥫${p.food||0}/${p.reqFood||2} 💧${p.water||0}/${p.reqWater||2}
+      ${p.needMed?(p.medQty?'💊✅':'💊❌'):''} ${p.needBaby?(p.babyQty?'🍼✅':'🍼❌'):''} ${p.needEvac?(p.evacHelped?'👴✅':'👴🚨'):''} ${p.needPads?(p.padsQty?'🌸✅':'🌸❌'):''}</div>
+    </div>
+  `).join('');
 
-const sel = all.find(x => x.id === selectedId) || all[0];
-if(sel && !selectedId) selectedId = sel.id;
-$('inspector').innerHTML = sel ? `
-   <h3>${esc(sel.name)}</h3>
-   <p><b>Hoàn cảnh vai:</b> ${esc(cleanRoleSubtitle(sel.profile?.title)||'Chưa phân')} (${esc(sel.profile?.groupLabel||'')})</p>
-   <p class="small"><b>Sẵn có gốc:</b> 🥫${sel.profile?.baseFood??0} · 💧${sel.profile?.baseWater??0} | <b>Chuẩn duy trì:</b> ${sel.reqFood||2} Ăn · ${sel.reqWater||2} Nước</p>
-   <p><b>Part I (Ba lô):</b> ${sel.bag ? `${sel.bag.containerType==='bucket'?'🪣 Xô':'🎒 Balo'} · ${(sel.bag.weightTenths/10).toFixed(1)}kg · [${(sel.bag.selected||[]).join(', ')}]` : 'Chưa xong'}</p>
-   <p><b>Part II:</b> <b>${sel.prepared===true?'A (Tiếp tục chuẩn bị)':sel.prepared===false?'B (Tạm thời chờ đợi)':'Chưa chọn'}</b> · Checklist: ${(sel.checks||[]).length}/6</p>
-   <p><b>Kho thực tế:</b> 🥫${sel.food||0}/${sel.reqFood||2} · 💧${sel.water||0}/${sel.reqWater||2} · 💊${sel.medQty||0} · 🍼${sel.babyQty||0} · 🌸${sel.padsQty||0}</p>
-   ${(sel.consequenceLogs||[]).length ? `<div style="background:#f3ebd3;padding:8px;border-radius:8px;margin:8px 0;max-height:140px;overflow:auto"><b>Nhật ký hệ quả:</b><br><span class="small">${sel.consequenceLogs.map(x=>esc(x)).join('<br>')}</span></div>` : ''}
-    ${sel.status==='active' && room.locked ? `<h4>⚡ Kích hoạt Biến cố "Ông Trời"</h4>
+  const sel = all.find(x => x.id === selectedId) || all[0];
+  if(sel && !selectedId) selectedId = sel.id;
+  $('inspector').innerHTML = sel ? `
+    <h3>${esc(sel.name)}</h3>
+    <p><b>Hoàn cảnh vai:</b> ${esc(cleanRoleSubtitle(sel.profile?.title)||'Chưa phân')} (${esc(sel.profile?.groupLabel||'')})</p>
+    <p class="small"><b>Sẵn có gốc:</b> 🥫${sel.profile?.baseFood??0} · 💧${sel.profile?.baseWater??0} | <b>Chuẩn duy trì:</b> ${sel.reqFood||2} Ăn · ${sel.reqWater||2} Nước</p>
+    <p><b>Part I (Ba lô):</b> ${sel.bag ? `${sel.bag.containerType==='bucket'?'🪣 Xô':'🎒 Balo'} · ${(sel.bag.weightTenths/10).toFixed(1)}kg · [${(sel.bag.selected||[]).join(', ')}]` : 'Chưa xong'}</p>
+    <p><b>Part II:</b> <b>${sel.prepared===true?'A (Tiếp tục chuẩn bị)':sel.prepared===false?'B (Tạm thời chờ đợi)':'Chưa chọn'}</b> · Checklist: ${(sel.checks||[]).length}/6</p>
+    <p><b>Kho thực tế:</b> 🥫${sel.food||0}/${sel.reqFood||2} · 💧${sel.water||0}/${sel.reqWater||2} · 💊${sel.medQty||0} · 🍼${sel.babyQty||0} · 🌸${sel.padsQty||0}</p>
+    ${(sel.consequenceLogs||[]).length ? `<div style="background:#f3ebd3;padding:8px;border-radius:8px;margin:8px 0;max-height:140px;overflow:auto"><b>Nhật ký hệ quả:</b><br><span class="small">${sel.consequenceLogs.map(x=>esc(x)).join('<br>')}</span></div>` : ''}
     ${sel.status==='active' && room.locked ? `<h4>⚡ Kích hoạt Biến cố & Cứu trợ "Ông Trời"</h4>
-   <div class="godGrid">
-     <button class="warn" onclick="godAction('food_loss','${sel.id}')">🌊 Cuốn thực phẩm (-1 Ăn)</button>
-     <button class="warn" onclick="godAction('water_dirty','${sel.id}')">🚱 Nhiễm bẩn nước (-1 Nước)</button>
-     <button class="warn" onclick="godAction('mute','${sel.id}')">${sel.muted?'📶 Mở liên lạc':'📵 Đứt cáp (Cấm mic)'}</button>
-     <button class="warn" onclick="godAction('lock_send','${sel.id}')">${sel.sendLocked?'✅ Mở khóa gửi':'🚫 Cô lập (Khóa gửi)'}</button>
-     <button class="primary" onclick="godAction('relief','${sel.id}')">🚁 Cứu trợ (+3 Ăn, +3 Nước)</button>
-      <button class="danger" onclick="godAction('flood','${sel.id}')">🆘 Lũ cuốn (Loại hộ)</button>
+    <div class="godGrid">
+      <button class="warn" onclick="godAction('food_loss','${sel.id}')">🌊 Cuốn thực phẩm (-1 Ăn)</button>
+      <button class="warn" onclick="godAction('water_dirty','${sel.id}')">🚱 Nhiễm bẩn nước (-1 Nước)</button>
+      <button class="warn" onclick="godAction('mute','${sel.id}')">${sel.muted?'📶 Mở liên lạc':'📵 Đứt cáp (Cấm mic)'}</button>
+      <button class="warn" onclick="godAction('lock_send','${sel.id}')">${sel.sendLocked?'✅ Mở khóa gửi':'🚫 Cô lập (Khóa gửi)'}</button>
+      <button class="primary" onclick="godAction('relief','${sel.id}')">🚁 Cứu trợ (+3 Ăn, +3 Nước)</button>
       <button class="primary" onclick="godAction('relief_med','${sel.id}')">💊 Cứu trợ Thuốc đặc trị (+1)</button>
       <button class="primary" onclick="godAction('relief_baby','${sel.id}')">🍼 Cứu trợ Sữa & Tã (+1)</button>
       <button class="primary" onclick="godAction('relief_pads','${sel.id}')">🌸 Cứu trợ Băng vệ sinh (+1)</button>
       <button class="danger" style="grid-column:span 2" onclick="godAction('flood','${sel.id}')">🆘 Lũ cuốn (Loại hộ)</button>
-   </div>` : ''}
- ` : 'Chưa có gia đình nào đăng ký.';
+    </div>` : ''}
+  ` : 'Chưa có gia đình nào đăng ký.';
 
-$('mcScriptBox').innerHTML = curTask ? `<b>🎙️ Gợi ý lời dẫn (${esc(curTask.label)}):</b><br>${esc(curTask.mcScript)}` : 'Chờ bấm Bắt đầu để hiện kịch bản dẫn chương trình.';
-const board = (room.boardIndices||[]).map(i => NEWS[i]?.text).filter(Boolean);
-$('mcBoardPreview').innerHTML = board.length ? `<h4>📢 Top 5 tin trên Bảng tin cộng đồng:</h4>` + board.map((x,i)=>`<div class="refCard"><b>#${i+1}:</b> ${esc(x)}</div>`).join('') : '';
+  $('mcScriptBox').innerHTML = curTask ? `<b>🎙️ Gợi ý lời dẫn (${esc(curTask.label)}):</b><br>${esc(curTask.mcScript)}` : 'Chờ bấm Bắt đầu để hiện kịch bản dẫn chương trình.';
+  const board = (room.boardIndices||[]).map(i => NEWS[i]?.text).filter(Boolean);
+  $('mcBoardPreview').innerHTML = board.length ? `<h4>📢 Top 5 tin trên Bảng tin cộng đồng:</h4>` + board.map((x,i)=>`<div class="refCard"><b>#${i+1}:</b> ${esc(x)}</div>`).join('') : '';
 
-const res = calcResultsFromState(room);
-const prepButHard = res.houses.filter(h=>h.prepared===true && h.outcome!=='safe');
-const waitedAndHit = res.houses.filter(h=>h.prepared===false);
-const topHelpers = [...res.houses].filter(h=>h.sentCount>0).sort((a,b)=>b.sentCount-a.sentCount).slice(0,3);
-const unhelped = res.houses.filter(h=>h.status==='active' && h.outcome!=='safe');
+  const res = calcResultsFromState(room);
+  const prepButHard = res.houses.filter(h=>h.prepared===true && h.outcome!=='safe');
+  const waitedAndHit = res.houses.filter(h=>h.prepared===false);
+  const topHelpers = [...res.houses].filter(h=>h.sentCount>0).sort((a,b)=>b.sentCount-a.sentCount).slice(0,3);
+  const unhelped = res.houses.filter(h=>h.status==='active' && h.outcome!=='safe');
 
-$('mcReflectionPanel').innerHTML = `
-   <h3 style="margin-top:12px">📊 Bảng Tổng Hợp Tình Huống Cho Host MC (Reflection)</h3>
-   <p><b>Số liệu tổng thể:</b> <b>${res.safeHouses}/${res.totalHouses}</b> gia đình bình an trọn vẹn · <b>${res.survivedMembers}/${res.totalMembers}</b> thành viên an toàn.</p>
-   <div class="refCard"><b>1. Chuẩn bị tốt (A) nhưng vẫn gặp khó:</b> ${prepButHard.length ? prepButHard.map(h=>`${esc(h.name)} (${esc(h.outcomeLabel)})`).join(', ') : 'Chưa có'}</div>
-   <div class="refCard"><b>2. Chọn chờ đợi (B) và chịu hệ quả:</b> ${waitedAndHit.length ? waitedAndHit.map(h=>esc(h.name)).join(', ') : 'Chưa có'}</div>
-   <div class="refCard"><b>3. Các gia đình chủ động chia sẻ tài nguyên:</b> ${topHelpers.length ? topHelpers.map(h=>`${esc(h.name)} (${h.sentCount} lượt)`).join(', ') : 'Chưa có'}</div>
-   <div class="refCard"><b>4. Gia đình gặp tổn thất / chưa kịp hỗ trợ:</b> ${unhelped.length ? unhelped.map(h=>`${esc(h.name)} [${esc((h.issues||[]).join('; '))}]`).join(' · ') : 'Tất cả đều an toàn!'}</div>
- `;
+  $('mcReflectionPanel').innerHTML = `
+    <h3 style="margin-top:12px">📊 Bảng Tổng Hợp Tình Huống Cho Host MC (Reflection)</h3>
+    <p><b>Số liệu tổng thể:</b> <b>${res.safeHouses}/${res.totalHouses}</b> gia đình bình an trọn vẹn · <b>${res.survivedMembers}/${res.totalMembers}</b> thành viên an toàn.</p>
+    <div class="refCard"><b>1. Chuẩn bị tốt (A) nhưng vẫn gặp khó:</b> ${prepButHard.length ? prepButHard.map(h=>`${esc(h.name)} (${esc(h.outcomeLabel)})`).join(', ') : 'Chưa có'}</div>
+    <div class="refCard"><b>2. Chọn chờ đợi (B) và chịu hệ quả:</b> ${waitedAndHit.length ? waitedAndHit.map(h=>esc(h.name)).join(', ') : 'Chưa có'}</div>
+    <div class="refCard"><b>3. Các gia đình chủ động chia sẻ tài nguyên:</b> ${topHelpers.length ? topHelpers.map(h=>`${esc(h.name)} (${h.sentCount} lượt)`).join(', ') : 'Chưa có'}</div>
+    <div class="refCard"><b>4. Gia đình gặp tổn thất / chưa kịp hỗ trợ:</b> ${unhelped.length ? unhelped.map(h=>`${esc(h.name)} [${esc((h.issues||[]).join('; '))}]`).join(' · ') : 'Tất cả đều an toàn!'}</div>
+  `;
 
-const evs = Object.values(room.events || {}).sort((a,b)=>b.at-a.at).slice(0,25);
-$('eventFeed').innerHTML = evs.map(e => `<div class="refCard"><span class="small">${new Date(e.at).toLocaleTimeString('vi-VN')}</span><br>${esc(e.text)}</div>`).join('');
+  const evs = Object.values(room.events || {}).sort((a,b)=>b.at-a.at).slice(0,25);
+  $('eventFeed').innerHTML = evs.map(e => `<div class="refCard"><span class="small">${new Date(e.at).toLocaleTimeString('vi-VN')}</span><br>${esc(e.text)}</div>`).join('');
 
-drawHostMap(all);
+  drawHostMap(all);
 }
 
 function loadArt(){
-if(typeof EMBEDDED_ASSETS === 'undefined') return;
-Object.keys(EMBEDDED_ASSETS).forEach(k => { const im=new Image(); im.src=EMBEDDED_ASSETS[k]; hostArt[k]=im; });
+  if(typeof EMBEDDED_ASSETS === 'undefined') return;
+  Object.keys(EMBEDDED_ASSETS).forEach(k => { const im=new Image(); im.src=EMBEDDED_ASSETS[k]; hostArt[k]=im; });
 }
 const SPOTS = Array.from({length:25},(_,i)=>({x:115+(i%5)*170,y:95+Math.floor(i/5)*108}));
 function drawHostMap(all){
-const c = $('hostMap').getContext('2d'); c.imageSmoothingEnabled=false;
-c.fillStyle='#8db98c'; c.fillRect(0,0,960,624);
-for(let y=0;y<624;y+=32) for(let x=0;x<960;x+=32){
-const tile=(y>260&&y<300)||(x>845&&x<880)?1:0, im=hostArt['tiles.png'];
-if(im?.complete&&im.naturalWidth) c.drawImage(im,tile*32,0,32,32,x,y,32,32);
-}
-c.fillStyle='#70acb0'; c.fillRect(890,0,70,624);
-c.fillStyle='#b6a68c'; c.fillRect(25,266,825,34);
-all.forEach(p => {
-const n = SPOTS[(p.slot-1)%25];
-const st = p.status==='flooded'?'flooded':p.prepared===false?'cracked':'normal';
-const im = hostArt[`house_${(p.slot-1)%12}_${st}.png`];
-if(im?.complete&&im.naturalWidth) c.drawImage(im, n.x-34, n.y-22, 68, 68);
-if(p.id===selectedId){ c.strokeStyle='#fff0a2'; c.lineWidth=4; c.strokeRect(n.x-40,n.y-27,80,82); }
-c.fillStyle='#405f58'; c.fillRect(n.x-52,n.y+44,104,20);
-c.fillStyle='#fff'; c.font='bold 11px Arial'; c.textAlign='center'; c.fillText(p.name.slice(0,15), n.x, n.y+58);
-});
-$('hostMap').onclick = e => {
-const b = $('hostMap').getBoundingClientRect(), x = (e.clientX-b.left)*960/b.width, y = (e.clientY-b.top)*624/b.height;
-const hit = all.find(p => { const n=SPOTS[(p.slot-1)%25]; return n && Math.abs(x-n.x)<48 && y>n.y-30 && y<n.y+68; });
-if(hit){ selectedId = hit.id; renderHost(); }
-};
+  const c = $('hostMap').getContext('2d'); c.imageSmoothingEnabled=false;
+  c.fillStyle='#8db98c'; c.fillRect(0,0,960,624);
+  for(let y=0;y<624;y+=32) for(let x=0;x<960;x+=32){
+    const tile=(y>260&&y<300)||(x>845&&x<880)?1:0, im=hostArt['tiles.png'];
+    if(im?.complete&&im.naturalWidth) c.drawImage(im,tile*32,0,32,32,x,y,32,32);
+  }
+  c.fillStyle='#70acb0'; c.fillRect(890,0,70,624);
+  c.fillStyle='#b6a68c'; c.fillRect(25,266,825,34);
+  all.forEach(p => {
+    const n = SPOTS[(p.slot-1)%25];
+    const st = p.status==='flooded'?'flooded':p.prepared===false?'cracked':'normal';
+    const im = hostArt[`house_${(p.slot-1)%12}_${st}.png`];
+    if(im?.complete&&im.naturalWidth) c.drawImage(im, n.x-34, n.y-22, 68, 68);
+    if(p.id===selectedId){ c.strokeStyle='#fff0a2'; c.lineWidth=4; c.strokeRect(n.x-40,n.y-27,80,82); }
+    c.fillStyle='#405f58'; c.fillRect(n.x-52,n.y+44,104,20);
+    c.fillStyle='#fff'; c.font='bold 11px Arial'; c.textAlign='center'; c.fillText(p.name.slice(0,15), n.x, n.y+58);
+  });
+  $('hostMap').onclick = e => {
+    const b = $('hostMap').getBoundingClientRect(), x = (e.clientX-b.left)*960/b.width, y = (e.clientY-b.top)*624/b.height;
+    const hit = all.find(p => { const n=SPOTS[(p.slot-1)%25]; return n && Math.abs(x-n.x)<48 && y>n.y-30 && y<n.y+68; });
+    if(hit){ selectedId = hit.id; renderHost(); }
+  };
 }
 </script>
 </body>
