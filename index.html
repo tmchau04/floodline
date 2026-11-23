@@ -1069,9 +1069,6 @@ document.body.classList.add('shaking');
 setTimeout(() => document.body.classList.remove('shaking'), 1200);
 }
 if (overlayTimer) clearTimeout(overlayTimer);
-if (!sc.stayUntilNext) {
-overlayTimer = setTimeout(hidePhaseOverlay, 35000);
-}
 }
 
 async function handlePhaseOverlayAction() {
