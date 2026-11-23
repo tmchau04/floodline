@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+F<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
@@ -1472,8 +1472,8 @@ const roleSubtitle = cleanRoleSubtitle(me.profile?.title);
 html = stageCountdownHtml('Thời gian chọn ba lô khẩn cấp') +
 `<div class="note" style="font-size:13.5px"><b>🎭 ${esc(me.name)} (${esc(roleSubtitle)}):</b> ${esc(me.profile?.membersText)}. Hãy tự suy luận từ câu chuyện gia đình để chọn đồ thiết yếu nhất!</div>
    <div class="row">
-     <button class="${bagContainer==='backpack'?'primary':''}" onclick="bagContainer='backpack';renderGame()">🎒 Balo vải<br><span style="font-size:11px;font-weight:400">(Gọn nhẹ, dễ ngấm nước)</span></button>
-     <button class="${bagContainer==='bucket'?'primary':''}" onclick="bagContainer='bucket';renderGame()">🪣 Xô nhựa có nắp<br><span style="font-size:11px;font-weight:400">(Chống thấm bảo vệ thuốc/sữa)</span></button>
+     <button class="${bagContainer==='backpack'?'primary':''}" onclick="bagContainer='backpack';renderGame()">🎒 Balo vải<br><span style="font-size:11px;font-weight:400"></span></button>
+     <button class="${bagContainer==='bucket'?'primary':''}" onclick="bagContainer='bucket';renderGame()">🪣 Xô nhựa có nắp<br><span style="font-size:11px;font-weight:400"></span></button>
    </div>
    <div style="margin-top:10px;display:flex;justify-content:space-between"><b>Đã chọn: ${bagSel.size}/12 món</b><b>Trọng lượng: ${(w/10).toFixed(1)}/5.0 kg</b></div>
    <div class="bar"><div class="fill" style="width:${Math.min(100,Math.max(bagSel.size/12,w/50)*100)}%"></div></div>
@@ -2158,6 +2158,7 @@ if(savedId){ myId = savedId; $('loginWrap').classList.add('hidden'); $('hudLayer
 </script>
 </body>
 </html>
+
 
 
 
