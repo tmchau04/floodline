@@ -1160,17 +1160,17 @@ const PHASE_SCENES = {
 profile_card: {
 mood: 'p1', theme: '', badge: 'T–72 GIỜ',
 title: '🌤️ TRỜI RÁNG MỠ GÀ',
-desc: 'Chân trời ửng sắc ráng mỡ gà, không khí quanh khu phố bắt đầu có nhiều thay đổi. Hãy nhận thẻ phân vai để khám phá hoàn cảnh và câu chuyện của gia đình bạn.'
+desc: 'Trời ửng sắc vàng cam, không khí quanh khu phố bắt đầu có nhiều thay đổi. Hãy nhận thẻ phân vai để khám phá câu chuyện của gia đình bạn.'
 },
 news: {
 mood: 'p2', theme: '', badge: 'T–48 GIỜ',
 title: '🌧️ BẢNG TIN CỘNG ĐỒNG',
-desc: 'Mưa bắt đầu kéo dài, mực nước trên sông dâng lên. Nhiều nguồn tin thật – giả bắt đầu lan truyền trong khu phố.'
+desc: 'Mưa bắt đầu kéo dài, mực nước trên sông dâng lên. Nhiều nguồn tin bắt đầu lan truyền trong khu phố.'
 },
 break: {
 mood: 'break', theme: '', badge: 'KHOẢNG LẶNG CHIA SẺ',
 title: '☕ SHARING SESSION',
-desc: 'Tạm gác lại các thao tác. Đây là lúc cả khu phố cùng ngồi lại trao đổi góc nhìn và kinh nghiệm thực tế theo các nội dung dưới đây:',
+desc: 'Tạm nghỉ ngơi và quay trở lại với phòng Zoom. Cả khu phố cùng ngồi lại trao đổi và chia sẻ câu chuyện sau 24 tiếng trôi qua...',
 topics: SHARING_TOPICS,
 stayUntilNext: true,
 btnText: 'Tiếp tục →'
@@ -1441,7 +1441,7 @@ renderBottomTicker(me, all, t);
 let html = '';
 
 if(!t){
-html = `<div class="card">${room.locked ? `Cảm ơn <b>${esc(me.name)}</b> đã tham gia <b>Ráng Mỡ Gà: Có Nhà Thì Giữ</b>!` : `✅ Chào mừng <b>${esc(me.name)}</b> đến với khu phố Hội An!<br><br>Ngôi nhà <b>${esc(me.name)}</b> đang tỏa sáng viền vàng trên bản đồ. Bạn có thể bấm <b>"🗺️ Xem bản đồ"</b> rồi <b>kéo thả chuột / vuốt</b> để dạo quanh khu phố trong lúc chờ Host bắt đầu!`}</div>`;
+html = `<div class="card">${room.locked ? `Cảm ơn <b>${esc(me.name)}</b> đã tham gia <b>Ráng Mỡ Gà: Có Nhà Thì Giữ</b>!` : `Chào mừng <b>${esc(me.name)}</b> đến với khu phố Hội An!<br><br><b>${esc(me.name)}</b> là ngôi nhà đang tỏa sáng viền vàng trên bản đồ. Bạn có thể bấm <b>"🗺️ Xem bản đồ"</b> và <b>kéo thả chuột / vuốt</b> để dạo quanh khu phố trong lúc chờ khu phố!`}</div>`;
 } else if(t.id === 'profile_card'){
 const prof = me.profile;
 const roleSubtitle = cleanRoleSubtitle(prof?.title);
@@ -2152,6 +2152,7 @@ if(savedId){ myId = savedId; $('loginWrap').classList.add('hidden'); $('hudLayer
 </script>
 </body>
 </html>
+
 
 
 
