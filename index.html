@@ -413,12 +413,12 @@ body.shaking { animation: screenShake 0.55s ease-in-out 2; }
 <!-- 1. MÀN HÌNH INTRO GAME -->
 <div id="introScreen">
 <canvas id="introCanvas" width="480" height="270"></canvas>
-<div class="introContent">
-<div class="gameEdition">✦ KÝ ỨC MÙA NƯỚC NỔI · PHỐ HỘI ✦</div>
-<h1 class="gameMainTitle">RÁNG MỠ GÀ</h1>
-<div class="gameSubTitle">CÓ NHÀ THÌ GIỮ</div>
-<button class="playStartBtn" id="introPlayBtn" onclick="enterGameFromIntro()">▶ BẮT ĐẦU CHƠI</button>
-</div>
+<div class="introContent" style="justify-content:flex-start;padding-top:34px;max-width:760px">
+    <div class="gameEdition">✦ KÝ ỨC MÙA NƯỚC NỔI · PHỐ HỘI ✦</div>
+    <h1 class="gameMainTitle">RÁNG MỠ GÀ</h1>
+    <div class="gameSubTitle" style="margin-bottom:18px">CÓ NHÀ THÌ GIỮ</div>
+    <button class="playStartBtn" id="introPlayBtn" onclick="enterGameFromIntro()">▶ BẮT ĐẦU CHƠI</button>
+  </div>
 <div class="introFooter">RÁNG MỠ GÀ: CÓ NHÀ THÌ GIỮ · MÔ PHỎNG CỘNG ĐỒNG ỨNG PHÓ THIÊN TAI</div>
 </div>
 
@@ -961,108 +961,289 @@ $('eventPopupBackdrop').classList.add('hidden');
 }
 
 // ================= BỘ VẼ PHỐ CỔ HỘI AN BÊN SÔNG =================
-const HOIAN_HOUSES = [
-{ x: 18, w: 62, h: 48, wall: '#e8b948', roof: '#8c3b2b' },
-{ x: 84, w: 74, h: 56, wall: '#f6d465', roof: '#9e4737' },
-{ x: 164, w: 58, h: 44, wall: '#edd074', roof: '#7d3325' },
-{ x: 235, w: 80, h: 52, wall: '#f2c14e', roof: '#8c3b2b' },
-{ x: 322, w: 66, h: 46, wall: '#f6d465', roof: '#9e4737' },
-{ x: 394, w: 72, h: 54, wall: '#e8b948', roof: '#7d3325' }
+const INTRO_HOUSES = [
+  { x: -6,  y: 86,  w: 64, h: 96, roofH: 22, wall: '#d89b3c', roof: '#4a2e22', balcony: true,  peopleRoof: true },
+  { x: 54,  y: 98,  w: 62, h: 82, roofH: 20, wall: '#e2a846', roof: '#563628', balcony: false, peopleRoof: true },
+  { x: 112, y: 112, w: 56, h: 66, roofH: 17, wall: '#e8b452', roof: '#4e3124', balcony: false, peopleRoof: false },
+  { x: 164, y: 121, w: 48, h: 55, roofH: 15, wall: '#ebb95b', roof: '#5c3b2c', balcony: false, peopleRoof: true },
+  { x: 209, y: 128, w: 42, h: 46, roofH: 13, wall: '#efbf65', roof: '#543527', balcony: false, peopleRoof: false },
+  { x: 248, y: 134, w: 34, h: 38, roofH: 11, wall: '#f2c772', roof: '#623f2f', balcony: false, peopleRoof: false },
+  { x: 280, y: 138, w: 28, h: 32, roofH: 9,  wall: '#f4ce7e', roof: '#593829', balcony: false, peopleRoof: false },
+  { x: 306, y: 141, w: 24, h: 27, roofH: 8,  wall: '#f5d48a', roof: '#684332', balcony: false, peopleRoof: false },
+  { x: 328, y: 144, w: 20, h: 22, roofH: 7,  wall: '#f6da96', roof: '#5e3c2c', balcony: false, peopleRoof: false },
+  { x: 346, y: 146, w: 17, h: 19, roofH: 6,  wall: '#f7df9f', roof: '#6b4634', balcony: false, peopleRoof: false },
+  { x: 362, y: 148, w: 15, h: 16, roofH: 5,  wall: '#f8e3a8', roof: '#634030', balcony: false, peopleRoof: false }
 ];
-const SCENE_CLOUDS = [
-{ x: 40, y: 28, w: 90, s: 0.12 },
-{ x: 210, y: 18, w: 120, s: 0.08 },
-{ x: 360, y: 36, w: 85, s: 0.15 }
+
+const INTRO_CLOUDS = [
+  { x: 26,  y: 26, w: 110, s: 0.06 },
+  { x: 185, y: 18, w: 135, s: 0.05 },
+  { x: 330, y: 34, w: 120, s: 0.07 }
 ];
-const SCENE_DROPS = Array.from({ length: 110 }, (_, i) => ({
-x: (i * 37) % 480, y: (i * 53) % 270, len: 5 + (i % 5), spd: 2.5 + (i % 3) * 0.8
+
+// Số hạt mưa giảm xuống thưa nhẹ để không che cảnh
+const INTRO_RAIN = Array.from({ length: 18 }, (_, i) => ({
+  x: (i * 53) % 480,
+  y: (i * 67) % 270,
+  len: 5 + (i % 3),
+  spd: 1.6 + (i % 2) * 0.4
 }));
 
-function renderHoiAnPanorama(ctx, frame, mood) {
-ctx.imageSmoothingEnabled = false;
-const cfg = {
-intro: { skyTop:'#2b2238', skyMid:'#b85d3b', skyBot:'#f5b041', sun:true, sunY:122, rainCount:25, waterY:180, lanternsOn:true, cloudAlpha:0.68 },
-p1:    { skyTop:'#234854', skyMid:'#4b6f75', skyBot:'#e0ab63', sun:true, sunY:112, rainCount:25, waterY:180, lanternsOn:true, cloudAlpha:0.45 },
-p2:    { skyTop:'#12222b', skyMid:'#223742', skyBot:'#4f5d61', sun:false, sunY:0,  rainCount:75, waterY:172, lanternsOn:true, cloudAlpha:0.80 },
-break: { skyTop:'#1c1829', skyMid:'#382a3b', skyBot:'#7d5338', sun:false, sunY:0,  rainCount:20, waterY:178, lanternsOn:true, cloudAlpha:0.40 },
-p3:    { skyTop:'#070d12', skyMid:'#111c24', skyBot:'#25323b', sun:false, sunY:0,  rainCount:110, waterY:148, lanternsOn:false, cloudAlpha:0.94 },
-p4:    { skyTop:'#2b6777', skyMid:'#68a691', skyBot:'#ffd180', sun:true, sunY:98,  rainCount:0,  waterY:182, lanternsOn:true, cloudAlpha:0.22 }
-}[mood] || { skyTop:'#2b2238', skyMid:'#b85d3b', skyBot:'#f5b041', sun:true, sunY:122, rainCount:25, waterY:180, lanternsOn:true, cloudAlpha:0.68 };
+const INTRO_BOATS = [
+  { baseX: 78,  y: 234, w: 54, roof: false, spd: 0.08,  phase: 0.2 },
+  { baseX: 196, y: 206, w: 46, roof: false, spd: -0.06, phase: 1.4 },
+  { baseX: 282, y: 183, w: 36, roof: false, spd: 0.05,  phase: 2.3 },
+  { baseX: 344, y: 173, w: 48, roof: true,  spd: -0.07, phase: 0.9 },
+  { baseX: 392, y: 194, w: 56, roof: true,  spd: 0.06,  phase: 1.8 },
+  { baseX: 376, y: 226, w: 42, roof: false, spd: -0.05, phase: 2.8 }
+];
 
-const sky = ctx.createLinearGradient(0, 0, 0, 175);
-sky.addColorStop(0, cfg.skyTop); sky.addColorStop(0.55, cfg.skyMid); sky.addColorStop(1, cfg.skyBot);
-ctx.fillStyle = sky; ctx.fillRect(0, 0, 480, 175);
+function drawIntroPerson(ctxP, x, y, coatColor, hasFlashlight, hasBag) {
+  ctxP.fillStyle = '#3b2820';
+  ctxP.fillRect(x, y, 4, 3);
+  ctxP.fillStyle = '#f2c6a0';
+  ctxP.fillRect(x, y + 3, 4, 3);
+  ctxP.fillStyle = coatColor;
+  ctxP.fillRect(x - 1, y + 6, 6, 8);
+  ctxP.fillStyle = '#25313d';
+  ctxP.fillRect(x, y + 14, 2, 4);
+  ctxP.fillRect(x + 3, y + 14, 2, 4);
 
-if (cfg.sun) {
-ctx.fillStyle = mood === 'intro' ? 'rgba(255, 195, 90, 0.32)' : 'rgba(255, 232, 163, 0.25)';
-ctx.beginPath(); ctx.arc(355, cfg.sunY, 30, 0, Math.PI * 2); ctx.fill();
-ctx.fillStyle = mood === 'intro' ? '#ffd166' : '#ffe8a3';
-ctx.beginPath(); ctx.arc(355, cfg.sunY, 17, 0, Math.PI * 2); ctx.fill();
+  if (hasBag) {
+    ctxP.fillStyle = '#c85a32';
+    ctxP.fillRect(x - 3, y + 7, 2, 5);
+  }
+  if (hasFlashlight) {
+    const grad = ctxP.createLinearGradient(x + 5, y + 8, x + 28, y + 11);
+    grad.addColorStop(0, 'rgba(255, 246, 190, 0.72)');
+    grad.addColorStop(1, 'rgba(255, 246, 190, 0)');
+    ctxP.fillStyle = grad;
+    ctxP.beginPath();
+    ctxP.moveTo(x + 5, y + 8);
+    ctxP.lineTo(x + 28, y + 4);
+    ctxP.lineTo(x + 28, y + 15);
+    ctxP.closePath();
+    ctxP.fill();
+  }
 }
 
-ctx.fillStyle = `rgba(22, 24, 34, ${cfg.cloudAlpha})`;
-SCENE_CLOUDS.forEach(cl => {
-cl.x += cl.s * (mood === 'p3' ? 2.6 : 1.1);
-if (cl.x > 500) cl.x = -cl.w;
-ctx.fillRect(Math.floor(cl.x), cl.y, cl.w, 13);
-ctx.fillRect(Math.floor(cl.x) + 12, cl.y - 6, cl.w - 24, 9);
-});
+function drawIntroBoat(ctxP, x, y, w, hasRoof) {
+  const bx = Math.floor(x);
+  const by = Math.floor(y);
+  ctxP.fillStyle = 'rgba(20, 32, 44, 0.35)';
+  ctxP.fillRect(bx + 2, by + 6, w - 4, 3);
 
-HOIAN_HOUSES.forEach((h, idx) => {
-const topY = 175 - h.h;
-ctx.fillStyle = h.wall; ctx.fillRect(h.x, topY + 14, h.w, h.h - 14);
-ctx.fillStyle = h.roof;
-ctx.beginPath(); ctx.moveTo(h.x - 4, topY + 15); ctx.lineTo(h.x + h.w / 2, topY); ctx.lineTo(h.x + h.w + 4, topY + 15); ctx.closePath(); ctx.fill();
+  ctxP.fillStyle = '#5c3824';
+  ctxP.beginPath();
+  ctxP.moveTo(bx, by);
+  ctxP.lineTo(bx + w, by);
+  ctxP.lineTo(bx + w - 7, by + 6);
+  ctxP.lineTo(bx + 7, by + 6);
+  ctxP.closePath();
+  ctxP.fill();
 
-const lit = cfg.lanternsOn && (mood === 'break' || mood === 'p4' || idx % 2 === 0);
-ctx.fillStyle = lit ? '#ffe58f' : '#2b1e14';
-ctx.fillRect(h.x + 12, topY + 24, 10, 12);
-ctx.fillRect(h.x + h.w - 22, topY + 24, 10, 12);
+  ctxP.fillStyle = '#855336';
+  ctxP.fillRect(bx + 4, by + 1, w - 8, 2);
 
-const swing = Math.sin(frame * (mood === 'p3' ? 0.16 : 0.06) + idx) * (mood === 'p3' ? 4 : 2.2);
-const lx = Math.floor(h.x + h.w / 2 + swing);
-const ly = topY + 17;
-ctx.fillStyle = cfg.lanternsOn ? ((idx % 2 === 0) ? '#ff4d4f' : '#faad14') : '#4a2e1e';
-ctx.fillRect(lx - 3, ly, 6, 7);
-if (cfg.lanternsOn) { ctx.fillStyle = '#fff1b8'; ctx.fillRect(lx - 1, ly + 2, 2, 3); }
-});
-
-ctx.fillStyle = '#5c4d3c'; ctx.fillRect(0, 173, 480, 7);
-
-const river = ctx.createLinearGradient(0, cfg.waterY, 0, 270);
-if (mood === 'p3') { river.addColorStop(0, 'rgba(28, 64, 82, 0.90)'); river.addColorStop(1, '#091820'); }
-else if (mood === 'intro') { river.addColorStop(0, '#3d3b4d'); river.addColorStop(1, '#182430'); }
-else { river.addColorStop(0, '#1f4e5f'); river.addColorStop(1, '#102933'); }
-ctx.fillStyle = river; ctx.fillRect(0, cfg.waterY, 480, 270 - cfg.waterY);
-
-ctx.fillStyle = 'rgba(255, 224, 163, 0.36)'; ctx.fillRect(0, cfg.waterY, 480, 2);
-
-if (cfg.lanternsOn) {
-HOIAN_HOUSES.forEach((h, idx) => {
-const rx = Math.floor(h.x + h.w / 2 + Math.sin(frame * 0.06 + idx) * 3);
-ctx.fillStyle = (idx % 2 === 0) ? 'rgba(255, 110, 90, 0.35)' : 'rgba(255, 210, 100, 0.35)';
-ctx.fillRect(rx - 4, cfg.waterY + 6, 8, 3); ctx.fillRect(rx - 2, cfg.waterY + 14, 5, 2);
-});
+  if (hasRoof) {
+    ctxP.fillStyle = '#3b2519';
+    ctxP.fillRect(bx + 8, by - 7, w - 16, 2);
+    ctxP.fillStyle = '#d9b37c';
+    ctxP.fillRect(bx + 10, by - 5, w - 20, 5);
+  } else {
+    ctxP.fillStyle = '#2d5a4c';
+    ctxP.fillRect(bx + Math.floor(w * 0.42), by - 5, 4, 5);
+    ctxP.fillStyle = '#f2c6a0';
+    ctxP.fillRect(bx + Math.floor(w * 0.42), by - 8, 4, 3);
+  }
 }
 
-ctx.fillStyle = 'rgba(255, 220, 175, 0.22)';
-for (let w = 0; w < 20; w++) {
-const wx = ((w * 67 + frame * (mood === 'p3' ? 1.3 : 0.45)) % 500) - 20;
-const wy = cfg.waterY + 6 + (w * 19) % Math.max(20, 265 - cfg.waterY);
-ctx.fillRect(Math.floor(wx), wy, 18 + (w % 12), 2);
-}
+function renderIntroScene(ctxP, frame) {
+  ctxP.imageSmoothingEnabled = false;
 
-if (cfg.rainCount > 0) {
-ctx.fillStyle = mood === 'p3' ? 'rgba(225, 245, 255, 0.65)' : 'rgba(215, 240, 255, 0.38)';
-for (let i = 0; i < cfg.rainCount; i++) {
-const d = SCENE_DROPS[i];
-d.y += d.spd * (mood === 'p3' ? 1.6 : 1);
-d.x -= (mood === 'p3' ? 1.6 : 0.5);
-if (d.y > 270) { d.y = -5; d.x = (i * 41 + frame) % 480; }
-if (d.x < 0) d.x += 480;
-ctx.fillRect(Math.floor(d.x), Math.floor(d.y), mood === 'p3' ? 1.5 : 1, d.len);
-}
-}
+  const sky = ctxP.createLinearGradient(0, 0, 480, 165);
+  sky.addColorStop(0, '#8a4224');
+  sky.addColorStop(0.55, '#cc7633');
+  sky.addColorStop(1, '#f6c667');
+  ctxP.fillStyle = sky;
+  ctxP.fillRect(0, 0, 480, 165);
+
+  const sunGlow = ctxP.createRadialGradient(445, 138, 6, 445, 138, 95);
+  sunGlow.addColorStop(0, 'rgba(255, 248, 210, 0.92)');
+  sunGlow.addColorStop(0.45, 'rgba(255, 214, 125, 0.45)');
+  sunGlow.addColorStop(1, 'rgba(255, 190, 95, 0)');
+  ctxP.fillStyle = sunGlow;
+  ctxP.fillRect(320, 40, 160, 125);
+
+  const rbColors = [
+    'rgba(255, 110, 110, 0.24)',
+    'rgba(255, 185, 95, 0.24)',
+    'rgba(255, 240, 130, 0.24)',
+    'rgba(130, 225, 165, 0.22)',
+    'rgba(120, 195, 255, 0.22)'
+  ];
+  rbColors.forEach((col, idx) => {
+    ctxP.strokeStyle = col;
+    ctxP.lineWidth = 2.5;
+    ctxP.beginPath();
+    ctxP.arc(465, 152, 54 - idx * 3, Math.PI, Math.PI * 1.48);
+    ctxP.stroke();
+  });
+
+  ctxP.fillStyle = 'rgba(60, 32, 22, 0.22)';
+  INTRO_CLOUDS.forEach(cl => {
+    cl.x += cl.s;
+    if (cl.x > 495) cl.x = -cl.w;
+    const cx = Math.floor(cl.x);
+    ctxP.fillRect(cx, cl.y, cl.w, 8);
+    ctxP.fillRect(cx + 14, cl.y - 5, cl.w - 28, 6);
+    ctxP.fillRect(cx + 28, cl.y + 8, cl.w - 48, 4);
+  });
+
+  ctxP.fillStyle = 'rgba(72, 42, 30, 0.34)';
+  ctxP.fillRect(0, 62, 58, 75);
+  ctxP.fillRect(58, 76, 48, 60);
+  ctxP.fillRect(106, 92, 44, 48);
+
+  const river = ctxP.createLinearGradient(0, 150, 0, 270);
+  river.addColorStop(0, '#6c7c88');
+  river.addColorStop(0.45, '#475b6d');
+  river.addColorStop(1, '#2b3d4f');
+  ctxP.fillStyle = river;
+  ctxP.fillRect(0, 148, 480, 122);
+
+  ctxP.fillStyle = 'rgba(255, 222, 145, 0.36)';
+  for (let r = 0; r < 14; r++) {
+    const rw = 24 + (r % 5) * 14;
+    const rx = 355 + (r % 4) * 18 + Math.sin(frame * 0.04 + r) * 3;
+    const ry = 152 + r * 6;
+    ctxP.fillRect(Math.floor(rx), ry, rw, 2);
+  }
+
+  ctxP.fillStyle = '#5a585c';
+  ctxP.beginPath();
+  ctxP.moveTo(0, 180);
+  ctxP.lineTo(395, 152);
+  ctxP.lineTo(395, 160);
+  ctxP.lineTo(0, 212);
+  ctxP.closePath();
+  ctxP.fill();
+
+  ctxP.fillStyle = '#787270';
+  ctxP.beginPath();
+  ctxP.moveTo(0, 168);
+  ctxP.lineTo(395, 149);
+  ctxP.lineTo(395, 153);
+  ctxP.lineTo(0, 184);
+  ctxP.closePath();
+  ctxP.fill();
+
+  INTRO_HOUSES.forEach((h, idx) => {
+    ctxP.fillStyle = h.wall;
+    ctxP.fillRect(h.x, h.y + h.roofH, h.w, h.h - h.roofH);
+
+    ctxP.fillStyle = 'rgba(72, 42, 22, 0.22)';
+    ctxP.fillRect(h.x + h.w - Math.max(3, Math.floor(h.w * 0.14)), h.y + h.roofH, Math.max(3, Math.floor(h.w * 0.14)), h.h - h.roofH);
+
+    ctxP.fillStyle = h.roof;
+    ctxP.beginPath();
+    ctxP.moveTo(h.x - 2, h.y + h.roofH);
+    ctxP.lineTo(h.x + Math.floor(h.w * 0.44), h.y);
+    ctxP.lineTo(h.x + h.w + 2, h.y + h.roofH);
+    ctxP.closePath();
+    ctxP.fill();
+
+    ctxP.fillStyle = 'rgba(255, 195, 130, 0.14)';
+    ctxP.fillRect(h.x + 3, h.y + Math.floor(h.roofH * 0.55), h.w - 6, 1);
+
+    if (h.w >= 26) {
+      const winW = Math.max(4, Math.floor(h.w * 0.15));
+      const winH = Math.max(5, Math.floor((h.h - h.roofH) * 0.22));
+      ctxP.fillStyle = idx % 2 === 1 ? '#f7d27a' : '#3a261c';
+      ctxP.fillRect(h.x + Math.floor(h.w * 0.18), h.y + h.roofH + 6, winW, winH);
+      ctxP.fillRect(h.x + Math.floor(h.w * 0.52), h.y + h.roofH + 6, winW, winH);
+
+      const doorW = Math.max(6, Math.floor(h.w * 0.24));
+      const doorH = Math.max(8, Math.floor((h.h - h.roofH) * 0.34));
+      ctxP.fillStyle = '#2d1e17';
+      ctxP.fillRect(h.x + Math.floor(h.w * 0.22), h.y + h.h - doorH, doorW, doorH);
+    }
+
+    if (h.balcony) {
+      const by = h.y + h.roofH + 22;
+      ctxP.fillStyle = '#4f3222';
+      ctxP.fillRect(h.x + 2, by, h.w - 6, 2);
+      ctxP.fillRect(h.x + 2, by + 7, h.w - 6, 2);
+      for (let bx = h.x + 4; bx < h.x + h.w - 6; bx += 5) {
+        ctxP.fillRect(bx, by, 2, 8);
+      }
+      ctxP.fillStyle = '#5a7d8c';
+      ctxP.fillRect(h.x + 14, by - 7, 4, 7);
+      ctxP.fillStyle = '#c97b63';
+      ctxP.fillRect(h.x + 26, by - 7, 4, 7);
+      ctxP.fillStyle = '#d4a36a';
+      ctxP.fillRect(h.x + 19, by - 5, 6, 5);
+    }
+
+    if (h.peopleRoof) {
+      ctxP.fillStyle = '#385c6b';
+      ctxP.fillRect(h.x + 14, h.y + 3, 4, 6);
+      ctxP.fillStyle = '#f2c6a0';
+      ctxP.fillRect(h.x + 14, h.y, 4, 3);
+    }
+  });
+
+  ctxP.fillStyle = '#3b281c';
+  ctxP.fillRect(230, 146, 2, 16);
+  ctxP.fillRect(256, 146, 2, 16);
+  ctxP.fillStyle = '#e8d5b5';
+  ctxP.fillRect(228, 134, 32, 14);
+  ctxP.strokeStyle = '#5c3b28';
+  ctxP.lineWidth = 1.5;
+  ctxP.strokeRect(228, 134, 32, 14);
+  ctxP.fillStyle = '#fffdf7';
+  ctxP.fillRect(231, 137, 7, 8);
+  ctxP.fillRect(241, 137, 7, 5);
+  ctxP.fillRect(250, 137, 7, 8);
+
+  ctxP.fillStyle = '#b8b2a6';
+  ctxP.fillRect(184, 155, 16, 6);
+  ctxP.fillRect(187, 152, 10, 4);
+
+  drawIntroPerson(ctxP, 12,  174, '#d99b52', true,  true);
+  drawIntroPerson(ctxP, 32,  171, '#c96a4b', true,  true);
+  drawIntroPerson(ctxP, 70,  166, '#f2c94c', false, false);
+  drawIntroPerson(ctxP, 94,  164, '#d64545', false, false);
+  drawIntroPerson(ctxP, 148, 157, '#f2c94c', true,  true);
+  drawIntroPerson(ctxP, 168, 155, '#d64545', false, true);
+  drawIntroPerson(ctxP, 202, 150, '#d64545', true,  false);
+
+  ctxP.fillStyle = '#4a2e1e';
+  ctxP.fillRect(58, 198, 3, 22);
+  ctxP.fillRect(188, 174, 3, 18);
+
+  INTRO_BOATS.forEach((b) => {
+    const bx = b.baseX + Math.sin(frame * 0.02 + b.phase) * 4;
+    const by = b.y + Math.cos(frame * 0.03 + b.phase) * 1;
+    drawIntroBoat(ctxP, bx, by, b.w, b.roof);
+  });
+
+  ctxP.fillStyle = 'rgba(225, 238, 245, 0.22)';
+  for (let w = 0; w < 14; w++) {
+    const wx = ((w * 79 + frame * 0.35) % 490) - 10;
+    const wy = 166 + (w * 17) % 94;
+    ctxP.fillRect(Math.floor(wx), wy, 14 + (w % 10), 1.5);
+  }
+
+  ctxP.fillStyle = 'rgba(235, 244, 255, 0.38)';
+  for (let i = 0; i < INTRO_RAIN.length; i++) {
+    const d = INTRO_RAIN[i];
+    d.y += d.spd;
+    d.x -= 0.35;
+    if (d.y > 270) { d.y = -6; d.x = (i * 59 + frame) % 480; }
+    if (d.x < 0) d.x += 480;
+    ctxP.fillRect(Math.floor(d.x), Math.floor(d.y), 1, d.len);
+  }
 }
 
 // ================= INTRO SCREEN =================
@@ -2100,4 +2281,5 @@ if(savedId){ myId = savedId; $('loginWrap').classList.add('hidden'); $('hudLayer
 </script>
 </body>
 </html>
+
 
