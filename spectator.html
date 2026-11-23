@@ -3,58 +3,237 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RÁNG MỠ GÀ: CÓ NHÀ THÌ GIỮ · CAMERA KHU PHỐ (ZOOM)</title>
+<title>RÁNG MỠ GÀ: CÓ NHÀ THÌ GIỮ · LIVESTREAM VIEW (ZOOM)</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="art.js"></script>
 <script src="game-data.js"></script>
 <style>
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#14282e;color:#2f4842;font:14px system-ui,Arial}
-button,input{font:inherit;border:2px solid #ae956f;border-radius:8px;padding:8px 11px;background:#fffdf5;color:#2f4842}
-button{cursor:pointer;font-weight:750;background:#e0eacb}
+html,body{margin:0;padding:0;width:100vw;height:100vh;overflow:hidden;background:#162928;color:#2f4842;font:14px system-ui,-apple-system,Arial}
+button,input{font:inherit;border:2px solid #ae956f;border-radius:8px;padding:6px 10px;background:#fffdf5;color:#2f4842}
+button{cursor:pointer;font-weight:750;background:#e0eacb;transition:transform 0.1s ease,background 0.15s ease}
+button:hover{filter:brightness(1.03)}
+button:active{transform:scale(0.98)}
 button.primary{background:#3e8a70;color:#fff;border-color:#2b6350}
 .hidden{display:none!important}
-.small{font-size:12px;color:#63726a}
+.small{font-size:12px;color:#5c6e66}
 
 /* Đăng nhập màn hình trình chiếu */
-#authScreen{position:fixed;inset:0;z-index:500;background:rgba(16,38,44,0.88);display:flex;align-items:center;justify-content:center;padding:16px}
-.authBox{background:#fff8e7;border:4px solid #ad8a5c;border-radius:16px;padding:22px;width:100%;max-width:420px;box-shadow:0 16px 40px rgba(0,0,0,0.5)}
+#authScreen{position:fixed;inset:0;z-index:500;background:rgba(16,38,44,0.9);display:flex;align-items:center;justify-content:center;padding:16px}
+.authBox{background:#fff8e7;border:4px solid #ad8a5c;border-radius:16px;padding:24px;width:100%;max-width:420px;box-shadow:0 16px 40px rgba(0,0,0,0.5)}
 .authBox h2{margin:0 0 8px}
 .errMsg{color:#b63e3e;font-weight:700;font-size:12.5px;min-height:18px;margin-top:6px}
 
-/* Vùng bản đồ toàn màn hình */
-#stageWrap{position:fixed;inset:0;width:100vw;height:100vh;overflow:hidden;background:#2b4a42;user-select:none}
-#specMap{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;cursor:grab;display:block}
+/* Khung tổng thể kiểu Streamer Overlay cho Laptop: 0 khoảng trống dư, 0 đè chéo */
+#streamShell{display:flex;flex-direction:column;width:100vw;height:100vh;overflow:hidden;background:#182c2b}
+
+/* 1. Thanh Top Header */
+.streamTopBar{
+  height:52px;
+  flex-shrink:0;
+  background:linear-gradient(180deg,#253f3d,#1a2f2e);
+  border-bottom:2.5px solid #96734e;
+  padding:0 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  color:#fff7e5;
+  z-index:20;
+}
+.topGroup{display:flex;align-items:center;gap:10px}
+.roomTitle{font-size:15px;font-weight:850;letter-spacing:0.2px;color:#fff7e5}
+.phasePill{background:#3e8a70;color:#fff;font-weight:800;padding:4px 11px;border-radius:7px;font-size:12.5px;border:1.5px solid #75bfa3}
+.clockBox{background:#f6c95e;color:#2b1d0e;font-weight:900;padding:4px 12px;border-radius:7px;font-size:15px;letter-spacing:0.6px;box-shadow:inset 0 -2px 0 rgba(0,0,0,0.18)}
+.hudBtn{padding:5px 10px;font-size:12px;background:#fff6df;border:2px solid #96734e;color:#2b1d0e}
+.hudBtn.active{background:#f6c95e;border-color:#fff2c2}
+
+/* 2. Khu vực chính ở giữa: Chia 2 cột khít nhau (Map bên trái + Khung chat bên phải) */
+.streamMain{
+  flex:1;
+  min-height:0;
+  display:flex;
+  position:relative;
+  overflow:hidden;
+}
+
+/* Cột trái: Camera Map */
+.mapViewport{
+  flex:1;
+  min-width:0;
+  height:100%;
+  position:relative;
+  overflow:hidden;
+  background:#28463e;
+  user-select:none;
+}
+#specMap{
+  width:100%;
+  height:100%;
+  display:block;
+  image-rendering:pixelated;
+  cursor:grab;
+}
 #specMap.dragging{cursor:grabbing}
+.mapHintTag{
+  position:absolute;
+  left:10px;
+  bottom:10px;
+  background:rgba(20,38,37,0.75);
+  color:#f5e6c4;
+  padding:4px 9px;
+  border-radius:6px;
+  font-size:11.5px;
+  pointer-events:none;
+  border:1px solid rgba(201,166,107,0.45);
+}
 
-/* Thanh trên cùng: Pha, Đồng hồ, Camera */
-.topHud{position:fixed;top:10px;left:10px;right:10px;z-index:25;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;pointer-events:none;flex-wrap:wrap}
-.hudCard{pointer-events:auto;background:rgba(255,247,229,0.95);border:3px solid #96734e;border-radius:14px;padding:8px 13px;box-shadow:0 6px 18px rgba(0,0,0,0.3);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.phasePill{background:#2c5e4e;color:#fff6dc;font-weight:800;padding:4px 10px;border-radius:8px;font-size:13px}
-.clockBox{background:#f6c95e;color:#2b1d0e;font-weight:900;padding:4px 11px;border-radius:8px;font-size:15px;letter-spacing:0.5px}
+/* Cột phải: Khung chat độc lập về Bảng tin cộng đồng khu phố Hội An */
+.chatSidebar{
+  width:370px;
+  flex-shrink:0;
+  height:100%;
+  background:#fbf3df;
+  border-left:3px solid #96734e;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  transition:width 0.2s ease, background 0.2s ease;
+  z-index:15;
+}
+.chatSidebar.hiddenPanel{
+  width:0;
+  border-left:none;
+}
+/* Chế độ phủ trong suốt lên góc phải map khi người dùng bật "Nền trong suốt" */
+.chatSidebar.overlayMode{
+  position:absolute;
+  top:10px;
+  right:10px;
+  bottom:10px;
+  height:auto;
+  width:370px;
+  border:2.5px solid rgba(230,192,123,0.85);
+  border-radius:14px;
+  background:rgba(16,32,33,0.52);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  box-shadow:0 10px 28px rgba(0,0,0,0.42);
+}
+.chatHeader{
+  background:linear-gradient(180deg,#4b3722,#362616);
+  color:#fff6dc;
+  padding:9px 12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  flex-shrink:0;
+  border-bottom:2px solid #8a6842;
+}
+.chatHeaderTitle{
+  font-size:13px;
+  font-weight:850;
+  letter-spacing:0.2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.chatHeaderActions{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.miniIconBtn{padding:3px 7px;font-size:11px;border-radius:6px;background:#f6c95e;color:#2b1d0e;border:1.5px solid #fff0be}
 
-/* Khung chat độc lập: Bảng tin cộng đồng khu phố Hội An */
-.chatBoard{position:fixed;top:72px;right:12px;bottom:58px;width:min(390px,36vw);z-index:22;background:rgba(255,248,231,0.97);border:3px solid #96734e;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.35);display:flex;flex-direction:column;overflow:hidden;transition:all 0.2s ease}
-.chatBoard.minimized{top:auto;bottom:58px;height:auto;width:auto}
-.chatHeader{background:linear-gradient(180deg,#4f3a23,#3b2a19);color:#fff6dc;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer}
-.chatHeaderTitle{font-size:12.5px;font-weight:850;letter-spacing:0.3px}
-.chatToggleBtn{padding:3px 8px;font-size:11.5px;border-radius:6px;background:#f6c95e;color:#2b1d0e;border:1.5px solid #fff3c4}
-.chatBody{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;background:#fdf8ec}
-.chatBoard.minimized .chatBody{display:none}
+.chatBody{
+  flex:1;
+  overflow-y:auto;
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
 
-.summaryBox{background:#fdf3d7;border:2px solid #cfa96e;border-radius:10px;padding:9px 11px;font-size:12.5px;line-height:1.5}
-.heroBox{background:#eef8f2;border:1.5px solid #589c82;border-radius:10px;padding:9px 11px;font-size:12.5px;line-height:1.5}
+/* Thẻ tin trong khung chat - giữ độ tương phản cao kể cả khi bật nền trong suốt */
+.summaryBox{
+  background:#fff6dc;
+  border:2px solid #c99c57;
+  border-radius:10px;
+  padding:10px 11px;
+  font-size:12.5px;
+  line-height:1.5;
+  color:#23332f;
+  box-shadow:0 2px 6px rgba(0,0,0,0.12);
+}
+.heroBox{
+  background:#eaf7ef;
+  border:2px solid #4c9478;
+  border-radius:10px;
+  padding:10px 11px;
+  font-size:12.5px;
+  line-height:1.5;
+  color:#1f352e;
+  box-shadow:0 2px 6px rgba(0,0,0,0.12);
+}
+.chatBubble{
+  background:rgba(255,253,246,0.97);
+  border:1.5px solid #cbb48b;
+  border-radius:10px;
+  padding:8px 10px;
+  font-size:12.5px;
+  line-height:1.45;
+  color:#1f302c;
+  box-shadow:0 2px 6px rgba(0,0,0,0.14);
+}
+.chatBubble.newsPost{border-left:4px solid #2b6cb0;background:rgba(242,248,255,0.98)}
+.chatBubble.playerPost{border-left:4px solid #2f855a;background:rgba(241,252,246,0.98)}
+.chatBubble.alertPost{border-left:4px solid #c53030;background:rgba(255,243,242,0.98)}
+.chatMeta{display:flex;justify-content:space-between;gap:6px;font-size:11px;color:#52635d;margin-bottom:3px;font-weight:800}
 
-.chatBubble{background:#fffdf6;border:1.5px solid #d5c19b;border-radius:10px;padding:8px 10px;font-size:12.5px;line-height:1.45}
-.chatBubble.newsPost{border-left:4px solid #2b6cb0;background:#f3f8fd}
-.chatBubble.playerPost{border-left:4px solid #3e8a70;background:#f4fbf7}
-.chatBubble.alertPost{border-left:4px solid #c94a38;background:#fff4f2}
-.chatMeta{display:flex;justify-content:space-between;gap:6px;font-size:11px;color:#63726a;margin-bottom:3px;font-weight:700}
+.chatSidebar.overlayMode .emptyFeedNote{
+  color:#fff8e7;
+  font-weight:650;
+  text-shadow:0 1px 3px rgba(0,0,0,0.85);
+}
+.chatSidebar.overlayMode .sectionDividerLabel{
+  color:#ffe8a3;
+  text-shadow:0 1px 3px rgba(0,0,0,0.9);
+}
 
-/* Thanh diễn biến dưới cùng */
-.bottomBar{position:fixed;bottom:10px;left:12px;right:12px;z-index:25;background:rgba(28,53,52,0.94);color:#fff7e5;border:2px solid #c9a66b;border-radius:12px;padding:9px 14px;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:0 6px 18px rgba(0,0,0,0.35)}
-.bottomBar.storm{background:rgba(130,32,32,0.95);border-color:#ffd166}
+/* 3. Thanh Ticker chạy dưới đáy kiểu Livestream */
+.streamBottomBar{
+  height:40px;
+  flex-shrink:0;
+  background:#192e2d;
+  border-top:2px solid #96734e;
+  padding:0 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  color:#fff7e5;
+  font-size:13px;
+  z-index:20;
+}
+.streamBottomBar.storm{
+  background:#7c1d1d;
+  border-top-color:#ffd166;
+}
+.tickerLiveBadge{
+  background:#d64545;
+  color:#fff;
+  font-size:11px;
+  font-weight:900;
+  padding:2px 7px;
+  border-radius:5px;
+  letter-spacing:0.6px;
+  flex-shrink:0;
+}
+#weatherTicker{
+  flex:1;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-weight:600;
+}
 
 /* Màn hình chuyển cảnh trình chiếu cho Spectator */
 #specPhaseOverlay{position:fixed;inset:0;z-index:200;background:#132933;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;color:#fff8e7;opacity:0;pointer-events:none;transition:opacity 0.45s ease}
@@ -70,10 +249,6 @@ button.primary{background:#3e8a70;color:#fff;border-color:#2b6350}
 @keyframes specLightning{0%,100%{filter:brightness(1)}12%{filter:brightness(2.4)}20%{filter:brightness(0.85)}28%{filter:brightness(2.0)}40%{filter:brightness(1)}}
 @keyframes specShake{0%,100%{transform:translate(0,0)}20%{transform:translate(-6px,4px)}40%{transform:translate(6px,-4px)}60%{transform:translate(-4px,-3px)}80%{transform:translate(4px,3px)}}
 body.specShaking{animation:specShake 0.55s ease-in-out 2}
-
-@media(max-width:860px){
-  .chatBoard:not(.minimized){top:auto;left:10px;right:10px;bottom:56px;width:auto;max-height:38vh}
-}
 </style>
 </head>
 <body>
@@ -81,55 +256,65 @@ body.specShaking{animation:specShake 0.55s ease-in-out 2}
 <div id="authScreen">
   <div class="authBox">
     <h2>📺 CAMERA KHU PHỐ · TRÌNH CHIẾU ZOOM</h2>
-    <p class="small">Màn hình quan sát toàn cảnh theo thời gian thực (chỉ xem, không can thiệp thao tác chơi). Nhập mã PIN Host để mở:</p>
+    <p class="small">Màn hình quan sát toàn cảnh cho Laptop (chỉ xem, không can thiệp thao tác chơi). Nhập mã PIN Host để mở:</p>
     <input type="password" id="specPin" placeholder="Nhập mã PIN Host" style="width:100%;margin-top:8px" onkeydown="if(event.key==='Enter') unlockSpectator()">
     <div class="errMsg" id="pinErr"></div>
     <button class="primary" style="width:100%;margin-top:6px" onclick="unlockSpectator()">MỞ MÀN HÌNH TRÌNH CHIẾU</button>
   </div>
 </div>
 
-<div id="stageWrap" class="hidden">
-  <canvas id="specMap"></canvas>
+<div id="streamShell" class="hidden">
+  <!-- 1. Thanh HUD trên cùng -->
+  <header class="streamTopBar">
+    <div class="topGroup">
+      <span class="roomTitle" id="roomCount">🏘️ Khu phố Hội An (0/25)</span>
+      <span class="phasePill" id="phaseBadge">Chờ bắt đầu</span>
+      <span class="clockBox" id="specClock">--:--</span>
+    </div>
+    <div class="topGroup">
+      <button class="hudBtn" onclick="fitMapToViewport()">🎯 Vừa khung hình</button>
+      <button class="hudBtn" onclick="zoomBy(-0.12)">🔍-</button>
+      <button class="hudBtn" onclick="zoomBy(0.12)">🔍+</button>
+      <button class="hudBtn active" id="toggleChatBtn" onclick="toggleChatSidebar()">💬 Bảng tin Hội An</button>
+    </div>
+  </header>
 
-  <div class="topHud">
-    <div class="hudCard">
-      <strong id="roomCount">🏘️ Khu phố Hội An (0/25)</strong>
-      <span id="phaseBadge" class="phasePill">Chờ bắt đầu</span>
-      <span id="specClock" class="clockBox">--:--</span>
-    </div>
-    <div class="hudCard">
-      <button style="padding:5px 9px;font-size:12px" onclick="resetCam()">🎯 Toàn cảnh</button>
-      <button style="padding:5px 9px;font-size:12px" onclick="zoomBy(-0.15)">🔍-</button>
-      <button style="padding:5px 9px;font-size:12px" onclick="zoomBy(0.15)">🔍+</button>
-      <button style="padding:5px 9px;font-size:12px" onclick="toggleChatBoard()">💬 Bảng tin Hội An</button>
-    </div>
-  </div>
+  <!-- 2. Khung chính chia 2 cột khít nhau: Bản đồ bên trái + Bảng tin bên phải -->
+  <main class="streamMain">
+    <section class="mapViewport" id="mapViewport">
+      <canvas id="specMap"></canvas>
+      <div class="mapHintTag">🖱️ Kéo để di chuyển · Cuộn chuột để phóng to/thu nhỏ</div>
+    </section>
 
-  <!-- Khung chat độc lập duy nhất: Bảng tin cộng đồng khu phố Hội An -->
-  <aside id="chatBoard" class="chatBoard">
-    <div class="chatHeader" onclick="toggleChatBoard()">
-      <span class="chatHeaderTitle">💬 Bảng tin cộng đồng khu phố Hội An</span>
-      <button type="button" id="chatToggleBtn" class="chatToggleBtn" onclick="event.stopPropagation();toggleChatBoard()">Thu gọn</button>
-    </div>
-    <div id="chatBody" class="chatBody">
-      <div class="small">Bảng tin cộng đồng, tin thương lượng/chia sẻ Part III, thông báo biến cố và tổng kết cuối game sẽ hiển thị tại đây.</div>
-    </div>
-  </aside>
+    <aside class="chatSidebar" id="chatSidebar">
+      <div class="chatHeader">
+        <span class="chatHeaderTitle">💬 Bảng tin cộng đồng khu phố Hội An</span>
+        <div class="chatHeaderActions">
+          <button type="button" class="miniIconBtn" id="overlayModeBtn" onclick="toggleOverlayMode()" title="Chuyển chế độ nền trong suốt đè nhẹ lên bản đồ khi phóng to">🪟 Nền trong suốt</button>
+          <button type="button" class="miniIconBtn" onclick="toggleChatSidebar()" title="Ẩn khung bảng tin">✕</button>
+        </div>
+      </div>
+      <div class="chatBody" id="chatBody">
+        <div class="small emptyFeedNote">Bảng tin cộng đồng, tin thương lượng/chia sẻ Part III, thông báo biến cố và tổng kết cuối game sẽ hiển thị tại đây.</div>
+      </div>
+    </aside>
+  </main>
 
-  <div id="bottomBar" class="bottomBar">
-    <span id="weatherTicker">☀️ Đang theo dõi khu phố Hội An...</span>
-    <span class="small" style="color:#f5c96b;white-space:nowrap">Kéo thả để di chuyển · Cuộn để zoom</span>
-  </div>
+  <!-- 3. Thanh Ticker chạy dưới đáy -->
+  <footer class="streamBottomBar" id="bottomBar">
+    <span class="tickerLiveBadge">TRỰC TIẾP</span>
+    <span id="weatherTicker">🌤️ Đang theo dõi toàn cảnh khu phố Hội An...</span>
+  </footer>
+</div>
 
-  <!-- Màn chuyển cảnh y hệt người chơi cho Spectator -->
-  <div id="specPhaseOverlay">
-    <canvas id="specPhaseCanvas" width="480" height="270"></canvas>
-    <div class="specOvContent">
-      <div class="specOvBadge" id="specOvBadge">T–72 GIỜ</div>
-      <h2 id="specOvTitle">TIÊU ĐỀ PHẦN</h2>
-      <p id="specOvDesc">Mô tả bối cảnh...</p>
-      <div id="specOvTopics" class="specOvTopics hidden"></div>
-    </div>
+<!-- Màn hình chuyển cảnh đồng bộ -->
+<div id="specPhaseOverlay">
+  <canvas id="specPhaseCanvas" width="480" height="270"></canvas>
+  <div class="specOvContent">
+    <div class="specOvBadge" id="specOvBadge">T–72 GIỜ</div>
+    <h2 id="specOvTitle">TIÊU ĐỀ PHẦN</h2>
+    <p id="specOvDesc">Mô tả bối cảnh...</p>
+    <div id="specOvTopics" class="specOvTopics hidden"></div>
   </div>
 </div>
 
@@ -148,7 +333,7 @@ let currentSpecMood = 'p1';
 let persistentFeedItems = [];
 let seenPersistentKeys = new Set();
 
-let camX = 0, camY = 0, targetCamX = 0, targetCamY = 0, camZoom = 0.88;
+let camX = 0, camY = 0, targetCamX = 0, targetCamY = 0, camZoom = 1;
 let isDragging = false, startX = 0, startY = 0, startCamX = 0, startCamY = 0;
 let tick = 0, lightningTimer = 0;
 const artImgs = {};
@@ -362,9 +547,9 @@ async function unlockSpectator() {
     }
   }
   $('authScreen').classList.add('hidden');
-  $('stageWrap').classList.remove('hidden');
+  $('streamShell').classList.remove('hidden');
   resizeCanvas();
-  resetCam();
+  fitMapToViewport();
 
   DB.ref('room').on('value', s => {
     room = s.val() || { players: {} };
@@ -374,14 +559,24 @@ async function unlockSpectator() {
   setInterval(updateClock, 500);
 }
 
-function toggleChatBoard() {
-  const board = $('chatBoard');
-  const isMin = board.classList.toggle('minimized');
-  $('chatToggleBtn').textContent = isMin ? 'Mở' : 'Thu gọn';
-  if (!isMin) {
-    const body = $('chatBody');
-    body.scrollTop = body.scrollHeight;
-  }
+function toggleChatSidebar() {
+  const sidebar = $('chatSidebar');
+  const isHidden = sidebar.classList.toggle('hiddenPanel');
+  $('toggleChatBtn').classList.toggle('active', !isHidden);
+  setTimeout(() => {
+    resizeCanvas();
+    fitMapToViewport();
+  }, 220);
+}
+
+function toggleOverlayMode() {
+  const sidebar = $('chatSidebar');
+  const isOverlay = sidebar.classList.toggle('overlayMode');
+  $('overlayModeBtn').textContent = isOverlay ? '📌 Cố định cạnh phải' : '🪟 Nền trong suốt';
+  setTimeout(() => {
+    resizeCanvas();
+    fitMapToViewport();
+  }, 220);
 }
 
 function pushFeedItem(key, item) {
@@ -438,7 +633,7 @@ function buildFinalSummaryHtml(r) {
       <div><b>🏅 Người hùng khu phố (Top 3)</b></div>
       ${heroHtml}
     </div>
-    <div class="small" style="font-weight:800">📋 Chi tiết từng hộ dân</div>
+    <div class="small sectionDividerLabel" style="font-weight:800">📋 Chi tiết từng hộ dân</div>
     ${houseRows}
   `;
 }
@@ -450,7 +645,7 @@ function syncUnifiedFeed(r) {
   const phase = t?.phase || 1;
   const players = Object.values(r.players || {}).filter(p => p && p.status !== 'left');
 
-  // 1. Tin tức trên Bảng tin cộng đồng khu phố (Part II)
+  // 1. Tin tức trên Bảng tin cộng đồng (Part II)
   const board = (r.boardIndices || []).map(i => NEWS[i]).filter(Boolean);
   if (board.length) {
     board.forEach((nw, i) => {
@@ -475,7 +670,7 @@ function syncUnifiedFeed(r) {
     });
   }
 
-  // 2. Thông báo biến cố & sự kiện từ hệ thống/Host
+  // 2. Thông báo biến cố & sự kiện hệ thống
   Object.entries(r.events || {}).forEach(([eid, ev]) => {
     if (!ev || !ev.text) return;
     const isIncident = ev.text.includes('cuốn') || ev.text.includes('nhiễm bẩn') ||
@@ -524,7 +719,7 @@ function syncUnifiedFeed(r) {
           </div>
         `;
       }).join('')
-    : `<div class="small">Chưa có tin đăng hoặc thông báo nào trên bảng tin khu phố.</div>`;
+    : `<div class="small emptyFeedNote">Chưa có tin đăng hoặc thông báo nào trên bảng tin khu phố.</div>`;
 
   const nearBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 60;
   body.innerHTML = summaryHtml + feedHtml;
@@ -580,7 +775,7 @@ function renderSpectatorUI() {
   if (isEndingPhase) {
     $('weatherTicker').textContent = '🌅 Trời quang mây tạnh — Bảng tin tổng kết toàn khu phố đã cập nhật.';
   } else if (latestItem) {
-    $('weatherTicker').textContent = `⚡ ${latestItem.sender}: ${latestItem.text}`;
+    $('weatherTicker').textContent = `${latestItem.sender}: ${latestItem.text}`;
   } else if (phase === 3) {
     $('weatherTicker').textContent = '⛈️ Bão lũ đang đổ bộ — Mưa lớn, gió giật và mực nước dâng cao trong khu phố.';
   } else if (phase === 2 && tid !== 'break') {
@@ -590,8 +785,9 @@ function renderSpectatorUI() {
   }
 }
 
-// Camera kéo thả & zoom giống màn chơi
+// Camera vừa khít khung nhìn laptop, không tạo khoảng trống thừa
 const WORLD_W = 1120, WORLD_H = 740;
+const viewportEl = $('mapViewport');
 const canvas = $('specMap');
 const ctx = canvas.getContext('2d');
 const spots = Array.from({ length: 25 }, (_, i) => ({
@@ -599,40 +795,59 @@ const spots = Array.from({ length: 25 }, (_, i) => ({
   y: 135 + Math.floor(i / 5) * 115
 }));
 
+function getViewportSize() {
+  return {
+    w: Math.max(320, viewportEl.clientWidth || window.innerWidth),
+    h: Math.max(240, viewportEl.clientHeight || (window.innerHeight - 92))
+  };
+}
+
+function getMinFitZoom() {
+  const { w, h } = getViewportSize();
+  return Math.max(w / WORLD_W, h / WORLD_H);
+}
+
 function resizeCanvas() {
+  const { w, h } = getViewportSize();
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  canvas.width = window.innerWidth * dpr;
-  canvas.height = window.innerHeight * dpr;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.imageSmoothingEnabled = false;
+  const minZ = getMinFitZoom();
+  if (camZoom < minZ) camZoom = minZ;
   clampCam();
 }
 window.addEventListener('resize', resizeCanvas);
 
 function clampCam() {
-  const vw = window.innerWidth / camZoom;
-  const vh = window.innerHeight / camZoom;
-  targetCamX = WORLD_W <= vw ? (WORLD_W - vw) / 2 : Math.max(-120, Math.min(WORLD_W - vw + 120, targetCamX));
-  targetCamY = WORLD_H <= vh ? (WORLD_H - vh) / 2 : Math.max(-120, Math.min(WORLD_H - vh + 120, targetCamY));
+  const { w, h } = getViewportSize();
+  const vw = w / camZoom;
+  const vh = h / camZoom;
+  targetCamX = WORLD_W <= vw ? (WORLD_W - vw) / 2 : Math.max(0, Math.min(WORLD_W - vw, targetCamX));
+  targetCamY = WORLD_H <= vh ? (WORLD_H - vh) / 2 : Math.max(0, Math.min(WORLD_H - vh, targetCamY));
 }
 
-function resetCam() {
-  camZoom = Math.max(0.7, Math.min(1.0, window.innerWidth / 1320));
-  const vw = window.innerWidth / camZoom;
-  const vh = window.innerHeight / camZoom;
+function fitMapToViewport() {
+  const { w, h } = getViewportSize();
+  camZoom = getMinFitZoom();
+  const vw = w / camZoom;
+  const vh = h / camZoom;
   targetCamX = (WORLD_W - vw) / 2;
   targetCamY = (WORLD_H - vh) / 2;
   clampCam();
 }
 
 function zoomBy(d) {
-  const vw = window.innerWidth / camZoom;
-  const vh = window.innerHeight / camZoom;
+  const { w, h } = getViewportSize();
+  const vw = w / camZoom;
+  const vh = h / camZoom;
   const cx = targetCamX + vw / 2;
   const cy = targetCamY + vh / 2;
-  camZoom = Math.max(0.6, Math.min(1.5, Number((camZoom + d).toFixed(2))));
-  targetCamX = cx - (window.innerWidth / camZoom) / 2;
-  targetCamY = cy - (window.innerHeight / camZoom) / 2;
+  const minZ = getMinFitZoom();
+  camZoom = Math.max(minZ, Math.min(1.6, Number((camZoom + d).toFixed(3))));
+  targetCamX = cx - (w / camZoom) / 2;
+  targetCamY = cy - (h / camZoom) / 2;
   clampCam();
 }
 
@@ -661,10 +876,10 @@ canvas.addEventListener('wheel', e => {
 
 function drawLoop() {
   tick++;
-  camX += (targetCamX - camX) * 0.22;
-  camY += (targetCamY - camY) * 0.22;
+  camX += (targetCamX - camX) * 0.24;
+  camY += (targetCamY - camY) * 0.24;
 
-  const vw = window.innerWidth, vh = window.innerHeight;
+  const { w: vw, h: vh } = getViewportSize();
   ctx.fillStyle = '#2b4a42';
   ctx.fillRect(0, 0, vw, vh);
 
