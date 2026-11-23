@@ -325,6 +325,87 @@ box-shadow: 0 4px 0 #8c5319;
 @keyframes lightningFlash { 0%, 100% { filter: brightness(1); } 12% { filter: brightness(2.4); } 20% { filter: brightness(0.85); } 28% { filter: brightness(2.0); } 40% { filter: brightness(1); } }
 @keyframes screenShake { 0%, 100% { transform: translate(0, 0); } 20% { transform: translate(-6px, 4px); } 40% { transform: translate(6px, -4px); } 60% { transform: translate(-4px, -3px); } 80% { transform: translate(4px, 3px); } }
 body.shaking { animation: screenShake 0.55s ease-in-out 2; }
+/* === SẮP XẾP THỨ TỰ ƯU TIÊN CHECKLIST (KÉO THẢ + NÚT LÊN/XUỐNG) === */
+.prioHintCard{
+  background:#fdf3d7;
+  border:2px solid #cfa96e;
+  border-radius:11px;
+  padding:10px 12px;
+  margin-bottom:10px;
+  font-size:13.5px;
+  line-height:1.5;
+}
+.prioList{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin:10px 0 14px;
+}
+.prioItem{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:#fffdf6;
+  border:2px solid #cbb792;
+  border-radius:11px;
+  padding:10px 12px;
+  transition:transform 0.14s ease, box-shadow 0.14s ease, border-color 0.14s ease;
+  touch-action:none;
+}
+.prioItem.dragging{
+  opacity:0.92;
+  transform:scale(1.02);
+  border-color:#3e8a70;
+  box-shadow:0 10px 22px rgba(0,0,0,0.22);
+  background:#eef7e6;
+  z-index:20;
+}
+.prioItem.dragOver{
+  border-color:#d9822b;
+  background:#fff4d8;
+}
+.prioRankBadge{
+  min-width:34px;
+  height:34px;
+  border-radius:9px;
+  background:#2c5e4e;
+  color:#fff6dc;
+  font-weight:900;
+  font-size:13px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+.prioDragHandle{
+  cursor:grab;
+  font-size:16px;
+  color:#7a6240;
+  padding:2px 4px;
+  user-select:none;
+  flex-shrink:0;
+}
+.prioDragHandle:active{ cursor:grabbing; }
+.prioText{
+  flex:1;
+  font-size:14px;
+  font-weight:650;
+  color:#2f423e;
+  line-height:1.45;
+}
+.prioMoveBtns{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  flex-shrink:0;
+}
+.prioMiniBtn{
+  padding:2px 8px;
+  font-size:11px;
+  line-height:1.2;
+  border-radius:6px;
+  background:#efe6cf;
+}
 </style>
 </head>
 <body>
@@ -448,7 +529,9 @@ const STUDIO_TASKS = new Set(['profile_card', 'bag_90s', 'vote_news', 'checklist
 let mode='join', myId=null, room=null, lastTaskId='', bagSel=new Set(), bagContainer='backpack', bagFilter='all', voteSel=new Set(), selectedRecipient='', seenEvents=new Set(), initialEventsLoaded=false, lastPendingCount=0, modalOpen=true, studioPeekingMap=false;
 let lastSceneSignalAt = 0;
 let noticeReadLocal = false;
-
+let prioOrder = null;
+let prioSaved = false;
+  
 async function markNoticeAfterVoteRead() {
   if (!myId) return;
   noticeReadLocal = true;
@@ -1256,6 +1339,8 @@ lastPendingCount = incomingPending.length;
 if(tid !== lastTaskId){
 lastTaskId = tid;
 noticeReadLocal = false;
+  prioOrder = null;
+  prioSaved = false;
 if (lastTaskId === 'news_after_vote' || lastTaskId === 'board_decide') SoundFX.playNotiBell();
 if (lastTaskId === 'alert') SoundFX.playEmergencyAlarm();
 studioPeekingMap = false;
@@ -1391,10 +1476,40 @@ inPlay.map(idx => `<button class="voteCard ${voteSel.has(idx)?'sel':''}" onclick
         : `<div class="small" style="margin-top:10px">Hãy chọn một phương án ở trên.</div>`}
     </div>`;  
 } else if(t.id === 'checklist'){
-const checks = Array.isArray(me.checks) ? me.checks : [];
-html = stageCountdownHtml('Thời gian sắp xếp thứ tự ưu tiên chuẩn bị') +
-(me.prepared === true ? `<p>❤️ Rà soát danh mục an toàn trước bão của <b>${esc(me.name)}</b> (${checks.length}/${CHECKLIST.length}):</p>` + CHECKLIST.map((x,i)=>`<label class="card"><input type="checkbox" style="width:auto" ${checks.includes(i)?'checked':''} onchange="toggleCheck(${i})"> ${esc(x)}</label>`).join('') : `<div class="card">⏳ <b>${esc(me.name)}</b> đã chọn phương án B (Tạm thời chờ đợi thêm thông tin).</div>`);
-} else if(t.id === 'break'){
+    const timerHtml = typeof stageCountdownHtml === 'function'
+      ? stageCountdownHtml('Thời gian sắp xếp thứ tự ưu tiên chuẩn bị')
+      : '';
+    if (me.prepared === true) {
+      const order = ensurePrioOrder(me);
+      const roleSubtitle = cleanRoleSubtitle(me.profile?.title);
+      html = timerHtml +
+      `<div class="prioHintCard">
+        <b>🎭 Hoàn cảnh của ${esc(me.name)} (${esc(roleSubtitle)}):</b> ${esc(me.profile?.membersText || '')}<br>
+        <span class="small" style="color:#4a5e59">Kéo thả các mục hoặc bấm ▲/▼ để xếp từ <b>#1 (ưu tiên nhất)</b> đến <b>#${order.length}</b> theo kiến thức, trải nghiệm và hoàn cảnh gia đình bạn. Không có đáp án đúng/sai.</span>
+      </div>
+      <div id="prioListBox" class="prioList">` +
+      order.map((itemIdx, pos) => `
+        <div class="prioItem" onpointerdown="onPrioPointerDown(event, ${pos})">
+          <div class="prioRankBadge">#${pos + 1}</div>
+          <span class="prioDragHandle" title="Kéo để đổi vị trí">☰</span>
+          <div class="prioText">${esc(CHECKLIST[itemIdx] || '')}</div>
+          <div class="prioMoveBtns">
+            <button type="button" class="prioMiniBtn" ${pos === 0 ? 'disabled' : ''} onclick="movePrioIndex(${pos}, ${pos - 1})" title="Đưa lên">▲</button>
+            <button type="button" class="prioMiniBtn" ${pos === order.length - 1 ? 'disabled' : ''} onclick="movePrioIndex(${pos}, ${pos + 1})" title="Đưa xuống">▼</button>
+          </div>
+        </div>
+      `).join('') +
+      `</div>
+      <button class="primary" style="width:100%;padding:12px" onclick="savePriorityOrder()">
+        ${(Array.isArray(me.priorityOrder) && me.priorityOrder.length === CHECKLIST.length && prioSaved)
+          ? '✅ ĐÃ LƯU THỨ TỰ ƯU TIÊN (Bấm để cập nhật lại)'
+          : '📌 CHỐT THỨ TỰ ƯU TIÊN CHUẨN BỊ'}
+      </button>`;
+    } else {
+      html = timerHtml +
+      `<div class="card">⏳ <b>${esc(me.name)}</b> chọn bình tĩnh chờ đợi thêm những thông tin chính xác hơn.</div>`;
+    }
+}  else if(t.id === 'break'){
 html = `<div class="card">☕ <b>SHARING SESSION</b> · Đang hiển thị trên màn hình chuyển cảnh.</div>`;
 } else if(t.id === 'alert'){
 const logs = me.consequenceLogs || [];
@@ -1574,6 +1689,84 @@ async function saveVotes(){
 await DB.ref(`room/players/${myId}/votes`).set([...voteSel]);
 toast('✓ Đã gửi phiếu bình chọn!');
 }
+function ensurePrioOrder(me) {
+  const total = CHECKLIST.length;
+  const base = Array.isArray(me?.priorityOrder) && me.priorityOrder.length === total
+    ? [...me.priorityOrder]
+    : Array.from({ length: total }, (_, i) => i);
+  if (!prioOrder || prioOrder.length !== total) {
+    prioOrder = base;
+  }
+  return prioOrder;
+}
+
+function movePrioIndex(fromIdx, toIdx) {
+  const total = CHECKLIST.length;
+  if (fromIdx === toIdx || fromIdx < 0 || toIdx < 0 || fromIdx >= total || toIdx >= total) return;
+  const next = [...prioOrder];
+  const [moved] = next.splice(fromIdx, 1);
+  next.splice(toIdx, 0, moved);
+  prioOrder = next;
+  prioSaved = false;
+  renderGame();
+}
+
+async function savePriorityOrder() {
+  if (!myId || !prioOrder) return;
+  await DB.ref(`room/players/${myId}/priorityOrder`).set(prioOrder);
+  prioSaved = true;
+  toast('✓ Đã lưu thứ tự ưu tiên chuẩn bị của gia đình!');
+  renderGame();
+}
+
+let dragSrcIndex = null;
+let dragCurrentOverIndex = null;
+
+function onPrioPointerDown(e, idx) {
+  if (e.target.closest('.prioMoveBtns')) return;
+  if (e.button !== undefined && e.button !== 0 && e.pointerType === 'mouse') return;
+
+  dragSrcIndex = idx;
+  dragCurrentOverIndex = idx;
+
+  const listEl = document.getElementById('prioListBox');
+  if (!listEl) return;
+  const rowEls = [...listEl.querySelectorAll('.prioItem')];
+  const activeRow = rowEls[idx];
+  if (activeRow) activeRow.classList.add('dragging');
+
+  function handleMove(ev) {
+    const clientY = ev.clientY;
+    let targetIdx = dragSrcIndex;
+    rowEls.forEach((el, rIdx) => {
+      el.classList.remove('dragOver');
+      const rect = el.getBoundingClientRect();
+      if (clientY >= rect.top && clientY <= rect.bottom) {
+        targetIdx = rIdx;
+      }
+    });
+    dragCurrentOverIndex = targetIdx;
+    if (targetIdx !== null && targetIdx !== dragSrcIndex && rowEls[targetIdx]) {
+      rowEls[targetIdx].classList.add('dragOver');
+    }
+  }
+
+  function handleUp() {
+    window.removeEventListener('pointermove', handleMove);
+    window.removeEventListener('pointerup', handleUp);
+    rowEls.forEach(el => el.classList.remove('dragging', 'dragOver'));
+
+    if (dragSrcIndex !== null && dragCurrentOverIndex !== null && dragSrcIndex !== dragCurrentOverIndex) {
+      movePrioIndex(dragSrcIndex, dragCurrentOverIndex);
+    }
+    dragSrcIndex = null;
+    dragCurrentOverIndex = null;
+  }
+
+  window.addEventListener('pointermove', handleMove);
+  window.addEventListener('pointerup', handleUp);
+}
+  
 async function toggleCheck(i){
 const cur = new Set(Array.isArray(room.players[myId].checks) ? room.players[myId].checks : []);
 if(cur.has(i)) cur.delete(i); else cur.add(i);
