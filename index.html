@@ -447,6 +447,18 @@ const STUDIO_TASKS = new Set(['profile_card', 'bag_90s', 'vote_news', 'checklist
 
 let mode='join', myId=null, room=null, lastTaskId='', bagSel=new Set(), bagContainer='backpack', bagFilter='all', voteSel=new Set(), selectedRecipient='', seenEvents=new Set(), initialEventsLoaded=false, lastPendingCount=0, modalOpen=true, studioPeekingMap=false;
 let lastSceneSignalAt = 0;
+let noticeReadLocal = false;
+
+async function markNoticeAfterVoteRead() {
+  if (!myId) return;
+  noticeReadLocal = true;
+  await DB.ref(`room/players/${myId}/readNoticeAfterVote`).set(true);
+  if (typeof SoundFX !== 'undefined' && SoundFX.playNotiBell) {
+    SoundFX.playNotiBell();
+  }
+  toast('✓ Đã xác nhận đã đọc bảng tin cộng đồng!');
+  renderGame();
+}
 const $ = id => document.getElementById(id);
 const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function toast(s){ const e=$('toast'); e.textContent=s; e.style.display='block'; setTimeout(()=>e.style.display='none',4200); }
@@ -1243,6 +1255,7 @@ lastPendingCount = incomingPending.length;
 
 if(tid !== lastTaskId){
 lastTaskId = tid;
+noticeReadLocal = false;
 if (lastTaskId === 'news_after_vote' || lastTaskId === 'board_decide') SoundFX.playNotiBell();
 if (lastTaskId === 'alert') SoundFX.playEmergencyAlarm();
 studioPeekingMap = false;
@@ -1337,15 +1350,46 @@ html = stageCountdownHtml('Thời gian bình chọn tin tức') +
 `<p>Chọn tối đa <b>3 mẩu tin</b> đáng tin cậy nhất đưa lên Bảng tin cộng đồng (${voteSel.size}/3):</p>` +
 inPlay.map(idx => `<button class="voteCard ${voteSel.has(idx)?'sel':''}" onclick="toggleVote(${idx})"><b>${voteSel.has(idx)?'✅ ':'⬜ '}${esc(NEWS[idx].source)}</b><div class="small" style="margin-top:4px;color:#354c48;font-size:13.5px">${esc(NEWS[idx].text)}</div></button>`).join('') +
 `<button class="primary" style="width:100%;padding:12px;margin-top:8px" onclick="saveVotes()">${(me.votes||[]).length ? '✅ ĐÃ GỬI PHIẾU (Bấm để sửa)' : '🗳️ GỬI PHIẾU BÌNH CHỌN'}</button>`;
-} else if(t.id === 'board_decide'){
-const board = (room.boardIndices||[]).map(i => NEWS[i]?.text).filter(Boolean);
-html = stageCountdownHtml('Thời gian đưa ra lựa chọn') +
-`<p>📢 <b>BẢNG TIN CỘNG ĐỒNG (Top 5 bình chọn):</b></p>` +
-board.map((x,i)=>`<div class="board"><b>Tin #${i+1}:</b> ${esc(x)}</div>`).join('') +
-`<div class="card"><b>Quyết định của ${esc(me.name)} trước giờ bão:</b>
-     <div class="small" style="margin-top:4px">• <b>Chọn A (Chuẩn bị):</b> Khẩn trương kê cao đồ đạc, chằng chống nhà cửa, sẵn sàng sơ tán sớm.<br>• <b>Chọn B (Chờ đợi):</b> Giữ nguyên nhịp sinh hoạt hiện tại, chờ theo dõi thêm diễn biến thực tế.</div>
-   </div>
-   <div class="row"><button class="${me.prepared===true?'primary':''}" onclick="DB.ref('room/players/${myId}/prepared').set(true)">A · 🛡️ Tiếp tục chuẩn bị</button><button class="${me.prepared===false?'primary':''}" onclick="DB.ref('room/players/${myId}/prepared').set(false)">B · ⏳ Tạm thời chờ đợi</button></div>`;
+} else if(t.id === 'news_after_vote'){
+    const isRead = Boolean(me.readNoticeAfterVote || noticeReadLocal);
+    const board = (room.boardIndices || []).map(i => NEWS[i]).filter(Boolean);
+    html = `<div class="card" style="background:#fffdf5;border:2px solid #cfa96e">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px">
+        <span class="tag">📢 BẢNG TIN THÔNG BÁO CỘNG ĐỒNG</span>
+        <span class="small" style="font-weight:700">${isRead ? '✅ Đã xác nhận đã đọc' : '⏳ Chưa xác nhận'}</span>
+      </div>
+      <p style="margin:6px 0 10px">Sau khi bình chọn, dưới đây là bảng tin thông báo tổng hợp để <b>${esc(me.name)}</b> nắm thông tin trước khi đưa ra lựa chọn:</p>
+      ${board.length
+        ? board.map((nw, i) => `<div class="board"><b>Tin #${i + 1} (${esc(nw.source)}):</b><br><span class="small" style="color:#354c48;font-size:13.5px">${esc(nw.text)}</span></div>`).join('')
+        : `<div class="board">Chưa có tin nào được đưa lên bảng tin.</div>`}
+      <div class="note" style="margin-top:10px">
+        <button class="primary" style="width:100%;padding:12px" onclick="markNoticeAfterVoteRead()">
+          ${isRead ? '✅ ĐÃ ĐỌC BẢNG TIN (Đã ghi nhận)' : '✅ ĐÃ ĐỌC BẢNG TIN'}
+        </button>
+      </div>
+    </div>`;
+
+  } else if(t.id === 'board_decide'){
+    const chosenText = me.prepared === true
+      ? 'Chủ động chuẩn bị ứng phó trước và sẵn sàng sơ tán'
+      : (me.prepared === false ? 'Bình tĩnh chờ đợi thêm những thông tin chính xác hơn' : null);
+
+    html = (typeof stageCountdownHtml === 'function' ? stageCountdownHtml('Thời gian đưa ra lựa chọn') : '') +
+    `<div class="card">
+      <h3>🧭 Lựa chọn của ${esc(me.name)}</h3>
+      <p class="small" style="margin:4px 0 12px">Dựa trên bảng tin cộng đồng và hoàn cảnh gia đình, bạn chọn phương án nào?</p>
+      <div class="row" style="flex-direction:column;gap:10px">
+        <button class="${me.prepared===true?'primary':''}" style="width:100%;text-align:left;padding:12px 14px" onclick="DB.ref('room/players/${myId}/prepared').set(true)">
+          Chủ động chuẩn bị ứng phó trước và sẵn sàng sơ tán
+        </button>
+        <button class="${me.prepared===false?'primary':''}" style="width:100%;text-align:left;padding:12px 14px" onclick="DB.ref('room/players/${myId}/prepared').set(false)">
+          Bình tĩnh chờ đợi thêm những thông tin chính xác hơn
+        </button>
+      </div>
+      ${chosenText
+        ? `<div class="note" style="margin-top:12px">✓ Đã ghi nhận: <b>${esc(chosenText)}</b></div>`
+        : `<div class="small" style="margin-top:10px">Hãy chọn một phương án ở trên.</div>`}
+    </div>`;  
 } else if(t.id === 'checklist'){
 const checks = Array.isArray(me.checks) ? me.checks : [];
 html = stageCountdownHtml('Thời gian sắp xếp thứ tự ưu tiên chuẩn bị') +
