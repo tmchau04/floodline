@@ -329,6 +329,7 @@ body.shaking { animation: screenShake 0.55s ease-in-out 2; }
 <button style="padding:4px 8px;font-size:12px" onclick="centerOnMyHouse(true)" title="Đưa camera về nhà mình">🎯 Nhà mình</button>
 <button style="padding:4px 8px;font-size:12px" onclick="adjustZoom(-0.15)" title="Thu nhỏ bản đồ">🔍-</button>
 <button style="padding:4px 8px;font-size:12px" onclick="adjustZoom(0.15)" title="Phóng to bản đồ">🔍+</button>
+<button id="muteBtn" style="padding:4px 8px;font-size:12px" onclick="toggleSoundBtn()" title="Bật/Tắt âm thanh">🔊</button>
 <button id="leaveBtn" style="padding:4px 8px;font-size:12px" onclick="leaveGame()">Rời</button>
 </div>
 <button class="hudActionBtn" id="hudSwitchBtn" onclick="handleHudAction()">
@@ -469,6 +470,326 @@ else if(modalOpen) closeTaskModal();
 
 // ================= HỆ THỐNG POP-UP BIẾN CỐ ĐẶC BIỆT (CHỈ HIỆN KHI CÓ BIẾN CỐ THỰC SỰ) =================
 // ================= HỆ THỐNG POP-UP BIẾN CỐ & CỨU TRỢ ĐẶC BIỆT =================
+// ================= HỆ THỐNG ÂM THANH HIỆU ỨNG (WEB AUDIO API) =================
+const SoundFX = (() => {
+  let ctx = null;
+  let muted = false;
+  let ambientNodes = [];
+  let activeAmbientMode = null;
+
+  function ensureCtx() {
+    if (!ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) ctx = new AudioCtx();
+    }
+    if (ctx && ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+    return ctx;
+  }
+
+  window.addEventListener('pointerdown', () => { ensureCtx(); }, { passive: true });
+
+  function stopAmbient() {
+    ambientNodes.forEach(n => {
+      try {
+        if (typeof n.stop === 'function') n.stop();
+        if (typeof n.disconnect === 'function') n.disconnect();
+      } catch (_) {}
+    });
+    ambientNodes = [];
+    activeAmbientMode = null;
+  }
+
+  function createNoiseBuffer(c, seconds = 2) {
+    const len = Math.floor(c.sampleRate * seconds);
+    const buf = c.createBuffer(1, len, c.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+    return buf;
+  }
+
+  function startRainLoop(c, gainVal, filterFreq) {
+    const src = c.createBufferSource();
+    src.buffer = createNoiseBuffer(c, 2.5);
+    src.loop = true;
+
+    const filter = c.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = filterFreq;
+    filter.Q.value = 0.7;
+
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.001, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.001, gainVal), c.currentTime + 0.6);
+
+    src.connect(filter);
+    filter.connect(g);
+    g.connect(c.destination);
+    src.start();
+    ambientNodes.push(src, filter, g);
+    return g;
+  }
+
+  function startCrowdChatterLoop(c, gainVal) {
+    const src = c.createBufferSource();
+    src.buffer = createNoiseBuffer(c, 3);
+    src.loop = true;
+
+    const filter = c.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 520;
+    filter.Q.value = 2.2;
+
+    const lfo = c.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 2.6;
+    const lfoGain = c.createGain();
+    lfoGain.gain.value = gainVal * 0.45;
+
+    const g = c.createGain();
+    g.gain.setValueAtTime(gainVal * 0.65, c.currentTime);
+
+    lfo.connect(lfoGain);
+    lfoGain.connect(g.gain);
+    src.connect(filter);
+    filter.connect(g);
+    g.connect(c.destination);
+
+    src.start();
+    lfo.start();
+    ambientNodes.push(src, filter, lfo, lfoGain, g);
+  }
+
+  function startStormWindLoop(c, gainVal) {
+    const src = c.createBufferSource();
+    src.buffer = createNoiseBuffer(c, 3);
+    src.loop = true;
+
+    const filter = c.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 340;
+
+    const lfo = c.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = 0.35;
+    const lfoGain = c.createGain();
+    lfoGain.gain.value = 220;
+
+    const g = c.createGain();
+    g.gain.value = gainVal;
+
+    lfo.connect(lfoGain);
+    lfoGain.connect(filter.frequency);
+    src.connect(filter);
+    filter.connect(g);
+    g.connect(c.destination);
+
+    src.start();
+    lfo.start();
+    ambientNodes.push(src, filter, lfo, lfoGain, g);
+  }
+
+  function playThunder(c) {
+    const src = c.createBufferSource();
+    src.buffer = createNoiseBuffer(c, 1.8);
+
+    const filter = c.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(240, c.currentTime);
+    filter.frequency.exponentialRampToValueAtTime(55, c.currentTime + 1.6);
+
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.001, c.currentTime);
+    g.gain.linearRampToValueAtTime(0.42, c.currentTime + 0.06);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 1.7);
+
+    src.connect(filter);
+    filter.connect(g);
+    g.connect(c.destination);
+    src.start();
+    src.stop(c.currentTime + 1.75);
+  }
+
+  function playSunnyChime(c) {
+    const notes = [523.25, 659.25, 783.99, 1046.5];
+    notes.forEach((freq, idx) => {
+      const osc = c.createOscillator();
+      const g = c.createGain();
+      osc.type = 'triangle';
+      const t0 = c.currentTime + idx * 0.14;
+      osc.frequency.setValueAtTime(freq, t0);
+      g.gain.setValueAtTime(0.001, t0);
+      g.gain.linearRampToValueAtTime(0.11, t0 + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.65);
+      osc.connect(g);
+      g.connect(c.destination);
+      osc.start(t0);
+      osc.stop(t0 + 0.7);
+    });
+  }
+
+  function setAmbient(mode) {
+    if (muted) { stopAmbient(); return; }
+    const c = ensureCtx();
+    if (!c) return;
+    if (activeAmbientMode === mode) return;
+    stopAmbient();
+    activeAmbientMode = mode;
+
+    if (mode === 'p1') {
+      startRainLoop(c, 0.045, 1300);
+    } else if (mode === 'p2') {
+      startRainLoop(c, 0.09, 1150);
+      startCrowdChatterLoop(c, 0.075);
+    } else if (mode === 'break') {
+      startRainLoop(c, 0.03, 1400);
+    } else if (mode === 'p3') {
+      startRainLoop(c, 0.16, 950);
+      startStormWindLoop(c, 0.14);
+      playThunder(c);
+    } else if (mode === 'p4') {
+      const rainG = startRainLoop(c, 0.04, 1500);
+      if (rainG) {
+        rainG.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 2.6);
+      }
+      setTimeout(() => {
+        if (!muted && activeAmbientMode === 'p4') playSunnyChime(c);
+      }, 900);
+    }
+  }
+
+  function playNotiBell() {
+    if (muted) return;
+    const c = ensureCtx();
+    if (!c) return;
+    const freqs = [880, 1174.66];
+    freqs.forEach((f, i) => {
+      const osc = c.createOscillator();
+      const g = c.createGain();
+      osc.type = 'sine';
+      const t0 = c.currentTime + i * 0.12;
+      osc.frequency.setValueAtTime(f, t0);
+      g.gain.setValueAtTime(0.001, t0);
+      g.gain.linearRampToValueAtTime(0.14, t0 + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.42);
+      osc.connect(g);
+      g.connect(c.destination);
+      osc.start(t0);
+      osc.stop(t0 + 0.45);
+    });
+  }
+
+  function playEmergencyAlarm() {
+    if (muted) return;
+    const c = ensureCtx();
+    if (!c) return;
+    for (let k = 0; k < 2; k++) {
+      const osc = c.createOscillator();
+      const g = c.createGain();
+      osc.type = 'sawtooth';
+      const t0 = c.currentTime + k * 0.48;
+      osc.frequency.setValueAtTime(660, t0);
+      osc.frequency.linearRampToValueAtTime(880, t0 + 0.18);
+      osc.frequency.linearRampToValueAtTime(620, t0 + 0.38);
+      g.gain.setValueAtTime(0.001, t0);
+      g.gain.linearRampToValueAtTime(0.11, t0 + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.42);
+      osc.connect(g);
+      g.connect(c.destination);
+      osc.start(t0);
+      osc.stop(t0 + 0.44);
+    }
+  }
+
+  function playHelicopter() {
+    if (muted) return;
+    const c = ensureCtx();
+    if (!c) return;
+    const osc = c.createOscillator();
+    const lfo = c.createOscillator();
+    const lfoGain = c.createGain();
+    const g = c.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.value = 95;
+    lfo.type = 'sine';
+    lfo.frequency.value = 11;
+    lfoGain.gain.value = 0.08;
+
+    g.gain.setValueAtTime(0.09, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 2.2);
+
+    lfo.connect(lfoGain);
+    lfoGain.connect(g.gain);
+    osc.connect(g);
+    g.connect(c.destination);
+
+    osc.start();
+    lfo.start();
+    osc.stop(c.currentTime + 2.2);
+    lfo.stop(c.currentTime + 2.2);
+  }
+
+  function playCableCut() {
+    if (muted) return;
+    const c = ensureCtx();
+    if (!c) return;
+    const osc = c.createOscillator();
+    const g = c.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(420, c.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(75, c.currentTime + 0.45);
+    g.gain.setValueAtTime(0.11, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.48);
+    osc.connect(g);
+    g.connect(c.destination);
+    osc.start();
+    osc.stop(c.currentTime + 0.5);
+  }
+
+  function playFloodCrisis() {
+    if (muted) return;
+    const c = ensureCtx();
+    if (!c) return;
+    startStormWindLoop(c, 0.22);
+    playThunder(c);
+    playEmergencyAlarm();
+  }
+
+  function playForGodEvent(rawText) {
+    if (rawText.includes('cứu trợ') || rawText.includes('Cứu trợ')) {
+      playHelicopter();
+    } else if (rawText.includes('đứt đường truyền') || rawText.includes('mất điện')) {
+      playCableCut();
+    } else if (rawText.includes('lũ cuốn') || rawText.includes('loại') || rawText.includes('cuốn thực phẩm') || rawText.includes('nhiễm bẩn nước')) {
+      playFloodCrisis();
+    } else {
+      playEmergencyAlarm();
+    }
+  }
+
+  function toggleMute() {
+    muted = !muted;
+    if (muted) {
+      stopAmbient();
+    } else {
+      const tid = TASKS[room?.taskIdx]?.id || '';
+      const mood = PHASE_SCENES[tid]?.mood;
+      if (mood) setAmbient(mood);
+      playNotiBell();
+    }
+    return muted;
+  }
+
+  return { setAmbient, playNotiBell, playEmergencyAlarm, playForGodEvent, toggleMute };
+})();
+
+function toggleSoundBtn() {
+  const isM = SoundFX.toggleMute();
+  if ($('muteBtn')) $('muteBtn').textContent = isM ? '🔇' : '🔊';
+  toast(isM ? '🔇 Đã tắt âm thanh hiệu ứng' : '🔊 Đã bật âm thanh hiệu ứng');
+}
 function showEventPopup(rawText) {
 let theme = '', icon = '', tag = '', title = '', shake = false;
 
@@ -500,6 +821,7 @@ theme = 'ev-warning'; icon = '🚧';
 tag = 'CHIA CẮT GIAO THÔNG'; title = 'Đường liên xóm bị ngập sâu!';
 } else {
 return;
+SoundFX.playForGodEvent(rawText);
 }
 
 $('evBanner').className = 'eventArtBanner ' + theme;
@@ -715,6 +1037,7 @@ topicsEl.classList.add('hidden');
 }
 
 $('ovActionBtn').textContent = sc.btnText || 'Tiếp tục →';
+SoundFX.setAmbient(sc.mood);
 currentPhaseMood = sc.mood;
 if (!phaseAnimActive) { phaseAnimActive = true; requestAnimationFrame(runPhaseCanvasLoop); }
 if (sc.shake) {
@@ -873,6 +1196,8 @@ lastPendingCount = incomingPending.length;
 
 if(tid !== lastTaskId){
 lastTaskId = tid;
+if (lastTaskId === 'news_after_vote' || lastTaskId === 'board_decide') SoundFX.playNotiBell();
+if (lastTaskId === 'alert') SoundFX.playEmergencyAlarm();
 studioPeekingMap = false;
 triggerPhaseScene(lastTaskId);
 if(lastTaskId === 'bag_90s'){ bagSel = new Set(me.bag?.selected || []); bagContainer = me.bag?.containerType || 'backpack'; bagFilter = 'all'; }
