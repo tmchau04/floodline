@@ -34,26 +34,20 @@ button.primary{background:#3e8a70;color:#fff;border-color:#2b6350}
 .phasePill{background:#2c5e4e;color:#fff6dc;font-weight:800;padding:4px 10px;border-radius:8px;font-size:13px}
 .clockBox{background:#f6c95e;color:#2b1d0e;font-weight:900;padding:4px 11px;border-radius:8px;font-size:15px;letter-spacing:0.5px}
 
-/* Bảng tin cộng đồng / Bảng tin tổng kết cuối game */
-.communityBoard{position:fixed;top:72px;left:12px;width:min(395px,37vw);max-height:54vh;z-index:22;background:rgba(255,248,231,0.96);border:3px solid #96734e;border-radius:14px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,0.35);display:flex;flex-direction:column;overflow:hidden}
-.communityBoard.collapsed{display:none}
-.boardHeader{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
-.boardSectionTitle{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:0.8px;color:#5c4328}
-.boardScroll{flex:1;overflow-y:auto;padding-right:3px}
-.newsCard{background:#fffdf4;border:1.5px solid #d7c29c;border-radius:9px;padding:8px 10px;margin-bottom:7px;font-size:12.5px;line-height:1.45}
-.newsSource{font-weight:800;color:#2c5e4e;font-size:12px;margin-bottom:2px}
-.summaryHighlight{background:#fdf3d7;border:2px solid #cfa96e;border-radius:10px;padding:9px 11px;margin-bottom:8px;font-size:12.5px;line-height:1.5}
-.heroBox{background:#eef8f2;border:1.5px solid #589c82;border-radius:10px;padding:9px 11px;margin-bottom:8px;font-size:12.5px;line-height:1.5}
-
-/* Khung Chat Box nhỏ góc phải (giữ tin nhắn & biến cố Part III, đóng/mở được) */
-.chatWindow{position:fixed;top:72px;right:12px;bottom:58px;width:min(365px,35vw);z-index:22;background:rgba(255,248,231,0.96);border:3px solid #96734e;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.35);display:flex;flex-direction:column;overflow:hidden;transition:all 0.2s ease}
-.chatWindow.minimized{top:auto;bottom:58px;height:auto;width:auto}
+/* Khung chat độc lập: Bảng tin cộng đồng khu phố Hội An */
+.chatBoard{position:fixed;top:72px;right:12px;bottom:58px;width:min(390px,36vw);z-index:22;background:rgba(255,248,231,0.97);border:3px solid #96734e;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.35);display:flex;flex-direction:column;overflow:hidden;transition:all 0.2s ease}
+.chatBoard.minimized{top:auto;bottom:58px;height:auto;width:auto}
 .chatHeader{background:linear-gradient(180deg,#4f3a23,#3b2a19);color:#fff6dc;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer}
-.chatHeaderTitle{font-size:12.5px;font-weight:850;letter-spacing:0.4px}
+.chatHeaderTitle{font-size:12.5px;font-weight:850;letter-spacing:0.3px}
 .chatToggleBtn{padding:3px 8px;font-size:11.5px;border-radius:6px;background:#f6c95e;color:#2b1d0e;border:1.5px solid #fff3c4}
-.chatBody{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:7px;background:#fdf8ec}
-.chatWindow.minimized .chatBody{display:none}
+.chatBody{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;background:#fdf8ec}
+.chatBoard.minimized .chatBody{display:none}
+
+.summaryBox{background:#fdf3d7;border:2px solid #cfa96e;border-radius:10px;padding:9px 11px;font-size:12.5px;line-height:1.5}
+.heroBox{background:#eef8f2;border:1.5px solid #589c82;border-radius:10px;padding:9px 11px;font-size:12.5px;line-height:1.5}
+
 .chatBubble{background:#fffdf6;border:1.5px solid #d5c19b;border-radius:10px;padding:8px 10px;font-size:12.5px;line-height:1.45}
+.chatBubble.newsPost{border-left:4px solid #2b6cb0;background:#f3f8fd}
 .chatBubble.playerPost{border-left:4px solid #3e8a70;background:#f4fbf7}
 .chatBubble.alertPost{border-left:4px solid #c94a38;background:#fff4f2}
 .chatMeta{display:flex;justify-content:space-between;gap:6px;font-size:11px;color:#63726a;margin-bottom:3px;font-weight:700}
@@ -78,8 +72,7 @@ button.primary{background:#3e8a70;color:#fff;border-color:#2b6350}
 body.specShaking{animation:specShake 0.55s ease-in-out 2}
 
 @media(max-width:860px){
-  .communityBoard{left:10px;right:10px;width:auto;max-height:28vh}
-  .chatWindow:not(.minimized){top:auto;left:10px;right:10px;bottom:56px;width:auto;max-height:34vh}
+  .chatBoard:not(.minimized){top:auto;left:10px;right:10px;bottom:56px;width:auto;max-height:38vh}
 }
 </style>
 </head>
@@ -108,29 +101,18 @@ body.specShaking{animation:specShake 0.55s ease-in-out 2}
       <button style="padding:5px 9px;font-size:12px" onclick="resetCam()">🎯 Toàn cảnh</button>
       <button style="padding:5px 9px;font-size:12px" onclick="zoomBy(-0.15)">🔍-</button>
       <button style="padding:5px 9px;font-size:12px" onclick="zoomBy(0.15)">🔍+</button>
-      <button style="padding:5px 9px;font-size:12px" onclick="toggleCommunityBoard()">📰 Bảng tin / Tổng kết</button>
+      <button style="padding:5px 9px;font-size:12px" onclick="toggleChatBoard()">💬 Bảng tin Hội An</button>
     </div>
   </div>
 
-  <!-- Bảng tin cộng đồng khu phố (Part II) / Bảng tin tổng kết cuối game (Part IV) -->
-  <section id="communityBoard" class="communityBoard">
-    <div class="boardHeader">
-      <span id="boardHeading" class="boardSectionTitle">📰 Bảng tin cộng đồng khu phố</span>
-      <button style="padding:2px 7px;font-size:11px" onclick="toggleCommunityBoard()">✕</button>
-    </div>
-    <div id="boardList" class="boardScroll">
-      <div class="newsCard small">Chưa có tin tức trên bảng tin cộng đồng.</div>
-    </div>
-  </section>
-
-  <!-- Khung Chat Box nhỏ góc phải (giữ tin nhắn & biến cố Part III, đóng/mở được) -->
-  <aside id="chatWindow" class="chatWindow">
-    <div class="chatHeader" onclick="toggleChatWindow()">
-      <span class="chatHeaderTitle">💬 Tin khu phố & Biến cố Part III</span>
-      <button type="button" id="chatToggleBtn" class="chatToggleBtn" onclick="event.stopPropagation();toggleChatWindow()">Thu gọn</button>
+  <!-- Khung chat độc lập duy nhất: Bảng tin cộng đồng khu phố Hội An -->
+  <aside id="chatBoard" class="chatBoard">
+    <div class="chatHeader" onclick="toggleChatBoard()">
+      <span class="chatHeaderTitle">💬 Bảng tin cộng đồng khu phố Hội An</span>
+      <button type="button" id="chatToggleBtn" class="chatToggleBtn" onclick="event.stopPropagation();toggleChatBoard()">Thu gọn</button>
     </div>
     <div id="chatBody" class="chatBody">
-      <div class="small">Các tin đăng thương lượng/chia sẻ ở Part III và thông báo biến cố sẽ hiển thị và lưu lại tại đây.</div>
+      <div class="small">Bảng tin cộng đồng, tin thương lượng/chia sẻ Part III, thông báo biến cố và tổng kết cuối game sẽ hiển thị tại đây.</div>
     </div>
   </aside>
 
@@ -163,9 +145,7 @@ let specPhaseAnimActive = false;
 let specPhaseFrame = 0;
 let currentSpecMood = 'p1';
 
-let boardAutoOpenedForPhase2 = false;
-let boardAutoOpenedForPhase4 = false;
-let persistentChatItems = [];
+let persistentFeedItems = [];
 let seenPersistentKeys = new Set();
 
 let camX = 0, camY = 0, targetCamX = 0, targetCamY = 0, camZoom = 0.88;
@@ -388,19 +368,15 @@ async function unlockSpectator() {
 
   DB.ref('room').on('value', s => {
     room = s.val() || { players: {} };
-    syncPersistentChat(room);
+    syncUnifiedFeed(room);
     renderSpectatorUI();
   });
   setInterval(updateClock, 500);
 }
 
-function toggleCommunityBoard() {
-  $('communityBoard').classList.toggle('collapsed');
-}
-
-function toggleChatWindow() {
-  const win = $('chatWindow');
-  const isMin = win.classList.toggle('minimized');
+function toggleChatBoard() {
+  const board = $('chatBoard');
+  const isMin = board.classList.toggle('minimized');
   $('chatToggleBtn').textContent = isMin ? 'Mở' : 'Thu gọn';
   if (!isMin) {
     const body = $('chatBody');
@@ -408,45 +384,119 @@ function toggleChatWindow() {
   }
 }
 
-function pushPersistentItem(key, item) {
+function pushFeedItem(key, item) {
   if (seenPersistentKeys.has(key)) {
-    const idx = persistentChatItems.findIndex(x => x.key === key);
+    const idx = persistentFeedItems.findIndex(x => x.key === key);
     if (idx >= 0) {
-      persistentChatItems[idx] = { ...persistentChatItems[idx], ...item };
+      persistentFeedItems[idx] = { ...persistentFeedItems[idx], ...item };
     }
     return;
   }
   seenPersistentKeys.add(key);
-  persistentChatItems.push({ key, ...item });
-  persistentChatItems.sort((a, b) => (a.at || 0) - (b.at || 0));
+  persistentFeedItems.push({ key, ...item });
+  persistentFeedItems.sort((a, b) => (a.at || 0) - (b.at || 0));
 }
 
-function syncPersistentChat(r) {
-  if (!r) return;
-  const prevCount = persistentChatItems.length;
+function buildFinalSummaryHtml(r) {
+  const res = typeof calcResultsFromState === 'function' ? calcResultsFromState(r) : null;
+  if (!res) return '';
 
-  const evEntries = Object.entries(r.events || {});
-  evEntries.forEach(([eid, ev]) => {
+  const transfers = Object.values(r.transfers || {}).filter(x => x && x.status === 'accepted');
+  const playersMap = r.players || {};
+  const heroCounts = {};
+  transfers.forEach(tr => {
+    const giverId = tr.to;
+    if (!giverId || !playersMap[giverId]) return;
+    heroCounts[giverId] = (heroCounts[giverId] || 0) + 1;
+  });
+
+  const topHeroes = Object.entries(heroCounts)
+    .map(([pid, cnt]) => ({ name: playersMap[pid]?.name || 'Gia đình', count: cnt }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 3);
+
+  const medals = ['🥇', '🥈', '🥉'];
+  const heroHtml = topHeroes.length
+    ? topHeroes.map((h, i) => `<div>${medals[i] || '🏅'} <b>${esc(h.name)}</b> — ${h.count} lượt chia sẻ</div>`).join('')
+    : `<div class="small">Chưa ghi nhận lượt chia sẻ nào được xác nhận.</div>`;
+
+  const houseRows = res.houses.map(h => `
+    <div class="chatBubble">
+      <div class="chatMeta"><span>${esc(h.name)}</span><span>${esc(h.group)}</span></div>
+      <div>${esc(h.outcomeLabel)}</div>
+    </div>
+  `).join('');
+
+  return `
+    <div class="summaryBox">
+      <div><b>🏆 TỔNG KẾT KHU PHỐ HỘI AN</b></div>
+      <div>• <b>Tổng số nhà bình an:</b> ${res.safeHouses}/${res.totalHouses} hộ</div>
+      <div>• <b>Thành viên an toàn:</b> ${res.survivedMembers}/${res.totalMembers} người</div>
+      <div class="small">Tổn thương/khó khăn: ${res.damagedHouses} hộ · Gặp nạn lũ: ${res.floodedHouses} hộ</div>
+    </div>
+    <div class="heroBox">
+      <div><b>🏅 Người hùng khu phố (Top 3)</b></div>
+      ${heroHtml}
+    </div>
+    <div class="small" style="font-weight:800">📋 Chi tiết từng hộ dân</div>
+    ${houseRows}
+  `;
+}
+
+function syncUnifiedFeed(r) {
+  if (!r) return;
+  const prevCount = persistentFeedItems.length;
+  const t = TASKS[r.taskIdx];
+  const phase = t?.phase || 1;
+  const players = Object.values(r.players || {}).filter(p => p && p.status !== 'left');
+
+  // 1. Tin tức trên Bảng tin cộng đồng khu phố (Part II)
+  const board = (r.boardIndices || []).map(i => NEWS[i]).filter(Boolean);
+  if (board.length) {
+    board.forEach((nw, i) => {
+      pushFeedItem('board_' + i + '_' + nw.text, {
+        kind: 'news',
+        sender: `📰 Bảng tin · ${nw.source}`,
+        text: nw.text,
+        at: (r.boardPublishedAt || 1700000000000) + i,
+        timeLabel: 'Bảng tin'
+      });
+    });
+  } else if (phase === 2) {
+    const activeNews = [...new Set(players.map(p => p.news).filter(i => typeof i === 'number' && i >= 0 && NEWS[i]))];
+    activeNews.forEach((idx, i) => {
+      pushFeedItem('rumor_' + idx, {
+        kind: 'news',
+        sender: `📰 Tin khu phố · ${NEWS[idx].source}`,
+        text: NEWS[idx].text,
+        at: 1699999990000 + i,
+        timeLabel: 'Part II'
+      });
+    });
+  }
+
+  // 2. Thông báo biến cố & sự kiện từ hệ thống/Host
+  Object.entries(r.events || {}).forEach(([eid, ev]) => {
     if (!ev || !ev.text) return;
     const isIncident = ev.text.includes('cuốn') || ev.text.includes('nhiễm bẩn') ||
       ev.text.includes('đứt đường truyền') || ev.text.includes('mất điện') ||
       ev.text.includes('Nước xiết') || ev.text.includes('cứu trợ') ||
       ev.text.includes('Cứu trợ') || ev.text.includes('lũ cuốn') ||
       ev.text.includes('chia cắt') || ev.text.includes('gặp nạn');
-    pushPersistentItem('ev_' + eid, {
+    pushFeedItem('ev_' + eid, {
       kind: isIncident ? 'alert' : 'sys',
-      sender: isIncident ? '⚡ Thông báo biến cố' : '📡 Bản tin hệ thống',
+      sender: isIncident ? '⚡ Biến cố khu phố' : '📡 Thông báo',
       text: ev.text,
       at: ev.at || 0,
       timeLabel: ev.at ? new Date(ev.at).toLocaleTimeString('vi-VN') : ''
     });
   });
 
-  const players = Object.values(r.players || {}).filter(p => p && p.status !== 'left');
+  // 3. Tin nhắn kêu gọi / thương lượng / chia sẻ của người chơi ở Part III
   players.forEach(p => {
     const note = String(p.publicNote || '').trim();
     if (!note) return;
-    pushPersistentItem('note_' + p.id + '_' + note, {
+    pushFeedItem('note_' + p.id + '_' + note, {
       kind: 'player',
       sender: `🏠 ${p.name || 'Gia đình'}`,
       text: note,
@@ -458,23 +508,30 @@ function syncPersistentChat(r) {
   const body = $('chatBody');
   if (!body) return;
 
-  if (!persistentChatItems.length) {
-    body.innerHTML = `<div class="small">Chưa có tin đăng Part III hoặc thông báo biến cố nào.</div>`;
-    return;
-  }
+  const isEndingPhase = phase === 4 || t?.id === 'ending';
+  const summaryHtml = isEndingPhase ? buildFinalSummaryHtml(r) : '';
+
+  const feedHtml = persistentFeedItems.length
+    ? persistentFeedItems.map(m => {
+        const cls = m.kind === 'player' ? 'playerPost' : (m.kind === 'alert' ? 'alertPost' : (m.kind === 'news' ? 'newsPost' : ''));
+        return `
+          <div class="chatBubble ${cls}">
+            <div class="chatMeta">
+              <span>${esc(m.sender)}</span>
+              <span>${esc(m.timeLabel || '')}</span>
+            </div>
+            <div>${esc(m.text)}</div>
+          </div>
+        `;
+      }).join('')
+    : `<div class="small">Chưa có tin đăng hoặc thông báo nào trên bảng tin khu phố.</div>`;
 
   const nearBottom = body.scrollHeight - body.scrollTop - body.clientHeight < 60;
-  body.innerHTML = persistentChatItems.map(m => `
-    <div class="chatBubble ${m.kind === 'player' ? 'playerPost' : (m.kind === 'alert' ? 'alertPost' : '')}">
-      <div class="chatMeta">
-        <span>${esc(m.sender)}</span>
-        <span>${esc(m.timeLabel || '')}</span>
-      </div>
-      <div>${esc(m.text)}</div>
-    </div>
-  `).join('');
+  body.innerHTML = summaryHtml + feedHtml;
 
-  if (persistentChatItems.length > prevCount || nearBottom) {
+  if (isEndingPhase) {
+    body.scrollTop = 0;
+  } else if (persistentFeedItems.length > prevCount || nearBottom) {
     body.scrollTop = body.scrollHeight;
   }
 }
@@ -491,54 +548,6 @@ function updateClock() {
   $('specClock').textContent = `${mm}:${ss}${room.paused ? ' ⏸' : ''}`;
 }
 
-function renderFinalSummaryBoard(r) {
-  const res = typeof calcResultsFromState === 'function' ? calcResultsFromState(r) : null;
-  if (!res) {
-    $('boardList').innerHTML = `<div class="newsCard small">Đang tổng hợp kết quả toàn khu phố...</div>`;
-    return;
-  }
-
-  const transfers = Object.values(r.transfers || {}).filter(x => x && x.status === 'accepted');
-  const playersMap = r.players || {};
-  const heroCounts = {};
-  transfers.forEach(tr => {
-    const giverId = tr.to; // người chuyển đồ/hỗ trợ sang nhà nhận (tr.to) trong luồng giao dịch
-    if (!giverId || !playersMap[giverId]) return;
-    heroCounts[giverId] = (heroCounts[giverId] || 0) + 1;
-  });
-
-  const topHeroes = Object.entries(heroCounts)
-    .map(([pid, cnt]) => ({ name: playersMap[pid]?.name || 'Gia đình', count: cnt }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 3);
-
-  const medals = ['🥇', '🥈', '🥉'];
-  const heroHtml = topHeroes.length
-    ? topHeroes.map((h, i) => `<div>${medals[i] || '🏅'} <b>${esc(h.name)}</b> — ${h.count} lượt chia sẻ</div>`).join('')
-    : `<div class="small">Chưa ghi nhận lượt chia sẻ nào được xác nhận.</div>`;
-
-  const houseRows = res.houses.map(h => `
-    <div class="newsCard">
-      <div class="newsSource">${esc(h.name)} · <span class="small">${esc(h.group)}</span></div>
-      <div>${esc(h.outcomeLabel)}</div>
-    </div>
-  `).join('');
-
-  $('boardList').innerHTML = `
-    <div class="summaryHighlight">
-      <div><b>🏘️ Tổng số nhà bình an trọn vẹn:</b> <b>${res.safeHouses}/${res.totalHouses}</b> hộ</div>
-      <div><b>👥 Thành viên an toàn:</b> <b>${res.survivedMembers}/${res.totalMembers}</b> người</div>
-      <div class="small" style="margin-top:3px">Có tổn thương/sinh hoạt khó: ${res.damagedHouses} hộ · Gặp nạn do lũ: ${res.floodedHouses} hộ</div>
-    </div>
-    <div class="heroBox">
-      <div class="newsSource">🏅 Người hùng khu phố (Top 3)</div>
-      ${heroHtml}
-    </div>
-    <div class="boardSectionTitle" style="margin:8px 0 6px">📋 Tình trạng từng gia đình</div>
-    ${houseRows}
-  `;
-}
-
 function renderSpectatorUI() {
   if (!room) return;
   const players = Object.values(room.players || {}).filter(p => p && p.status !== 'left');
@@ -546,7 +555,6 @@ function renderSpectatorUI() {
   const tid = t?.id || '';
   const phase = t?.phase || 1;
 
-  // Chuyển cảnh đồng bộ theo từng bước hoặc khi Host phát lại màn chuyển cảnh
   if (tid && tid !== lastTaskId) {
     lastTaskId = tid;
     if (SPEC_PHASE_SCENES[tid]) {
@@ -565,54 +573,14 @@ function renderSpectatorUI() {
   $('phaseBadge').textContent = t ? `Pha ${t.phase} · ${t.label}` : (room.locked ? 'Đã tổng kết' : 'Đang mở đăng ký');
 
   const isEndingPhase = phase === 4 || tid === 'ending';
-
-  if (isEndingPhase) {
-    $('boardHeading').textContent = '🏆 Bảng tin tổng kết khu phố';
-    if (!boardAutoOpenedForPhase4) {
-      boardAutoOpenedForPhase4 = true;
-      $('communityBoard').classList.remove('collapsed');
-    }
-    renderFinalSummaryBoard(room);
-  } else {
-    boardAutoOpenedForPhase4 = false;
-    $('boardHeading').textContent = '📰 Bảng tin cộng đồng khu phố';
-    if (phase === 2 && !boardAutoOpenedForPhase2) {
-      boardAutoOpenedForPhase2 = true;
-      $('communityBoard').classList.remove('collapsed');
-    } else if (phase !== 2) {
-      boardAutoOpenedForPhase2 = false;
-    }
-
-    const board = (room.boardIndices || []).map(i => NEWS[i]).filter(Boolean);
-    if (board.length) {
-      $('boardList').innerHTML = board.map((nw, i) => `
-        <div class="newsCard">
-          <div class="newsSource">Tin #${i + 1} · ${esc(nw.source)}</div>
-          <div>${esc(nw.text)}</div>
-        </div>
-      `).join('');
-    } else {
-      const activeNewsIndices = [...new Set(players.map(p => p.news).filter(i => typeof i === 'number' && i >= 0 && NEWS[i]))];
-      if (phase === 2 && activeNewsIndices.length) {
-        $('boardList').innerHTML = activeNewsIndices.map((idx, i) => `
-          <div class="newsCard">
-            <div class="newsSource">Nguồn tin #${i + 1} · ${esc(NEWS[idx].source)}</div>
-            <div>${esc(NEWS[idx].text)}</div>
-          </div>
-        `).join('');
-      } else {
-        $('boardList').innerHTML = `<div class="newsCard small">Chưa có bản tin nào được công bố trên bảng tin khu phố.</div>`;
-      }
-    }
-  }
-
   const bar = $('bottomBar');
   bar.classList.toggle('storm', phase === 3);
-  const latestItem = persistentChatItems[persistentChatItems.length - 1];
-  if (latestItem) {
-    $('weatherTicker').textContent = `⚡ ${latestItem.sender}: ${latestItem.text}`;
-  } else if (isEndingPhase) {
+
+  const latestItem = persistentFeedItems[persistentFeedItems.length - 1];
+  if (isEndingPhase) {
     $('weatherTicker').textContent = '🌅 Trời quang mây tạnh — Bảng tin tổng kết toàn khu phố đã cập nhật.';
+  } else if (latestItem) {
+    $('weatherTicker').textContent = `⚡ ${latestItem.sender}: ${latestItem.text}`;
   } else if (phase === 3) {
     $('weatherTicker').textContent = '⛈️ Bão lũ đang đổ bộ — Mưa lớn, gió giật và mực nước dâng cao trong khu phố.';
   } else if (phase === 2 && tid !== 'break') {
