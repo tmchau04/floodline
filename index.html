@@ -1471,12 +1471,6 @@ html = stageCountdownHtml('Thời gian chọn ba lô khẩn cấp') +
    </div>
    <div style="margin-top:10px;display:flex;justify-content:space-between"><b>Đã chọn: ${bagSel.size}/12 món</b><b>Trọng lượng: ${(w/10).toFixed(1)}/5.0 kg</b></div>
    <div class="bar"><div class="fill" style="width:${Math.min(100,Math.max(bagSel.size/12,w/50)*100)}%"></div></div>
-   <div class="filterRow">
-     <button class="filterBtn ${bagFilter==='all'?'active':''}" onclick="bagFilter='all';renderGame()">Tất cả (30)</button>
-     <button class="filterBtn ${bagFilter==='survival'?'active':''}" onclick="bagFilter='survival';renderGame()">💧 Sinh tồn</button>
-     <button class="filterBtn ${bagFilter==='medical'?'active':''}" onclick="bagFilter='medical';renderGame()">💊 Y tế & Bé</button>
-     <button class="filterBtn ${bagFilter==='gear'?'active':''}" onclick="bagFilter='gear';renderGame()">🎒 Vật dụng</button>
-   </div>
    <div class="bagGrid">${filtered.map(([bid,em,nm,bw,_,hint])=>`<button class="bagItem ${bagSel.has(bid)?'sel':''}" onclick="toggleBag('${bid}')"><span style="font-size:22px">${em}</span><b>${nm}</b><span class="small">${hint}</span><span><b>${(bw/10).toFixed(1)}kg</b> ${bagSel.has(bid)?'✅':''}</span></button>`).join('')}</div>
    <button class="primary" style="width:100%;padding:12px" onclick="saveBag()">${me.bag ? '✅ ĐÃ CHỐT BA LÔ (Bấm để cập nhật lại)' : '🎒 CHỐT BA LÔ KHẨN CẤP'}</button>`;
 } else if(t.id === 'news' || t.id === 'talk1'){
@@ -2158,6 +2152,7 @@ if(savedId){ myId = savedId; $('loginWrap').classList.add('hidden'); $('hudLayer
 </script>
 </body>
 </html>
+
 
 
 
