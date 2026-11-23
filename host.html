@@ -438,6 +438,7 @@ function renderHost(){
     if(curTask.id==='profile_card') return p.profileAck;
     if(curTask.id==='bag_90s') return !!p.bag;
     if(curTask.id==='vote_news') return (p.votes||[]).length > 0;
+    if(curTask.id==='news_after_vote') return Boolean(p.readNoticeAfterVote);
     if(curTask.id==='board_decide') return p.prepared !== undefined && p.prepared !== null;
     if(curTask.id==='checklist') return p.prepared !== true || (p.checks||[]).length >= 6;
     return false;
@@ -453,8 +454,7 @@ function renderHost(){
     <div class="house ${p.id===selectedId?'selectedRow':''}" onclick="selectedId='${p.id}';renderHost()">
       <b>${esc(p.name)}</b> · <span class="badge">${esc(p.profile?.groupLabel||'Chờ chia vai')}</span>
       ${p.status==='flooded'?'🌊 Bị loại':''} ${p.muted?'📵':''} ${p.sendLocked?'🚫':''}
-      <div class="small">Part II: ${p.prepared===true?'A (Chuẩn bị)':p.prepared===false?'B (Chờ đợi)':'—'} · Kho: 🥫${p.food||0}/${p.reqFood||2} 💧${p.water||0}/${p.reqWater||2}
-      ${p.needMed?(p.medQty?'💊✅':'💊❌'):''} ${p.needBaby?(p.babyQty?'🍼✅':'🍼❌'):''} ${p.needEvac?(p.evacHelped?'👴✅':'👴🚨'):''} ${p.needPads?(p.padsQty?'🌸✅':'🌸❌'):''}</div>
+      <div class="small">Part II: ${p.prepared===true?'Chủ động chuẩn bị & sơ tán':p.prepared===false?'Bình tĩnh chờ tin chính xác hơn':'—'} ${p.readNoticeAfterVote?'· Đã đọc tin':''} · Kho: 🥫${p.food||0}/${p.reqFood||2} 💧${p.water||0}/${p.reqWater||2}      ${p.needMed?(p.medQty?'💊✅':'💊❌'):''} ${p.needBaby?(p.babyQty?'🍼✅':'🍼❌'):''} ${p.needEvac?(p.evacHelped?'👴✅':'👴🚨'):''} ${p.needPads?(p.padsQty?'🌸✅':'🌸❌'):''}</div>
     </div>
   `).join('');
 
@@ -465,7 +465,7 @@ function renderHost(){
     <p><b>Hoàn cảnh vai:</b> ${esc(cleanRoleSubtitle(sel.profile?.title)||'Chưa phân')} (${esc(sel.profile?.groupLabel||'')})</p>
     <p class="small"><b>Sẵn có gốc:</b> 🥫${sel.profile?.baseFood??0} · 💧${sel.profile?.baseWater??0} | <b>Chuẩn duy trì:</b> ${sel.reqFood||2} Ăn · ${sel.reqWater||2} Nước</p>
     <p><b>Part I (Ba lô):</b> ${sel.bag ? `${sel.bag.containerType==='bucket'?'🪣 Xô':'🎒 Balo'} · ${(sel.bag.weightTenths/10).toFixed(1)}kg · [${(sel.bag.selected||[]).join(', ')}]` : 'Chưa xong'}</p>
-    <p><b>Part II:</b> <b>${sel.prepared===true?'A (Tiếp tục chuẩn bị)':sel.prepared===false?'B (Tạm thời chờ đợi)':'Chưa chọn'}</b> · Checklist: ${(sel.checks||[]).length}/6</p>
+    <p><b>Part II:</b> <b>${sel.prepared===true?'Chủ động chuẩn bị ứng phó trước và sẵn sàng sơ tán':sel.prepared===false?'Bình tĩnh chờ đợi thêm những thông tin chính xác hơn':'Chưa chọn'}</b>${sel.readNoticeAfterVote?' · Đã đọc bảng tin sau vote':''}</p>
     <p><b>Kho thực tế:</b> 🥫${sel.food||0}/${sel.reqFood||2} · 💧${sel.water||0}/${sel.reqWater||2} · 💊${sel.medQty||0} · 🍼${sel.babyQty||0} · 🌸${sel.padsQty||0}</p>
     ${(sel.consequenceLogs||[]).length ? `<div style="background:#f3ebd3;padding:8px;border-radius:8px;margin:8px 0;max-height:140px;overflow:auto"><b>Nhật ký hệ quả:</b><br><span class="small">${sel.consequenceLogs.map(x=>esc(x)).join('<br>')}</span></div>` : ''}
     ${sel.status==='active' && room.locked ? `<h4>⚡ Kích hoạt Biến cố & Cứu trợ "Ông Trời"</h4>
