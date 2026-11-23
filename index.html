@@ -998,7 +998,7 @@ function renderHoiAnPanorama(ctx, frame, mood) {
 ctx.imageSmoothingEnabled = false;
 const cfg = {
 intro: { skyTop:'#2b2238', skyMid:'#b85d3b', skyBot:'#f5b041', sun:true, sunY:122, rainCount:25, waterY:180, lanternsOn:true, cloudAlpha:0.68 },
-p1:    { skyTop:'#234854', skyMid:'#4b6f75', skyBot:'#e0ab63', sun:true, sunY:112, rainCount:25, waterY:180, lanternsOn:true, cloudAlpha:0.45 },
+p1: { skyTop:'#6e2d18', skyMid:'#c9682c', skyBot:'#f9c75e', sun:true, sunY:118, rainCount:12, waterY:180, lanternsOn:true, cloudAlpha:0.28 },
 p2:    { skyTop:'#12222b', skyMid:'#223742', skyBot:'#4f5d61', sun:false, sunY:0,  rainCount:75, waterY:172, lanternsOn:true, cloudAlpha:0.80 },
 break: { skyTop:'#1c1829', skyMid:'#382a3b', skyBot:'#7d5338', sun:false, sunY:0,  rainCount:20, waterY:178, lanternsOn:true, cloudAlpha:0.40 },
 p3:    { skyTop:'#070d12', skyMid:'#111c24', skyBot:'#25323b', sun:false, sunY:0,  rainCount:110, waterY:148, lanternsOn:false, cloudAlpha:0.94 },
@@ -1069,14 +1069,20 @@ ctx.fillRect(Math.floor(wx), wy, 18 + (w % 12), 2);
 }
 
 if (cfg.rainCount > 0) {
-ctx.fillStyle = mood === 'p3' ? 'rgba(225, 245, 255, 0.65)' : 'rgba(215, 240, 255, 0.38)';
+const isLightDrizzle = mood === 'p1';
+ctx.fillStyle = mood === 'p3'
+? 'rgba(225, 245, 255, 0.65)'
+: (isLightDrizzle ? 'rgba(255, 244, 214, 0.28)' : 'rgba(215, 240, 255, 0.38)');
 for (let i = 0; i < cfg.rainCount; i++) {
 const d = SCENE_DROPS[i];
-d.y += d.spd * (mood === 'p3' ? 1.6 : 1);
-d.x -= (mood === 'p3' ? 1.6 : 0.5);
+const speedMul = mood === 'p3' ? 1.6 : (isLightDrizzle ? 0.55 : 1);
+const driftX = mood === 'p3' ? 1.6 : (isLightDrizzle ? 0.25 : 0.5);
+const dropLen = isLightDrizzle ? Math.max(3, d.len - 2) : d.len;
+d.y += d.spd * speedMul;
+d.x -= driftX;
 if (d.y > 270) { d.y = -5; d.x = (i * 41 + frame) % 480; }
 if (d.x < 0) d.x += 480;
-ctx.fillRect(Math.floor(d.x), Math.floor(d.y), mood === 'p3' ? 1.5 : 1, d.len);
+ctx.fillRect(Math.floor(d.x), Math.floor(d.y), mood === 'p3' ? 1.5 : 1, dropLen);
 }
 }
 }
@@ -2152,6 +2158,7 @@ if(savedId){ myId = savedId; $('loginWrap').classList.add('hidden'); $('hudLayer
 </script>
 </body>
 </html>
+
 
 
 
