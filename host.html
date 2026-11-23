@@ -59,6 +59,7 @@ button.danger{background:#b64c4c;color:white}button.warn{background:#e6a856;colo
         <button onclick="togglePause()">⏸ Tạm dừng / Tiếp</button>
         <button onclick="extendTime(60)">+ 1 phút</button>
         <button class="primary" onclick="nextTask()">Cảnh tiếp theo →</button>
+        <button class="warn" onclick="replayCurrentScene()">🎬 Hiện màn chuyển cảnh</button>
         <button class="danger" onclick="resetRoom()">↻ Reset lượt mới</button>
       </div>
     </div>
@@ -163,7 +164,6 @@ function tickClock(){
   const rem = room.paused ? room.remaining : Math.max(0, room.deadline - Date.now());
   const sec = Math.ceil(rem / 1000);
   $('clock').textContent = `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}${room.paused?' ⏸':''}`;
-  if(!room.paused && rem === 0) nextTask(true);
 }
 
 async function updateShareMin(){
@@ -417,7 +417,12 @@ async function resetRoom(){
   selectedId = null;
   say('Đã làm mới khu phố!');
 }
-
+async function replayCurrentScene(){
+  const cur = TASKS[room?.taskIdx];
+  if(!cur) return say('Chưa có cảnh nào đang chạy.');
+  await DB.ref('room/sceneSignal').set({ taskId: cur.id, at: Date.now() });
+  logEvent(`🎬 Host phát màn hình chuyển cảnh: ${cur.label}`);
+}
 function renderHost(){
   const curTask = TASKS[room.taskIdx];
   const all = Object.values(room.players || {}).filter(p => p && p.status !== 'left').sort((a,b)=>a.slot-b.slot);
