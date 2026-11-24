@@ -163,7 +163,7 @@ const EMBEDDED_ASSETS = (() => {
       assets[`house_${i}_${st}.png`] = c.toDataURL();
     });
   }
-// 3. Tạo nền khu phố Hội An (1120x740): bỏ hoa giấy chấm hồng, cầu bắc ngang sông, lồng đèn chéo như mẫu
+// 3. Tạo nền khu phố Hội An (1120x740): nền cỏ, đường, sông, cầu bắc ngang sông & cây xanh gọn gàng
   const bgCanvas = document.createElement('canvas');
   bgCanvas.width = 1120;
   bgCanvas.height = 740;
@@ -198,19 +198,16 @@ const EMBEDDED_ASSETS = (() => {
 
   // Cây cầu bắc ngang qua dải sông bên phải (từ bờ kè x=1034 qua sông x=1120)
   const brTop = 314, brH = 62;
-  // Móng & trụ cầu dưới sông
   bctx.fillStyle = '#4e3524';
   [1046, 1072, 1098].forEach(px => {
     bctx.fillRect(px, brTop + brH - 6, 8, 10);
   });
-  // Sàn cầu gỗ lát ngang
   bctx.fillStyle = '#9c6838';
   bctx.fillRect(1034, brTop + 10, 86, brH - 18);
   bctx.fillStyle = '#6e4420';
   for (let sy = brTop + 13; sy < brTop + brH - 10; sy += 6) {
     bctx.fillRect(1036, sy, 82, 2);
   }
-  // Lan can trên & dưới của cầu
   bctx.fillStyle = '#5c381b';
   bctx.fillRect(1034, brTop + 7, 86, 4);
   bctx.fillRect(1034, brTop + brH - 9, 86, 4);
@@ -241,56 +238,6 @@ const EMBEDDED_ASSETS = (() => {
     [160, 672], [355, 674], [550, 672], [745, 674], [935, 672]
   ];
   cleanTrees.forEach(([tx, ty]) => drawPixelRoundTree(tx, ty));
-
-  // Dây lồng đèn chéo / võng kiểu phố cổ Hội An (như ảnh mẫu đầu)
-  const lanternPalette = ['#d93829', '#e89b2d', '#b84a8e', '#2d8a78', '#e05a2b', '#4b7bec'];
-  function drawDiagonalLanternString(x1, y1, x2, y2, count, sag = 10) {
-    bctx.strokeStyle = '#3b2818';
-    bctx.lineWidth = 1.5;
-    bctx.beginPath();
-    bctx.moveTo(x1, y1);
-    const midX = (x1 + x2) / 2;
-    const midY = (y1 + y2) / 2 + sag;
-    bctx.quadraticCurveTo(midX, midY, x2, y2);
-    bctx.stroke();
-
-    for (let i = 1; i <= count; i++) {
-      const t = i / (count + 1);
-      const lx = Math.round((1 - t) * (1 - t) * x1 + 2 * (1 - t) * t * midX + t * t * x2);
-      const ly = Math.round((1 - t) * (1 - t) * y1 + 2 * (1 - t) * t * midY + t * t * y2);
-      const col = lanternPalette[(i + Math.round(x1)) % lanternPalette.length];
-
-      // Dây nối đèn
-      bctx.fillStyle = '#3b2818';
-      bctx.fillRect(lx, ly, 1, 3);
-
-      // Thân đèn tròn pixel
-      bctx.fillStyle = col;
-      bctx.fillRect(lx - 4, ly + 3, 8, 9);
-      bctx.fillRect(lx - 3, ly + 2, 6, 11);
-
-      // Viền & điểm sáng giữa đèn
-      bctx.strokeStyle = '#2d1e12';
-      bctx.lineWidth = 1.2;
-      bctx.strokeRect(lx - 4, ly + 3, 8, 9);
-      bctx.fillStyle = 'rgba(255, 246, 196, 0.55)';
-      bctx.fillRect(lx - 1.5, ly + 5, 3, 5);
-
-      // Tua rua nhỏ bên dưới
-      bctx.fillStyle = '#f5c242';
-      bctx.fillRect(lx - 1, ly + 13, 2, 3);
-    }
-  }
-
-  // Các dây lồng đèn chéo mắc giữa các hành lang & dọc lối đi
-  drawDiagonalLanternString(55, 192, 235, 212, 4, 8);
-  drawDiagonalLanternString(455, 192, 635, 212, 4, 8);
-  drawDiagonalLanternString(765, 212, 955, 192, 4, 8);
-  drawDiagonalLanternString(70, 304, 340, 318, 5, 9);
-  drawDiagonalLanternString(420, 318, 700, 304, 5, 9);
-  drawDiagonalLanternString(750, 304, 990, 318, 5, 9);
-  drawDiagonalLanternString(145, 424, 335, 442, 4, 8);
-  drawDiagonalLanternString(535, 442, 725, 424, 4, 8);
 
   assets['map_bg.png'] = bgCanvas.toDataURL();
   return assets;
