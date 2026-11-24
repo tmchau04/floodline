@@ -14,9 +14,16 @@ const EMBEDDED_ASSETS = (() => {
   ctx.fillRect(36, 8, 4, 2); ctx.fillRect(50, 20, 4, 2);
   assets['tiles.png'] = c.toDataURL();
 
-  // 2. Tạo 12 mẫu nhà Hội An x 3 trạng thái (normal, cracked, flooded)
-  const wallColors = ['#f6d465', '#f2c14e', '#f7df8b', '#e8b948', '#f5cb5c', '#edd074'];
-  const roofColors = ['#9e4737', '#8c3b2b', '#b3533e', '#7d3325'];
+ // 2. Tạo 12 mẫu nhà phố cổ Hội An x 3 trạng thái (normal, cracked, flooded)
+  const wallColors = ['#e8b438', '#dfaa30', '#eabf45', '#d9a12b', '#e6b843', '#dfb13b'];
+  const roofColors = [
+    { main: '#7a4b3a', rib: '#9e6852', edge: '#4a352d' },
+    { main: '#3d6b7a', rib: '#5b8c9c', edge: '#24414a' },
+    { main: '#9c562b', rib: '#bf7646', edge: '#5c3117' },
+    { main: '#535861', rib: '#747a85', edge: '#2f3238' },
+    { main: '#8a3b34', rib: '#b0554d', edge: '#4f201c' },
+    { main: '#4f6e4b', rib: '#6f916a', edge: '#2d402a' }
+  ];
 
   c.width = 68; c.height = 68;
   for (let i = 0; i < 12; i++) {
@@ -25,62 +32,99 @@ const EMBEDDED_ASSETS = (() => {
       const wall = wallColors[i % wallColors.length];
       const roof = roofColors[i % roofColors.length];
 
-      // Bóng đổ dưới nền
-      ctx.fillStyle = 'rgba(0,0,0,0.18)';
-      ctx.fillRect(10, 56, 48, 6);
+      // Bóng đổ & bậc thềm đá xám dưới chân nhà
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      ctx.fillRect(9, 57, 50, 5);
+      ctx.fillStyle = '#6f7375';
+      ctx.fillRect(11, 54, 46, 5);
+      ctx.fillStyle = '#8e9396';
+      ctx.fillRect(12, 54, 44, 1.5);
 
-      // Thân nhà tường vàng đặc trưng Hội An
+      // Thân tường vàng cổ Hội An + viền khung gọn
       ctx.fillStyle = wall;
-      ctx.fillRect(14, 28, 40, 28);
-      ctx.strokeStyle = '#5c4028';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(14, 28, 40, 28);
+      ctx.fillRect(13, 27, 42, 27);
+      ctx.strokeStyle = '#5a3e25';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(13, 27, 42, 27);
 
-      // Mái ngói âm dương
-      ctx.fillStyle = roof;
+      // Gờ trang trí góc tường 2 bên (đứng yên)
+      ctx.fillStyle = '#fff3c9';
+      ctx.fillRect(14, 30, 5, 1.5);
+      ctx.fillRect(14, 33, 5, 1.5);
+      ctx.fillRect(49, 30, 5, 1.5);
+      ctx.fillRect(49, 33, 5, 1.5);
+
+      // Biển / gờ ngang nhỏ cố định phía trên cửa chính
+      ctx.fillStyle = '#3b2b22';
+      ctx.fillRect(28, 30, 12, 4);
+      ctx.strokeStyle = '#c9a66b';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(28.5, 30.5, 11, 3);
+
+      // Cửa chính gỗ sẫm màu ở giữa (cố định)
+      ctx.fillStyle = '#2d221c';
+      ctx.fillRect(28.5, 35, 11, 19);
+      ctx.fillStyle = '#47362c';
+      ctx.fillRect(30, 36.5, 3.3, 7);
+      ctx.fillRect(34.7, 36.5, 3.3, 7);
+      ctx.fillRect(30, 45.5, 3.3, 7);
+      ctx.fillRect(34.7, 45.5, 3.3, 7);
+
+      // Cửa sổ gỗ lá sách 2 bên (cố định, không lắc lư)
+      [16, 41].forEach(wx => {
+        ctx.fillStyle = '#2d221c';
+        ctx.fillRect(wx, 36, 11, 12);
+        ctx.fillStyle = '#423229';
+        for (let ly = 38; ly <= 46; ly += 2.5) {
+          ctx.fillRect(wx + 1.5, ly, 8, 1);
+        }
+      });
+
+      // Mái ngói dốc ngang đặc trưng mặt tiền nhà cổ Hội An
+      ctx.fillStyle = roof.main;
       ctx.beginPath();
-      ctx.moveTo(8, 30);
-      ctx.lineTo(34, 12);
-      ctx.lineTo(60, 30);
+      ctx.moveTo(8, 28);
+      ctx.lineTo(13, 13);
+      ctx.lineTo(55, 13);
+      ctx.lineTo(60, 28);
       ctx.closePath();
       ctx.fill();
+      ctx.strokeStyle = '#3b261b';
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // Đường gân ngói
-      ctx.fillStyle = 'rgba(255,255,255,0.15)';
-      ctx.fillRect(22, 22, 24, 2);
+      // Các hàng ngói dốc song song
+      for (let row = 0; row < 4; row++) {
+        const ry = 15 + row * 3;
+        ctx.fillStyle = roof.rib;
+        ctx.fillRect(14 + row * 0.5, ry, 40 - row, 1.5);
+      }
 
-      // Cửa chính & Cửa sổ gỗ nâu
-      ctx.fillStyle = '#5c3822';
-      ctx.fillRect(29, 40, 10, 16); // Cửa chính
-      ctx.fillRect(18, 36, 7, 8);   // Cửa sổ trái
-      ctx.fillRect(43, 36, 7, 8);   // Cửa sổ phải
-
-      // Đèn lồng Hội An treo trước hiên
-      ctx.fillStyle = (i % 2 === 0) ? '#e63946' : '#f4a261';
-      ctx.fillRect(25, 31, 4, 5);
-      ctx.fillRect(39, 31, 4, 5);
+      // Diềm mái & đầu ngói tròn dọc mép dưới mái (cố định)
+      ctx.fillStyle = roof.edge;
+      ctx.fillRect(8, 26.5, 52, 2.5);
+      for (let tx = 11; tx <= 55; tx += 5) {
+        ctx.fillStyle = '#96918b';
+        ctx.fillRect(tx, 26, 3, 2);
+      }
 
       // Trạng thái hư hại / nứt tường (cracked)
       if (st === 'cracked') {
         ctx.strokeStyle = '#3b2416';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1.8;
         ctx.beginPath();
-        ctx.moveTo(20, 30); ctx.lineTo(25, 42); ctx.lineTo(22, 52);
-        ctx.moveTo(46, 32); ctx.lineTo(42, 46);
+        ctx.moveTo(47, 29); ctx.lineTo(44, 38); ctx.lineTo(48, 47);
+        ctx.moveTo(20, 31); ctx.lineTo(22, 40);
         ctx.stroke();
-        // Mái ngói xô lệch
-        ctx.fillStyle = '#4a3525';
-        ctx.fillRect(36, 18, 8, 6);
       }
 
       // Trạng thái ngập lụt (flooded)
       if (st === 'flooded') {
-        ctx.fillStyle = 'rgba(42, 118, 156, 0.78)';
-        ctx.fillRect(8, 38, 52, 22);
-        ctx.fillStyle = '#a8e6ff';
-        ctx.fillRect(12, 40, 16, 2);
-        ctx.fillRect(36, 45, 18, 2);
+        ctx.fillStyle = 'rgba(34, 118, 152, 0.72)';
+        ctx.fillRect(8, 43, 52, 18);
+        ctx.fillStyle = '#b8ebff';
+        ctx.fillRect(12, 45, 14, 1.5);
+        ctx.fillRect(38, 49, 16, 1.5);
       }
 
       assets[`house_${i}_${st}.png`] = c.toDataURL();
