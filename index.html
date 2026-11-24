@@ -1235,8 +1235,13 @@ if (sc.rules && sc.rules.length) {
   topicsEl.innerHTML = '';
   topicsEl.classList.add('hidden');
 }
-
-$('ovActionBtn').textContent = sc.btnText || 'Tiếp tục →';
+const actionBtn = $('ovActionBtn');
+if (taskId === 'break') {
+  actionBtn.classList.add('hidden');
+} else {
+  actionBtn.classList.remove('hidden');
+  actionBtn.textContent = sc.btnText || 'Tiếp tục →';
+}
 SoundFX.setAmbient(sc.mood);
 currentPhaseMood = sc.mood;
 if (!phaseAnimActive) { phaseAnimActive = true; requestAnimationFrame(runPhaseCanvasLoop); }
@@ -1248,21 +1253,8 @@ if (overlayTimer) clearTimeout(overlayTimer);
 }
 
 async function handlePhaseOverlayAction() {
-if (activeOverlayTaskId === 'break') {
-const alertIdx = TASKS.findIndex(x => x.id === 'alert');
-if (alertIdx >= 0 && room) {
-const nxt = TASKS[alertIdx];
-const dur = nxt.id === 'transfer' ? (room.shareSec || 360) : nxt.sec;
-await DB.ref('room').update({
-taskIdx: alertIdx,
-paused: false,
-deadline: Date.now() + dur * 1000,
-remaining: dur * 1000
-});
-return;
-}
-}
-hidePhaseOverlay();
+  if (activeOverlayTaskId === 'break') return;
+  hidePhaseOverlay();
 }
 
 function hidePhaseOverlay() {
@@ -1417,10 +1409,14 @@ if(!inStudio && tid !== 'break') openTaskModal();
 lastPendingCount = incomingPending.length;
 
 if(tid !== lastTaskId){
+const prevTaskId = lastTaskId;
 lastTaskId = tid;
 noticeReadLocal = false;
   prioOrder = null;
   prioSaved = false;
+if (prevTaskId === 'break' && tid !== 'break') {
+  hidePhaseOverlay();
+}
 if (lastTaskId === 'news_after_vote' || lastTaskId === 'board_decide') SoundFX.playNotiBell();
 if (lastTaskId === 'alert') SoundFX.playEmergencyAlarm();
 studioPeekingMap = false;
