@@ -163,5 +163,171 @@ const EMBEDDED_ASSETS = (() => {
       assets[`house_${i}_${st}.png`] = c.toDataURL();
     });
   }
+  // 3. Tạo nền khu phố Hội An chi tiết (1120x740): đường, bờ sông, cầu, cây, hoa giấy hồng, lồng đèn
+  const bgCanvas = document.createElement('canvas');
+  bgCanvas.width = 1120;
+  bgCanvas.height = 740;
+  const bctx = bgCanvas.getContext('2d');
+  bctx.imageSmoothingEnabled = false;
+
+  const tileImg = new Image();
+  tileImg.src = assets['tiles.png'];
+
+  // Nền cỏ & lưới gạch/đất
+  bctx.fillStyle = '#89b587';
+  bctx.fillRect(0, 0, 1120, 740);
+  for (let ty = 0; ty < 740; ty += 32) {
+    for (let tx = 0; tx < 1120; tx += 32) {
+      const isRoad = (ty >= 320 && ty < 365) || (tx >= 995 && tx < 1035);
+      bctx.fillStyle = isRoad ? '#b8a688' : '#89b587';
+      bctx.fillRect(tx, ty, 32, 32);
+      bctx.fillStyle = isRoad ? '#9f8d70' : '#79a477';
+      if (((tx + ty) / 32) % 2 === 0) {
+        bctx.fillRect(tx + 5, ty + 7, 4, 2);
+        bctx.fillRect(tx + 20, ty + 21, 3, 2);
+      }
+    }
+  }
+
+  // Tuyến đường chính & viền lề
+  bctx.fillStyle = '#c4b293';
+  bctx.fillRect(24, 326, 982, 40);
+  bctx.fillStyle = '#75634b';
+  bctx.fillRect(24, 324, 982, 2);
+  bctx.fillRect(24, 366, 982, 2);
+
+  // Dòng sông & bờ kè bên phải
+  bctx.fillStyle = '#4e919c';
+  bctx.fillRect(1040, 0, 80, 740);
+  bctx.fillStyle = '#73b3bd';
+  bctx.fillRect(1040, 0, 6, 740);
+  bctx.fillStyle = '#6c5842';
+  bctx.fillRect(1034, 0, 6, 740);
+
+  // Cầu gỗ bắc qua sông tại trục đường chính (y = 322..370)
+  bctx.fillStyle = '#7c5230';
+  bctx.fillRect(1002, 320, 46, 50);
+  bctx.fillStyle = '#a87444';
+  for (let py = 323; py < 368; py += 6) {
+    bctx.fillRect(1005, py, 40, 3);
+  }
+  bctx.fillStyle = '#4f321b';
+  bctx.fillRect(1002, 320, 46, 3);
+  bctx.fillRect(1002, 367, 46, 3);
+
+  // Hàm vẽ bụi cây xanh + hoa giấy hồng
+  function drawBougainvilleaBush(cx, cy, scale = 1) {
+    bctx.save();
+    bctx.translate(cx, cy);
+    bctx.scale(scale, scale);
+    // Tán lá xanh đậm
+    bctx.fillStyle = '#2d6a4f';
+    bctx.beginPath();
+    bctx.arc(-8, 2, 11, 0, Math.PI * 2);
+    bctx.arc(8, 2, 11, 0, Math.PI * 2);
+    bctx.arc(0, -6, 13, 0, Math.PI * 2);
+    bctx.fill();
+    // Tán lá sáng hơn
+    bctx.fillStyle = '#40916c';
+    bctx.beginPath();
+    bctx.arc(-5, -2, 8, 0, Math.PI * 2);
+    bctx.arc(6, -1, 8, 0, Math.PI * 2);
+    bctx.fill();
+    // Cụm bông hoa giấy màu hồng
+    const petals = [
+      [-9, -3, '#ff5d8f'], [-3, -9, '#ff75a0'], [4, -8, '#ff4d84'],
+      [9, -2, '#ff85ad'], [-5, 3, '#ff477e'], [2, 4, '#ff709c'], [7, 4, '#ff5c8d']
+    ];
+    petals.forEach(([px, py, col]) => {
+      bctx.fillStyle = col;
+      bctx.beginPath();
+      bctx.arc(px, py, 3.6, 0, Math.PI * 2);
+      bctx.fill();
+      bctx.fillStyle = '#ffd6e5';
+      bctx.fillRect(px - 1, py - 1, 1.5, 1.5);
+    });
+    bctx.restore();
+  }
+
+  // Hàm vẽ cây xanh phố cổ ở các khoảng trống
+  function drawStreetTree(cx, cy) {
+    bctx.fillStyle = 'rgba(0,0,0,0.16)';
+    bctx.beginPath();
+    bctx.ellipse(cx, cy + 12, 13, 5, 0, 0, Math.PI * 2);
+    bctx.fill();
+    bctx.fillStyle = '#5c3d24';
+    bctx.fillRect(cx - 2.5, cy, 5, 12);
+    bctx.fillStyle = '#3b7a57';
+    bctx.beginPath();
+    bctx.arc(cx, cy - 5, 11, 0, Math.PI * 2);
+    bctx.fill();
+    bctx.fillStyle = '#52996e';
+    bctx.beginPath();
+    bctx.arc(cx - 3, cy - 8, 7, 0, Math.PI * 2);
+    bctx.fill();
+  }
+
+  // Rải cây xanh & hoa giấy hồng ở các hành lang giữa các hàng nhà (tránh đè spots)
+  const treeSpots = [
+    [72, 82], [252, 80], [448, 82], [645, 80], [840, 82],
+    [70, 428], [448, 426], [842, 428],
+    [160, 668], [355, 672], [550, 668], [745, 672], [935, 668]
+  ];
+  treeSpots.forEach(([tx, ty]) => drawStreetTree(tx, ty));
+
+  const bougainvilleaSpots = [
+    [118, 198, 1.0], [312, 195, 1.1], [508, 198, 0.95], [702, 195, 1.1], [896, 198, 1.0],
+    [252, 305, 0.9], [645, 305, 0.95], [840, 305, 0.9],
+    [118, 385, 0.95], [312, 386, 1.05], [508, 385, 0.95], [702, 386, 1.05], [896, 385, 0.95],
+    [252, 542, 1.05], [645, 540, 1.1], [1022, 175, 1.05], [1022, 495, 1.05]
+  ];
+  bougainvilleaSpots.forEach(([bx, by, sc]) => drawBougainvilleaBush(bx, by, sc));
+
+  // Dây lồng đèn đủ màu mắc dọc tuyến đường chính phía trên (y ~ 314)
+  const lanternColors = ['#e63946', '#f4a261', '#2a9d8f', '#e9c46a', '#d62828', '#e76f51', '#4ea8de', '#c9184a'];
+  const startX = 65, endX = 995, spanW = 116;
+  for (let sx = startX; sx < endX; sx += spanW) {
+    const nx = Math.min(endX, sx + spanW);
+    // Dây treo võng nhẹ
+    bctx.strokeStyle = '#4a3525';
+    bctx.lineWidth = 1.5;
+    bctx.beginPath();
+    bctx.moveTo(sx, 306);
+    bctx.quadraticCurveTo((sx + nx) / 2, 318, nx, 306);
+    bctx.stroke();
+
+    // 3 đèn lồng mỗi nhịp
+    [0.25, 0.5, 0.75].forEach((tRatio, idx) => {
+      const lx = Math.round(sx + (nx - sx) * tRatio);
+      const ly = Math.round((1 - tRatio) * (1 - tRatio) * 306 + 2 * (1 - tRatio) * tRatio * 318 + tRatio * tRatio * 306);
+      const col = lanternColors[(Math.floor(sx / spanW) * 3 + idx) % lanternColors.length];
+
+      bctx.strokeStyle = '#3a2a1d';
+      bctx.lineWidth = 1;
+      bctx.beginPath();
+      bctx.moveTo(lx, ly);
+      bctx.lineTo(lx, ly + 3);
+      bctx.stroke();
+
+      bctx.fillStyle = col;
+      bctx.beginPath();
+      bctx.ellipse(lx, ly + 8, 5, 6, 0, 0, Math.PI * 2);
+      bctx.fill();
+
+      bctx.strokeStyle = '#3a2a1d';
+      bctx.lineWidth = 1.1;
+      bctx.stroke();
+
+      // Vệt sáng giữa đèn
+      bctx.fillStyle = 'rgba(255, 245, 190, 0.55)';
+      bctx.fillRect(lx - 1.5, ly + 5, 3, 5);
+
+      // Tua rua nhỏ
+      bctx.fillStyle = '#f9c74f';
+      bctx.fillRect(lx - 0.8, ly + 14, 1.6, 3);
+    });
+  }
+
+  assets['map_bg.png'] = bgCanvas.toDataURL();
   return assets;
 })();
