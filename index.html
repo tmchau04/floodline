@@ -2029,117 +2029,6 @@ const HOIAN_MAP_PALETTES = [
   { wall: '#eabf45', wallLight: '#f8d772', wallShade: '#c79322', trim: '#fff6d4', roof: '#824f3c', roofRib: '#a66c55', roofEdge: '#4d372e' },
   { wall: '#d9a12b', wallLight: '#e9bd50', wallShade: '#b27c14', trim: '#fcedb4', roof: '#62453c', roofRib: '#846054', roofEdge: '#3a2d29' }
 ];
-
-function drawHoiAnMapHouse(ctx, x, y, slot, state, frame) {
-  const pal = HOIAN_MAP_PALETTES[(slot - 1) % HOIAN_MAP_PALETTES.length];
-  ctx.save();
-  ctx.imageSmoothingEnabled = false;
-
-  // Bóng đổ mềm dưới chân nhà
-  ctx.fillStyle = 'rgba(18, 36, 28, 0.22)';
-  ctx.fillRect(x - 34, y + 40, 68, 7);
-
-  // Thềm / bậc đá xám dưới chân cửa
-  ctx.fillStyle = '#6f7375';
-  ctx.fillRect(x - 29, y + 36, 58, 5);
-  ctx.fillStyle = '#8c9194';
-  ctx.fillRect(x - 27, y + 36, 54, 1.5);
-
-  // Thân tường vàng cổ Hội An
-  const wallTop = y + 3;
-  const wallH = 33;
-  ctx.fillStyle = pal.wall;
-  ctx.fillRect(x - 27, wallTop, 54, wallH);
-
-  // Ánh sáng nhẹ bên trái & bóng tối nhẹ bên phải
-  ctx.fillStyle = pal.wallLight;
-  ctx.fillRect(x - 27, wallTop, 6, wallH);
-  ctx.fillStyle = pal.wallShade;
-  ctx.fillRect(x + 20, wallTop, 7, wallH);
-
-  // Gờ trang trí góc tường 2 bên (giống chi tiết viền cột/góc nhà cổ)
-  ctx.fillStyle = pal.trim;
-  ctx.fillRect(x - 26, wallTop + 4, 5, 2);
-  ctx.fillRect(x - 26, wallTop + 8, 5, 1.5);
-  ctx.fillRect(x + 21, wallTop + 4, 5, 2);
-  ctx.fillRect(x + 21, wallTop + 8, 5, 1.5);
-
-  // Thanh ngang / bảng biển nhỏ cố định phía trên cửa chính (không chuyển động)
-  ctx.fillStyle = '#3b2b22';
-  ctx.fillRect(x - 6, wallTop + 3, 12, 5);
-  ctx.strokeStyle = '#c9a66b';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(x - 5.5, wallTop + 3.5, 11, 4);
-
-  // Cửa chính gỗ sẫm màu ở giữa (cố định)
-  const doorX = x - 7;
-  const doorY = wallTop + 10;
-  ctx.fillStyle = '#2d221c';
-  ctx.fillRect(doorX, doorY, 14, 26);
-  ctx.fillStyle = '#47362c';
-  ctx.fillRect(doorX + 1.5, doorY + 2, 4.5, 10);
-  ctx.fillRect(doorX + 8, doorY + 2, 4.5, 10);
-  ctx.fillRect(doorX + 1.5, doorY + 14, 4.5, 10);
-  ctx.fillRect(doorX + 8, doorY + 14, 4.5, 10);
-
-  // Hai cửa sổ gỗ lá sách / khung sẫm hai bên (cố định)
-  [-19, 9].forEach(ox => {
-    const wx = x + ox;
-    const wy = wallTop + 10;
-    ctx.fillStyle = '#2d221c';
-    ctx.fillRect(wx, wy, 10, 14);
-    ctx.fillStyle = '#423229';
-    for (let ly = wy + 2; ly < wy + 13; ly += 2.5) {
-      ctx.fillRect(wx + 1.5, ly, 7, 1);
-    }
-  });
-
-  // Mái ngói dốc chạy ngang theo mặt tiền nhà cổ Hội An
-  const roofTop = y - 13;
-  const roofBottom = y + 4;
-  ctx.fillStyle = pal.roof;
-  ctx.beginPath();
-  ctx.moveTo(x - 32, roofBottom);
-  ctx.lineTo(x - 27, roofTop);
-  ctx.lineTo(x + 27, roofTop);
-  ctx.lineTo(x + 32, roofBottom);
-  ctx.closePath();
-  ctx.fill();
-
-  // Các hàng ngói dốc song song
-  for (let row = 0; row < 5; row++) {
-    const ry = roofTop + 2 + row * 3;
-    ctx.fillStyle = pal.roofRib;
-    ctx.fillRect(x - 26 + row * 0.5, ry, 52 - row, 1.5);
-  }
-
-  // Viền diềm mái & đầu ngói tròn đều dọc mép dưới mái (cố định)
-  ctx.fillStyle = pal.roofEdge;
-  ctx.fillRect(x - 32, roofBottom - 2, 64, 2.5);
-  for (let tx = x - 28; tx <= x + 28; tx += 5) {
-    ctx.fillStyle = '#8f8a84';
-    ctx.fillRect(tx, roofBottom - 2.5, 3, 2.5);
-  }
-
-  // Trạng thái hư hại (cracked) hoặc ngập nước (flooded)
-  if (state === 'cracked') {
-    ctx.strokeStyle = '#362318';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(x + 14, wallTop + 4);
-    ctx.lineTo(x + 11, wallTop + 13);
-    ctx.lineTo(x + 15, wallTop + 22);
-    ctx.stroke();
-  } else if (state === 'flooded') {
-    const waterTop = y + 27 + Math.sin(frame * 0.08 + slot) * 1.2;
-    ctx.fillStyle = 'rgba(34, 118, 152, 0.65)';
-    ctx.fillRect(x - 30, waterTop, 60, (y + 44) - waterTop);
-    ctx.fillStyle = 'rgba(186, 235, 255, 0.65)';
-    ctx.fillRect(x - 30, waterTop, 60, 2);
-  }
-
-  ctx.restore();
-}
   
 let tick = 0, lightningTimer = 0;
 function draw(){
@@ -2175,13 +2064,15 @@ const all = Object.values(room?.players || {}).filter(p => p.status !== 'left');
 const res = phase === 4 ? calcResultsFromState(room) : null;
 
 all.forEach(p => {
-const s = spots[(p.slot-1)%25], x = s.x, y = s.y;
-const out = res?.houses.find(h => h.id === p.id)?.outcome;
-let st = 'normal';
-if(p.status === 'flooded') st = 'flooded';
-else if(phase === 4 && out === 'damaged') st = 'cracked';
-else if(phase === 3 && p.prepared === false) st = 'cracked';
-drawHoiAnMapHouse(ctx, x, y, p.slot || 1, st, tick);
+const s = spots[(p.slot - 1) % 25], x = s.x, y = s.y;
+  const out = res?.houses.find(h => h.id === p.id)?.outcome;
+  let st = 'normal';
+  if (p.status === 'flooded') st = 'flooded';
+  else if (phase === 4 && out === 'damaged') st = 'cracked';
+  else if (phase === 3 && p.prepared === false) st = 'cracked';
+
+  const im = images[`house_${(p.slot - 1) % 12}_${st}.png`];
+  if (im?.complete && im.naturalWidth) ctx.drawImage(im, x - 36, y - 24, 72, 72);
 
 if(p.id === myId){ ctx.strokeStyle='#fff1a6'; ctx.lineWidth=3.5; ctx.strokeRect(x-42,y-29,84,86); }
 else if(p.id === selectedRecipient && tid === 'transfer'){ ctx.strokeStyle='#7ef9d0'; ctx.lineWidth=3.5; ctx.strokeRect(x-42,y-29,84,86); }
