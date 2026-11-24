@@ -1011,8 +1011,9 @@ function syncUnifiedFeed(r) {
   const phase = t?.phase || 1;
   const players = Object.values(r.players || {}).filter(p => p && p.status !== 'left');
 
-  // 1. Tin tức trên Bảng tin cộng đồng (Part II)
-  const board = (r.boardIndices || []).map(i => NEWS[i]).filter(Boolean);
+// 1. Tin tức trên Bảng tin cộng đồng (Part II): chỉ hiển thị khi đã công bố bảng tin sau bình chọn
+  const isBoardPublished = Boolean(r.boardPublishedAt) || (Array.isArray(r.boardIndices) && r.boardIndices.length > 0 && t && t.id !== 'vote_news');
+  const board = isBoardPublished ? (r.boardIndices || []).slice(0, 5).map(i => NEWS[i]).filter(Boolean) : [];
   if (board.length) {
     board.forEach((nw, i) => {
       pushFeedItem('board_' + i + '_' + nw.text, {
@@ -1021,17 +1022,6 @@ function syncUnifiedFeed(r) {
         text: nw.text,
         at: (r.boardPublishedAt || 1700000000000) + i,
         timeLabel: 'Bảng tin'
-      });
-    });
-  } else if (phase === 2) {
-    const activeNews = [...new Set(players.map(p => p.news).filter(i => typeof i === 'number' && i >= 0 && NEWS[i]))];
-    activeNews.forEach((idx, i) => {
-      pushFeedItem('rumor_' + idx, {
-        kind: 'news',
-        sender: `📰 Tin khu phố · ${NEWS[idx].source}`,
-        text: NEWS[idx].text,
-        at: 1699999990000 + i,
-        timeLabel: 'Part II'
       });
     });
   }
