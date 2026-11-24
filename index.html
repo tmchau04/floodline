@@ -1,4 +1,4 @@
-F<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
@@ -1675,14 +1675,6 @@ tk.innerHTML = `📌 <b>${esc(t.label)}</b> · <u>Bấm để mở Bảng nhiệ
 }
 
 function myInvHtml(m){
-  return `<div class="note"><b>📦 KHO RIÊNG CỦA ${esc(m.name.toUpperCase())} (Chỉ mình bạn thấy):</b><div class="invGrid">
-    <div class="invBox">🥫 Thực phẩm: <b>${m.food||0}/${m.reqFood||2}</b></div>
-    <div class="invBox">💧 Nước uống: <b>${m.water||0}/${m.reqWater||2}</b></div>
-    <div class="invBox">💊 Thuốc đặc trị: <b>${m.medQty||0}</b> ${m.needMed?(m.medQty?'✅':'<b style="color:#b63e3e">(Cần!)</b>'):''}</div>
-    <div class="invBox">🍼 Sữa & Tã bé: <b>${m.babyQty||0}</b> ${m.needBaby?(m.babyQty?'✅':'<b style="color:#b63e3e">(Cần!)</b>'):''}</div>
-    <div class="invBox">🌸 Băng vệ sinh: <b>${m.padsQty||0}</b> ${m.needPads?(m.padsQty?'✅':'<b style="color:#b63e3e">(Cần!)</b>'):''}</div>
-    <div class="invBox">👴 Sơ tán cụ yếu: <b>${m.needEvac?(m.evacHelped?'✅ Đã xong':'<b style="color:#b63e3e">🚨 Cần hỗ trợ!</b>'):'Không'}</b></div>
-  </div></div>`;
   const bagNames = (m.bag?.selected || [])
     .map(id => {
       const found = BAG_ITEMS.find(x => x[0] === id);
