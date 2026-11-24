@@ -2035,12 +2035,13 @@ toast(`🏠 ${best.name} ${best.publicNote ? '· ' + best.publicNote : ''}`);
 }
 }
 }
-// ================= VẼ NGÔI NHÀ PHỐ CỔ HỘI AN (1 TẦNG CHI TIẾT TRÊN MAP) =================
+
+// ================= VẼ NHÀ PHỐ CỔ HỘI AN (MÁI NGÓI DỐC SONG SONG, KHÔNG LẮC LƯ) =================
 const HOIAN_MAP_PALETTES = [
-  { wall: '#f3c65f', wallDark: '#d69f38', wallLight: '#ffe08a', roof: '#8f3828', roofEdge: '#4a1d14', lantern: '#f59e0b' },
-  { wall: '#eab44c', wallDark: '#c78c28', wallLight: '#ffd579', roof: '#7d3124', roofEdge: '#421911', lantern: '#ef4444' },
-  { wall: '#f5d276', wallDark: '#d4ab48', wallLight: '#ffea9e', roof: '#943e2c', roofEdge: '#4d2016', lantern: '#f59e0b' },
-  { wall: '#e2a644', wallDark: '#bf8223', wallLight: '#f8c96b', roof: '#782e22', roofEdge: '#3e1710', lantern: '#ef4444' }
+  { wall: '#e8b438', wallLight: '#f6cf63', wallShade: '#c48d1d', trim: '#fff3c9', roof: '#7a4b3a', roofRib: '#9e6852', roofEdge: '#4a352d' },
+  { wall: '#dfaa30', wallLight: '#efc558', wallShade: '#ba8316', trim: '#fff0bd', roof: '#6b473b', roofRib: '#8f6353', roofEdge: '#3f302b' },
+  { wall: '#eabf45', wallLight: '#f8d772', wallShade: '#c79322', trim: '#fff6d4', roof: '#824f3c', roofRib: '#a66c55', roofEdge: '#4d372e' },
+  { wall: '#d9a12b', wallLight: '#e9bd50', wallShade: '#b27c14', trim: '#fcedb4', roof: '#62453c', roofRib: '#846054', roofEdge: '#3a2d29' }
 ];
 
 function drawHoiAnMapHouse(ctx, x, y, slot, state, frame) {
@@ -2049,119 +2050,111 @@ function drawHoiAnMapHouse(ctx, x, y, slot, state, frame) {
   ctx.imageSmoothingEnabled = false;
 
   // Bóng đổ mềm dưới chân nhà
-  ctx.fillStyle = 'rgba(20, 38, 30, 0.24)';
-  ctx.fillRect(x - 32, y + 40, 64, 8);
+  ctx.fillStyle = 'rgba(18, 36, 28, 0.22)';
+  ctx.fillRect(x - 34, y + 40, 68, 7);
 
-  // Bệ móng gạch cổ
-  ctx.fillStyle = '#5a4e46';
-  ctx.fillRect(x - 28, y + 36, 56, 6);
-  ctx.fillStyle = '#75675d';
-  ctx.fillRect(x - 27, y + 36, 54, 2);
+  // Thềm / bậc đá xám dưới chân cửa
+  ctx.fillStyle = '#6f7375';
+  ctx.fillRect(x - 29, y + 36, 58, 5);
+  ctx.fillStyle = '#8c9194';
+  ctx.fillRect(x - 27, y + 36, 54, 1.5);
 
-  // Thân tường vàng phố cổ
-  const wallTop = y + 4;
-  const wallH = 32;
+  // Thân tường vàng cổ Hội An
+  const wallTop = y + 3;
+  const wallH = 33;
   ctx.fillStyle = pal.wall;
-  ctx.fillRect(x - 26, wallTop, 52, wallH);
+  ctx.fillRect(x - 27, wallTop, 54, wallH);
 
-  // Khối sáng bên trái & bóng tối bên phải tạo độ nổi 3D
+  // Ánh sáng nhẹ bên trái & bóng tối nhẹ bên phải
   ctx.fillStyle = pal.wallLight;
-  ctx.fillRect(x - 26, wallTop, 5, wallH);
-  ctx.fillStyle = pal.wallDark;
-  ctx.fillRect(x + 18, wallTop, 8, wallH);
+  ctx.fillRect(x - 27, wallTop, 6, wallH);
+  ctx.fillStyle = pal.wallShade;
+  ctx.fillRect(x + 20, wallTop, 7, wallH);
 
-  // Gờ chỉ cổ chạy ngang sát dưới mái
-  ctx.fillStyle = '#f8e6b4';
-  ctx.fillRect(x - 27, wallTop, 54, 3);
-  ctx.fillStyle = '#8a5a2b';
-  ctx.fillRect(x - 27, wallTop + 3, 54, 1.5);
+  // Gờ trang trí góc tường 2 bên (giống chi tiết viền cột/góc nhà cổ)
+  ctx.fillStyle = pal.trim;
+  ctx.fillRect(x - 26, wallTop + 4, 5, 2);
+  ctx.fillRect(x - 26, wallTop + 8, 5, 1.5);
+  ctx.fillRect(x + 21, wallTop + 4, 5, 2);
+  ctx.fillRect(x + 21, wallTop + 8, 5, 1.5);
 
-  // Hai cửa sổ gỗ hai bên
+  // Thanh ngang / bảng biển nhỏ cố định phía trên cửa chính (không chuyển động)
+  ctx.fillStyle = '#3b2b22';
+  ctx.fillRect(x - 6, wallTop + 3, 12, 5);
+  ctx.strokeStyle = '#c9a66b';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x - 5.5, wallTop + 3.5, 11, 4);
+
+  // Cửa chính gỗ sẫm màu ở giữa (cố định)
+  const doorX = x - 7;
+  const doorY = wallTop + 10;
+  ctx.fillStyle = '#2d221c';
+  ctx.fillRect(doorX, doorY, 14, 26);
+  ctx.fillStyle = '#47362c';
+  ctx.fillRect(doorX + 1.5, doorY + 2, 4.5, 10);
+  ctx.fillRect(doorX + 8, doorY + 2, 4.5, 10);
+  ctx.fillRect(doorX + 1.5, doorY + 14, 4.5, 10);
+  ctx.fillRect(doorX + 8, doorY + 14, 4.5, 10);
+
+  // Hai cửa sổ gỗ lá sách / khung sẫm hai bên (cố định)
   [-19, 9].forEach(ox => {
     const wx = x + ox;
-    const wy = wallTop + 9;
-    ctx.fillStyle = '#4a2c18';
-    ctx.fillRect(wx - 1, wy - 1, 12, 12);
-    ctx.fillStyle = '#2d1a0e';
-    ctx.fillRect(wx, wy, 10, 10);
-    // Song cửa gỗ mảnh
-    ctx.fillStyle = '#8b5a2b';
-    ctx.fillRect(wx + 4.5, wy, 1.5, 10);
-    ctx.fillRect(wx, wy + 4.5, 10, 1.5);
-    // Bệ cửa sổ nhô nhẹ
-    ctx.fillStyle = '#6e4726';
-    ctx.fillRect(wx - 2, wy + 10, 14, 2);
+    const wy = wallTop + 10;
+    ctx.fillStyle = '#2d221c';
+    ctx.fillRect(wx, wy, 10, 14);
+    ctx.fillStyle = '#423229';
+    for (let ly = wy + 2; ly < wy + 13; ly += 2.5) {
+      ctx.fillRect(wx + 1.5, ly, 7, 1);
+    }
   });
 
-  // Cửa chính gỗ hai cánh ở giữa
-  const dx = x - 6.5;
-  const dy = wallTop + 11;
-  ctx.fillStyle = '#422614';
-  ctx.fillRect(dx - 1.5, dy - 1.5, 16, 22.5);
-  ctx.fillStyle = '#361f11';
-  ctx.fillRect(dx, dy, 13, 21);
-  // Đường chia 2 cánh & ô pano
-  ctx.fillStyle = '#7c4e24';
-  ctx.fillRect(dx + 6, dy, 1, 21);
-  ctx.strokeStyle = '#69401c';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(dx + 1.5, dy + 2, 3.5, 6);
-  ctx.strokeRect(dx + 8, dy + 2, 3.5, 6);
-  ctx.strokeRect(dx + 1.5, dy + 10, 3.5, 8);
-  ctx.strokeRect(dx + 8, dy + 10, 3.5, 8);
-
-  // Đèn lồng nhỏ treo hai bên cửa chính
-  const sway = Math.sin(frame * 0.06 + slot) * 1.2;
-  [-11, 11].forEach((lxOff, idx) => {
-    const lx = Math.round(x + lxOff + sway);
-    const ly = wallTop + 5;
-    ctx.fillStyle = '#3b2416';
-    ctx.fillRect(lx, wallTop + 3, 1, 2);
-    ctx.fillStyle = idx === 0 ? '#ef4444' : pal.lantern;
-    ctx.fillRect(lx - 2, ly, 5, 6);
-    ctx.fillStyle = '#fef08a';
-    ctx.fillRect(lx - 0.5, ly + 1.5, 2, 3);
-  });
-
-  // Mái ngói dốc đặc trưng có các hàng ngói âm dương
-  const roofBottom = y + 5;
-  const roofPeakY = y - 16;
+  // Mái ngói dốc chạy ngang theo mặt tiền nhà cổ Hội An
+  const roofTop = y - 13;
+  const roofBottom = y + 4;
   ctx.fillStyle = pal.roof;
   ctx.beginPath();
-  ctx.moveTo(x - 33, roofBottom);
-  ctx.lineTo(x, roofPeakY);
-  ctx.lineTo(x + 33, roofBottom);
+  ctx.moveTo(x - 32, roofBottom);
+  ctx.lineTo(x - 27, roofTop);
+  ctx.lineTo(x + 27, roofTop);
+  ctx.lineTo(x + 32, roofBottom);
   ctx.closePath();
   ctx.fill();
 
-  // Hàng ngói ngang & sống nóc
-  ctx.fillStyle = 'rgba(255, 215, 160, 0.22)';
-  for (let ry = roofPeakY + 4; ry < roofBottom - 2; ry += 4) {
-    ctx.fillRect(x - 24, ry, 48, 1.5);
+  // Các hàng ngói dốc song song
+  for (let row = 0; row < 5; row++) {
+    const ry = roofTop + 2 + row * 3;
+    ctx.fillStyle = pal.roofRib;
+    ctx.fillRect(x - 26 + row * 0.5, ry, 52 - row, 1.5);
   }
-  ctx.fillStyle = pal.roofEdge;
-  ctx.fillRect(x - 34, roofBottom - 2, 68, 2.5);
-  ctx.fillRect(x - 2, roofPeakY - 1, 4, 3);
 
-  // Trạng thái hư hại nhẹ (cracked) hoặc ngập nước (flooded)
+  // Viền diềm mái & đầu ngói tròn đều dọc mép dưới mái (cố định)
+  ctx.fillStyle = pal.roofEdge;
+  ctx.fillRect(x - 32, roofBottom - 2, 64, 2.5);
+  for (let tx = x - 28; tx <= x + 28; tx += 5) {
+    ctx.fillStyle = '#8f8a84';
+    ctx.fillRect(tx, roofBottom - 2.5, 3, 2.5);
+  }
+
+  // Trạng thái hư hại (cracked) hoặc ngập nước (flooded)
   if (state === 'cracked') {
-    ctx.strokeStyle = '#3b2316';
+    ctx.strokeStyle = '#362318';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(x + 12, wallTop + 4);
-    ctx.lineTo(x + 9, wallTop + 12);
-    ctx.lineTo(x + 14, wallTop + 20);
+    ctx.moveTo(x + 14, wallTop + 4);
+    ctx.lineTo(x + 11, wallTop + 13);
+    ctx.lineTo(x + 15, wallTop + 22);
     ctx.stroke();
   } else if (state === 'flooded') {
-    const waterTop = y + 26 + Math.sin(frame * 0.08 + slot) * 1.5;
+    const waterTop = y + 27 + Math.sin(frame * 0.08 + slot) * 1.2;
     ctx.fillStyle = 'rgba(34, 118, 152, 0.65)';
-    ctx.fillRect(x - 29, waterTop, 58, (y + 44) - waterTop);
+    ctx.fillRect(x - 30, waterTop, 60, (y + 44) - waterTop);
     ctx.fillStyle = 'rgba(186, 235, 255, 0.65)';
-    ctx.fillRect(x - 29, waterTop, 58, 2);
+    ctx.fillRect(x - 30, waterTop, 60, 2);
   }
 
   ctx.restore();
 }
+  
 let tick = 0, lightningTimer = 0;
 function draw(){
 tick++;
