@@ -938,10 +938,7 @@ tag = 'MẤT TÍN HIỆU LIÊN LẠC'; title = 'Đứt cáp quang & Mất điệ
 } else if (rawText.includes('Nước xiết') || rawText.includes('không thể gửi')) {
 theme = 'ev-danger'; icon = '🚫';
 tag = 'CÔ LẬP DÒNG NƯỚC XIẾT'; title = 'Tuyến đường tiếp tế bị phong tỏa!';
-  } else if (rawText.includes('cứu trợ')) {
-    theme = 'ev-relief'; icon = '🚁';
-    tag = 'CHI VIỆN KHẨN CẤP'; title = 'Trực thăng cứu trợ thả hàng!';
-  } else if (rawText.includes('cứu trợ') || rawText.includes('Cứu trợ')) {
+} else if (rawText.includes('cứu trợ') || rawText.includes('Cứu trợ')) {
     theme = 'ev-relief';
     if (rawText.includes('Thuốc')) icon = '💊';
     else if (rawText.includes('Sữa')) icon = '🍼';
@@ -949,16 +946,16 @@ tag = 'CÔ LẬP DÒNG NƯỚC XIẾT'; title = 'Tuyến đường tiếp tế b
     else icon = '🚁';
     tag = 'CHI VIỆN KHẨN CẤP';
     title = rawText.includes('đặc biệt') ? 'Đội cứu trợ gửi vật phẩm đặc biệt!' : 'Trực thăng cứu trợ thả hàng!';
-} else if (rawText.includes('lũ cuốn') || rawText.includes('loại')) {
-theme = 'ev-danger'; icon = '🆘';
-tag = 'BÁO ĐỘNG ĐỎ'; title = 'Có hộ dân gặp nạn do lũ cuốn!'; shake = true;
-} else if (rawText.includes('chia cắt đường')) {
-theme = 'ev-warning'; icon = '🚧';
-tag = 'CHIA CẮT GIAO THÔNG'; title = 'Đường liên xóm bị ngập sâu!';
-} else {
-return;
-SoundFX.playForGodEvent(rawText);
-}
+  } else if (rawText.includes('lũ cuốn') || rawText.includes('loại')) {
+    theme = 'ev-danger'; icon = '🆘';
+    tag = 'BÁO ĐỘNG ĐỎ'; title = 'Có hộ dân gặp nạn do lũ cuốn!'; shake = true;
+  } else if (rawText.includes('chia cắt đường')) {
+    theme = 'ev-warning'; icon = '🚧';
+    tag = 'CHIA CẮT GIAO THÔNG'; title = 'Đường liên xóm bị ngập sâu!';
+  } else {
+    SoundFX.playForGodEvent(rawText);
+    return;
+  }
 
 $('evBanner').className = 'eventArtBanner ' + theme;
 $('evIcon').textContent = icon;
@@ -1703,9 +1700,7 @@ renderGame();
 }
 
 async function saveBag(){
-const w = BAG_ITEMS.reduce((s,x)=>s+(bagSel.has(x[0])?x[3]:0),0);
-  await DB.ref(`room/players/${myId}/bag`).set({ containerType: bagContainer, selected: [...bagSel], weightTenths: w });
-  toast('✓ Đã chốt ba lô khẩn cấp!');
+  const w = BAG_ITEMS.reduce((s,x)=>s+(bagSel.has(x[0])?x[3]:0),0);
   const selectedArr = [...bagSel];
   const me = room?.players?.[myId] || {};
   const prof = me.profile || {};
@@ -1728,7 +1723,6 @@ const w = BAG_ITEMS.reduce((s,x)=>s+(bagSel.has(x[0])?x[3]:0),0);
   });
   toast('✓ Đã chốt ba lô và cập nhật kho đồ!');
 }
-
 function toggleVote(idx){
 if(voteSel.has(idx)) voteSel.delete(idx);
 else if(voteSel.size < 3) voteSel.add(idx);
