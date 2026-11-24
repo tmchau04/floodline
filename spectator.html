@@ -1271,21 +1271,17 @@ function drawLoop() {
   ctx.scale(camZoom, camZoom);
   ctx.translate(-camX, -camY);
 
-  ctx.fillStyle = '#8eb88d';
+ const bgIm = artImgs['map_bg.png'];
+if (bgIm?.complete && bgIm.naturalWidth) {
+  ctx.drawImage(bgIm, 0, 0, WORLD_W, WORLD_H);
+} else {
+  ctx.fillStyle = '#89b587';
   ctx.fillRect(0, 0, WORLD_W, WORLD_H);
-
-  for (let y = 0; y < WORLD_H; y += 32) {
-    for (let x = 0; x < WORLD_W; x += 32) {
-      const tile = ((y > 320 && y < 365) || (x > 995 && x < 1035)) ? 1 : 0;
-      const im = artImgs['tiles.png'];
-      if (im?.complete && im.naturalWidth) ctx.drawImage(im, tile * 32, 0, 32, 32, x, y, 32, 32);
-    }
-  }
-
-  ctx.fillStyle = '#5c9ca3';
+  ctx.fillStyle = '#4e919c';
   ctx.fillRect(1040, 0, 80, WORLD_H);
-  ctx.fillStyle = '#b6a68c';
+  ctx.fillStyle = '#b8a688';
   ctx.fillRect(30, 328, 975, 36);
+}
 
   const t = TASKS[room?.taskIdx];
   const tid = t?.id || '';
