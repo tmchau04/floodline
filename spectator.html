@@ -947,7 +947,7 @@ function buildFinalSummaryHtml(r) {
   const playersMap = r.players || {};
   const heroCounts = {};
   transfers.forEach(tr => {
-    const giverId = tr.to;
+    const giverId = tr.from;
     if (!giverId || !playersMap[giverId]) return;
     heroCounts[giverId] = (heroCounts[giverId] || 0) + 1;
   });
